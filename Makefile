@@ -7,14 +7,14 @@
 
 CFLAGS+=-DBUILDING_TONEZONE
 
-# If the file .zaptel.makeopts is present in your home directory, you can
+# If the file .dahdi.makeopts is present in your home directory, you can
 # include all of your favorite menuselect options so that every time you download
 # a new version of Asterisk, you don't have to run menuselect to set them.
-# The file /etc/zaptel.makeopts will also be included but can be overridden
+# The file /etc/dahdi.makeopts will also be included but can be overridden
 # by the file in your home directory.
 
-GLOBAL_MAKEOPTS=$(wildcard /etc/zaptel.makeopts)
-USER_MAKEOPTS=$(wildcard ~/.zaptel.makeopts)
+GLOBAL_MAKEOPTS=$(wildcard /etc/dahdi.makeopts)
+USER_MAKEOPTS=$(wildcard ~/.dahdi.makeopts)
 
 ifeq ($(strip $(foreach var,clean distclean dist-clean update,$(findstring $(var),$(MAKECMDGOALS)))),)
  ifneq ($(wildcard menuselect.makeopts),)

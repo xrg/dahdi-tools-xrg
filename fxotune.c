@@ -35,7 +35,7 @@
 
 static const float amplitude = 16384.0;
 
-static char *zappath = "/dev/zap";
+static char *dahdipath = "/dev/dahdi";
 static char *configfile = "/etc/fxotune.conf";
 
 static int audio_dump_fd = -1;
@@ -334,7 +334,7 @@ static float calc_magnitude(short *inbuf, int insamps)
 /**
  *  dumps input and output buffer contents for the echo test - used to see exactly what's going on
  */
-static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
+static int maptone(int whichdahdi, int freq, char *dialstr, int delayuntilsilence)
 {
 	int i = 0;
 	int res = 0, x = 0;
@@ -349,13 +349,13 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 	}
 
 	x = 1;
-	if (ioctl(whichzap, DAHDI_SETLINEAR, &x)) {
+	if (ioctl(whichdahdi, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set channel to signed linear mode.\n");
 		return -1;
 	}
 
 	memset(&bi, 0, sizeof(bi));
-	if (ioctl(whichzap, DAHDI_GET_BUFINFO, &bi)) {
+	if (ioctl(whichdahdi, DAHDI_GET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to get buffer information!\n");
 		return -1;
 	}
@@ -363,7 +363,7 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 	bi.bufsize = TEST_DURATION; /* KD - changed from BUFFER_LENGTH; */
 	bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
 	bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
-	if (ioctl(whichzap, DAHDI_SET_BUFINFO, &bi)) {
+	if (ioctl(whichdahdi, DAHDI_SET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to set buffer information!\n");
 		return -1;
 	}
@@ -382,7 +382,7 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 	/* Make sure the line is clear */
 	struct silence_info sinfo;
 	memset(&sinfo, 0, sizeof(sinfo));
-	sinfo.device = whichzap;
+	sinfo.device = whichdahdi;
 	sinfo.dialstr = dialstr;
 	sinfo.initial_delay = delayuntilsilence;
 	sinfo.reset_after = 4; /* doesn't matter - we are only running one test */
@@ -394,13 +394,13 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 
 	/* Flush buffers */
 	x = DAHDI_FLUSH_READ | DAHDI_FLUSH_WRITE | DAHDI_FLUSH_EVENT;
-	if (ioctl(whichzap, DAHDI_FLUSH, &x)) {
+	if (ioctl(whichdahdi, DAHDI_FLUSH, &x)) {
 		fprintf(stderr, "Unable to flush I/O: %s\n", strerror(errno));
 		return -1;
 	}
 
 	/* send data out on line */
-	res = write(whichzap, outbuf, BUFFER_LENGTH); /* we are sending a TEST_DURATION length array of shorts (which are 2 bytes each) */
+	res = write(whichdahdi, outbuf, BUFFER_LENGTH); /* we are sending a TEST_DURATION length array of shorts (which are 2 bytes each) */
 	if (res != BUFFER_LENGTH) { 
 		fprintf(stderr, "Could not write all data to line\n");
 		return -1;
@@ -408,11 +408,11 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 
 retry:
 		/* read return response */
-	res = fxotune_read(whichzap, inbuf, BUFFER_LENGTH);
+	res = fxotune_read(whichdahdi, inbuf, BUFFER_LENGTH);
 	if (res != BUFFER_LENGTH) {
 		int x;
 
-		ioctl(whichzap, DAHDI_GETEVENT, &x);
+		ioctl(whichdahdi, DAHDI_GETEVENT, &x);
 		goto retry;
 	}
 
@@ -464,7 +464,7 @@ retry:
  * 		 http://www.silabs.com/public/documents/tpub_doc/anote/Wireline/Silicon_DAA/en/an84.pdf
  * 		 
  */
-static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilence, int silencegoodfor, struct wctdm_echo_coefs *coefs_out)
+static int acim_tune2(int whichdahdi, int freq, char *dialstr, int delayuntilsilence, int silencegoodfor, struct wctdm_echo_coefs *coefs_out)
 {
 	int i = 0;
 	int res = 0, x = 0;
@@ -483,19 +483,19 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 	}
 
 	/* Set echo settings */
-	if (ioctl(whichzap, WCTDM_SET_ECHOTUNE, &echo_trys[0])) {
-		fprintf(stderr, "Unable to set impedance on fd %d\n", whichzap);
+	if (ioctl(whichdahdi, WCTDM_SET_ECHOTUNE, &echo_trys[0])) {
+		fprintf(stderr, "Unable to set impedance on fd %d\n", whichdahdi);
 		return -1;
 	}
 
 	x = 1;
-	if (ioctl(whichzap, DAHDI_SETLINEAR, &x)) {
+	if (ioctl(whichdahdi, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set channel to signed linear mode.\n");
 		return -1;
 	}
 
 	memset(&bi, 0, sizeof(bi));
-	if (ioctl(whichzap, DAHDI_GET_BUFINFO, &bi)) {
+	if (ioctl(whichdahdi, DAHDI_GET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to get buffer information!\n");
 		return -1;
 	}
@@ -503,13 +503,13 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 	bi.bufsize = BUFFER_LENGTH;
 	bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
 	bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
-	if (ioctl(whichzap, DAHDI_SET_BUFINFO, &bi)) {
+	if (ioctl(whichdahdi, DAHDI_SET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to set buffer information!\n");
 		return -1;
 	}
 	x = DAHDI_OFFHOOK;
-	if (ioctl(whichzap, DAHDI_HOOK, &x)) {
-		fprintf(stderr, "Cannot bring fd %d off hook", whichzap);
+	if (ioctl(whichdahdi, DAHDI_HOOK, &x)) {
+		fprintf(stderr, "Cannot bring fd %d off hook", whichdahdi);
 		return -1;
 	}
 
@@ -517,7 +517,7 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 	/* Set up silence settings */
 	struct silence_info sinfo;
 	memset(&sinfo, 0, sizeof(sinfo));
-	sinfo.device = whichzap;
+	sinfo.device = whichdahdi;
 	sinfo.dialstr = dialstr;
 	sinfo.initial_delay = delayuntilsilence;
 	sinfo.reset_after = silencegoodfor;
@@ -542,20 +542,20 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 			return -1;
 		}
 		
-		if (ioctl(whichzap, WCTDM_SET_ECHOTUNE, &echo_trys[trys])) {
-			fprintf(stderr, "Unable to set echo coefficients on fd %d\n", whichzap);
+		if (ioctl(whichdahdi, WCTDM_SET_ECHOTUNE, &echo_trys[trys])) {
+			fprintf(stderr, "Unable to set echo coefficients on fd %d\n", whichdahdi);
 			return -1;
 		}
 
 		/* Flush buffers */
 		x = DAHDI_FLUSH_READ | DAHDI_FLUSH_WRITE | DAHDI_FLUSH_EVENT;
-		if (ioctl(whichzap, DAHDI_FLUSH, &x)) {
+		if (ioctl(whichdahdi, DAHDI_FLUSH, &x)) {
 			fprintf(stderr, "Unable to flush I/O: %s\n", strerror(errno));
 			return -1;
 		}
 
 		/* send data out on line */
-		res = write(whichzap, outbuf, BUFFER_LENGTH);
+		res = write(whichdahdi, outbuf, BUFFER_LENGTH);
 		if (res != BUFFER_LENGTH) {
 			fprintf(stderr, "Could not write all data to line\n");
 			return -1;
@@ -563,11 +563,11 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 
 retry:
 		/* read return response */
-		res = fxotune_read(whichzap, inbuf, BUFFER_LENGTH * 2);
+		res = fxotune_read(whichdahdi, inbuf, BUFFER_LENGTH * 2);
 		if (res != BUFFER_LENGTH * 2) {
 			int x;
 
-			ioctl(whichzap, DAHDI_GETEVENT, &x);
+			ioctl(whichdahdi, DAHDI_GETEVENT, &x);
 			goto retry;
 		}
 
@@ -624,7 +624,7 @@ retry:
 /**
  *  Perform calibration type 1 on the specified device.  Only tunes the line impedance.  Look for best response range 
  */
-static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int silencegoodfor, struct wctdm_echo_coefs *coefs_out)
+static int acim_tune(int whichdahdi, char *dialstr, int delayuntilsilence, int silencegoodfor, struct wctdm_echo_coefs *coefs_out)
 {
 	int i = 0, freq = 0, acim = 0;
 	int res = 0, x = 0;
@@ -647,26 +647,26 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 	/* Set up silence settings */
 	struct silence_info sinfo;
 	memset(&sinfo, 0, sizeof(sinfo));
-	sinfo.device = whichzap;
+	sinfo.device = whichdahdi;
 	sinfo.dialstr = dialstr;
 	sinfo.initial_delay = delayuntilsilence;
 	sinfo.reset_after = silencegoodfor;
 	
 	/* Set echo settings */
 	memset(&coefs, 0, sizeof(coefs));
-	if (ioctl(whichzap, WCTDM_SET_ECHOTUNE, &coefs)) {
+	if (ioctl(whichdahdi, WCTDM_SET_ECHOTUNE, &coefs)) {
 		fprintf(stdout, "Skipping non-TDM / non-FXO\n");
 		return -1;
 	}
 
 	x = 1;
-	if (ioctl(whichzap, DAHDI_SETLINEAR, &x)) {
+	if (ioctl(whichdahdi, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set channel to signed linear mode.\n");
 		return -1;
 	}
 
 	memset(&bi, 0, sizeof(bi));
-	if (ioctl(whichzap, DAHDI_GET_BUFINFO, &bi)) {
+	if (ioctl(whichdahdi, DAHDI_GET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to get buffer information!\n");
 		return -1;
 	}
@@ -674,7 +674,7 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 	bi.bufsize = BUFFER_LENGTH;
 	bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
 	bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
-	if (ioctl(whichzap, DAHDI_SET_BUFINFO, &bi)) {
+	if (ioctl(whichdahdi, DAHDI_SET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to set buffer information!\n");
 		return -1;
 	}
@@ -683,8 +683,8 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 		float freq_results[15];
 
 		coefs.acim = acim;
-		if (ioctl(whichzap, WCTDM_SET_ECHOTUNE, &coefs)) {
-			fprintf(stderr, "Unable to set impedance on fd %d\n", whichzap);
+		if (ioctl(whichdahdi, WCTDM_SET_ECHOTUNE, &coefs)) {
+			fprintf(stderr, "Unable to set impedance on fd %d\n", whichdahdi);
 			return -1;
 		}
 
@@ -702,13 +702,13 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 
 			/* Flush buffers */
 			x = DAHDI_FLUSH_READ | DAHDI_FLUSH_WRITE | DAHDI_FLUSH_EVENT;
-			if (ioctl(whichzap, DAHDI_FLUSH, &x)) {
+			if (ioctl(whichdahdi, DAHDI_FLUSH, &x)) {
 				fprintf(stderr, "Unable to flush I/O: %s\n", strerror(errno));
 				return -1;
 			}
 	
 			/* send data out on line */
-			res = write(whichzap, outbuf, BUFFER_LENGTH);
+			res = write(whichdahdi, outbuf, BUFFER_LENGTH);
 			if (res != BUFFER_LENGTH) {
 				fprintf(stderr, "Could not write all data to line\n");
 				return -1;
@@ -717,11 +717,11 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 			/* read return response */
 retry:
 			/* read return response */
-			res = fxotune_read(whichzap, inbuf, BUFFER_LENGTH);
+			res = fxotune_read(whichdahdi, inbuf, BUFFER_LENGTH);
 			if (res != BUFFER_LENGTH) {
 				int x;
 	
-				ioctl(whichzap, DAHDI_GETEVENT, &x);
+				ioctl(whichdahdi, DAHDI_GETEVENT, &x);
 				goto retry;
 			}
 
@@ -782,11 +782,11 @@ static int do_set(char *configfilename)
 	
 	while (res != EOF) {
 		struct wctdm_echo_coefs mycoefs;
-		char completezappath[56] = "";
-		int myzap,myacim,mycoef1,mycoef2,mycoef3,mycoef4,mycoef5,mycoef6,mycoef7,mycoef8;
+		char completedahdipath[56] = "";
+		int mydahdi,myacim,mycoef1,mycoef2,mycoef3,mycoef4,mycoef5,mycoef6,mycoef7,mycoef8;
 
 
-		res = fscanf(fp, "%d=%d,%d,%d,%d,%d,%d,%d,%d,%d",&myzap,&myacim,&mycoef1,
+		res = fscanf(fp, "%d=%d,%d,%d,%d,%d,%d,%d,%d,%d",&mydahdi,&myacim,&mycoef1,
 				&mycoef2,&mycoef3,&mycoef4,&mycoef5,&mycoef6,&mycoef7,
 				&mycoef8);
 
@@ -800,7 +800,7 @@ static int do_set(char *configfilename)
 			OUT_OF_BOUNDS(mycoef4)|| OUT_OF_BOUNDS(mycoef5)||
 			OUT_OF_BOUNDS(mycoef6)|| OUT_OF_BOUNDS(mycoef7)|| OUT_OF_BOUNDS(mycoef8)) {
 
-			fprintf(stdout, "Bounds check error on inputs from %s:%d\n", configfile, myzap);
+			fprintf(stdout, "Bounds check error on inputs from %s:%d\n", configfile, mydahdi);
 			return -1;
 		}
 
@@ -814,16 +814,16 @@ static int do_set(char *configfilename)
 		mycoefs.coef7 = mycoef7;
 		mycoefs.coef8 = mycoef8;
 	
-		snprintf(completezappath, sizeof(completezappath), "%s/%d", zappath, myzap);
-		fd = open(completezappath, O_RDWR);
+		snprintf(completedahdipath, sizeof(completedahdipath), "%s/%d", dahdipath, mydahdi);
+		fd = open(completedahdipath, O_RDWR);
 
 		if (fd < 0) {
-			fprintf(stdout, "open error on %s: %s\n", completezappath, strerror(errno));
+			fprintf(stdout, "open error on %s: %s\n", completedahdipath, strerror(errno));
 			return -1;
 		}
 
 		if (ioctl(fd, WCTDM_SET_ECHOTUNE, &mycoefs)) {
-			fprintf(stdout, "%s: %s\n", completezappath, strerror(errno));
+			fprintf(stdout, "%s: %s\n", completedahdipath, strerror(errno));
 			return -1;
 		}
 
@@ -856,18 +856,18 @@ static int do_dump(int startdev, char* dialstr, int delayuntilsilence, int silen
 {
 	int res = 0;
 	int fd;
-	char zapdev[80] = "";
+	char dahdidev[80] = "";
 	
-	int zapmodule = startdev;
-	snprintf(zapdev, sizeof(zapdev), "%s/%d", zappath, zapmodule);
+	int dahdimodule = startdev;
+	snprintf(dahdidev, sizeof(dahdidev), "%s/%d", dahdipath, dahdimodule);
 
-	fd = open(zapdev, O_RDWR);
+	fd = open(dahdidev, O_RDWR);
 	if (fd < 0) {
-		fprintf(stdout, "%s absent: %s\n", zapdev, strerror(errno));
+		fprintf(stdout, "%s absent: %s\n", dahdidev, strerror(errno));
 		return -1;
 	}
 
-	fprintf(stdout, "Dumping module %s\n", zapdev);
+	fprintf(stdout, "Dumping module %s\n", dahdidev);
 	res = maptone(fd, waveformtype, dialstr, delayuntilsilence); 
 
 	close(fd);
@@ -905,7 +905,7 @@ static int do_calibrate(int startdev, int enddev, int calibtype, char* configfil
 	int res = 0;
 	int configfd, fd;
 	int devno = 0;
-	char zapdev[80] = "";
+	char dahdidev[80] = "";
 	struct wctdm_echo_coefs coefs;
 	
 	configfd = open(configfile, O_CREAT|O_TRUNC|O_WRONLY, 0666);
@@ -916,15 +916,15 @@ static int do_calibrate(int startdev, int enddev, int calibtype, char* configfil
 	}
 
 	for (devno = startdev; devno <= enddev; devno++) {
-		snprintf(zapdev, sizeof(zapdev), "%s/%d", zappath, devno);
+		snprintf(dahdidev, sizeof(dahdidev), "%s/%d", dahdipath, devno);
 
-		fd = open(zapdev, O_RDWR);
+		fd = open(dahdidev, O_RDWR);
 		if (fd < 0) {
-			fprintf(stdout, "%s absent: %s\n", zapdev, strerror(errno));
+			fprintf(stdout, "%s absent: %s\n", dahdidev, strerror(errno));
 			continue;
 		}
 
-		fprintf(stdout, "Tuning module %s\n", zapdev);
+		fprintf(stdout, "Tuning module %s\n", dahdidev);
 		
 		if (1 == calibtype)
 			res = acim_tune(fd, dialstr, delayuntilsilence, silencegoodfor, &coefs);

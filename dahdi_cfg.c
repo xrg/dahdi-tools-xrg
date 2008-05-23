@@ -1,5 +1,5 @@
 /*
- * Configuration program for Zapata Telephony Interface
+ * Configuration program for DAHDI Telephony Interface
  *
  * Written by Mark Spencer <markster@digium.com>
  * Based on previous works, designs, and architectures conceived and

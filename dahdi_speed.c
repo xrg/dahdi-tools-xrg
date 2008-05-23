@@ -2,7 +2,7 @@
  * 
  * Generic speed test -- Run an infinite loop and
  * see how high we can count (in 5 seconds).  You 
- * can use this to measure how much CPU zaptel REALLY 
+ * can use this to measure how much CPU DAHDI REALLY 
  * is taking.
  * 
  * MUST BE COMPILED WITHOUT OPTIMIZATION

@@ -83,7 +83,7 @@ AC_DEFUN(
    done ;
 ) ;
 if test  "x$GNU_MAKE" = "xNot Found"  ; then
-   AC_MSG_ERROR(*** Please install GNU make.  It is required to build Zaptel!)
+   AC_MSG_ERROR(*** Please install GNU make.  It is required to build DAHDI tools!)
 fi
 AC_SUBST([GNU_MAKE])
 ])

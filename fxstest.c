@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	int res;
 	int x;
 	if (argc < 3) {
-		fprintf(stderr, "Usage: fxstest <zap device> <cmd>\n"
+		fprintf(stderr, "Usage: fxstest <dahdi device> <cmd>\n"
 		       "       where cmd is one of:\n"
 		       "       stats - reports voltages\n"
 		       "       regdump - dumps ProSLIC registers\n"
