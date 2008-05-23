@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
 	if (visual) {
 		printf("\nVisual Audio Levels.\n");
 		printf("--------------------\n");
-		printf(" Use zapata.conf file to adjust the gains if needed.\n\n");
+		printf(" Use dahdi.conf file to adjust the gains if needed.\n\n");
 		printf("( # = Audio Level  * = Max Audio Hit )\n");
 		draw_barheader();
 	}
