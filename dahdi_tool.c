@@ -516,7 +516,7 @@ static void show_spans(void)
 	
 	label = newtLabel(5,1,"Alarms          Span");
 	
-	newtCenteredWindow(72,18, "Zapata Telephony Interfaces");
+	newtCenteredWindow(72,18, "DAHDI Telephony Interfaces");
 	form = newtForm(NULL, NULL, 0);
 	
 	newtFormSetTimer(form, 200);
@@ -577,7 +577,7 @@ int main(int argc, char *argv[])
 	newtInit();
 	newtCls();
 	
-	newtDrawRootText(0,0,"Zaptel Tool (C)2002-2008 Digium, Inc.");
+	newtDrawRootText(0,0,"DAHDI Tool (C)2002-2008 Digium, Inc.");
 	newtPushHelpLine("Welcome to the DAHDI Tool!");
 	show_spans();
 	cleanup();

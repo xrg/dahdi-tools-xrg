@@ -1140,9 +1140,9 @@ static void printconfig(int fd)
 	strcpy(vi.echo_canceller, "Unknown");
 
 	if (ioctl(fd, DAHDI_GETVERSION, &vi))
-		error("Unable to read Zaptel version information.\n");
+		error("Unable to read DAHDI version information.\n");
 
-	printf("\nZaptel Version: %s\n"
+	printf("\nDAHDI Version: %s\n"
 	       "Echo Canceller: %s\n"
 	       "Configuration\n"
 	       "======================\n\n", vi.version, vi.echo_canceller);
@@ -1373,7 +1373,7 @@ int main(int argc, char *argv[])
 			if (stopmode) {
 				for (x=0;x<spans;x++) {
 					if (ioctl(fd, DAHDI_SHUTDOWN, &lc[x].span)) {
-						fprintf(stderr, "Zaptel shutdown failed: %s\n", strerror(errno));
+						fprintf(stderr, "DAHDI shutdown failed: %s\n", strerror(errno));
 						close(fd);
 						exit(1);
 					}
@@ -1388,7 +1388,7 @@ int main(int argc, char *argv[])
 				}
 				for (x=0;x<numdynamic;x++) {
 					if (ioctl(fd, DAHDI_DYNAMIC_CREATE, &zds[x])) {
-						fprintf(stderr, "Zaptel dynamic span creation failed: %s\n", strerror(errno));
+						fprintf(stderr, "DAHDI dynamic span creation failed: %s\n", strerror(errno));
 						close(fd);
 						exit(1);
 					}
@@ -1480,7 +1480,7 @@ int main(int argc, char *argv[])
 				}
 				for (x=0;x<spans;x++) {
 					if (ioctl(fd, DAHDI_STARTUP, &lc[x].span)) {
-						fprintf(stderr, "Zaptel startup failed: %s\n", strerror(errno));
+						fprintf(stderr, "DAHDI startup failed: %s\n", strerror(errno));
 						close(fd);
 						exit(1);
 					}
