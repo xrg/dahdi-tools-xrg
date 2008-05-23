@@ -9,7 +9,7 @@ INCLUDE_DIR	= $(includedir)/pppd
 
 LIBDIR		= $(libdir)/pppd/$(PPPD_VERSION)
 
-PLUGINS := zaptel.so
+PLUGINS := dahdi.so
 
 all:	$(PLUGINS)
 
