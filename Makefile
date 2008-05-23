@@ -31,7 +31,7 @@ endif
 SUBDIRS_UTILS_ALL:= ppp
 SUBDIRS_UTILS :=
 
-OPTFLAG=-O2
+OPTFLAGS=-O2
 CFLAGS+=-I. $(OPTFLAGS) -g -fPIC -Wall -DBUILDING_TONEZONE #-DTONEZONE_DRIVER
 ifneq (,$(findstring ppc,$(UNAME_M)))
 CFLAGS_PPC:=-fsigned-char
@@ -152,7 +152,7 @@ prereq: config.status version.h
 dahdi_tool.o: CFLAGS+=$(NEWT_INCLUDE)
 dahdi_tool: LDLIBS+=$(NEWT_LIB)
 
-dahdi_speed: CFLAGS=
+dahdi_speed: CFLAGS+=-O0
 
 $(LTZ_A): $(LTZ_A_OBJS)
 	ar rcs $@ $^
