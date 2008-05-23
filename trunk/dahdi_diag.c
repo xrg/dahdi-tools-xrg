@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Usage: ztdiag <channel>\n");
 		exit(1);
 	}
-	fd = open("/dev/zap/ctl", O_RDWR);
+	fd = open("/dev/dahdi/ctl", O_RDWR);
 	if (fd < 0) {
-		perror("open(/dev/zap/ctl");
+		perror("open(/dev/dahdi/ctl");
 		exit(1);
 	}
 	if (ioctl(fd, DAHDI_CHANDIAG, &chan)) {
