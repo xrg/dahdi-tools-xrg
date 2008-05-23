@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
 	char buf[100];
 	char alarms[50];
 
-	if ((ctl = open("/dev/zap/ctl", O_RDWR)) < 0) {
-		fprintf(stderr, "Unable to open /dev/zap/ctl: %s\n", strerror(errno));
+	if ((ctl = open("/dev/dahdi/ctl", O_RDWR)) < 0) {
+		fprintf(stderr, "Unable to open /dev/dahdi/ctl: %s\n", strerror(errno));
 		exit(1);
 	}
 	

@@ -33,7 +33,7 @@
 #include "dahdi/user.h"
 #include "tonezone.h"
 
-#define DEFAULT_DAHDI_DEV "/dev/zap/ctl"
+#define DEFAULT_DAHDI_DEV "/dev/dahdi/ctl"
 
 #define MAX_SIZE 16384
 #define CLIP 32635
