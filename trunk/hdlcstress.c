@@ -13,6 +13,8 @@
 #define FAST_HDLC_NEED_TABLES
 #include "kernel/fasthdlc.h"
 
+#include "version.h"
+
 /* #define BLOCK_SIZE 2048 */
 #define BLOCK_SIZE 2041
 

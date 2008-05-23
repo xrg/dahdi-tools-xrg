@@ -9,6 +9,7 @@
 #include <errno.h>
 
 #include <dahdi/user.h>
+#include "version.h"
 
 int main(int argc, char *argv[])
 {

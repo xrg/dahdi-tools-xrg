@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "version.h"
+
 int myread(int fd, char *buf, int len)
 {
 	int sofar;

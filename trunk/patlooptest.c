@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include <dahdi/user.h>
+#include "version.h"
 
 #define BLOCK_SIZE 2039
 

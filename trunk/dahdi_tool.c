@@ -45,6 +45,7 @@
 
 #include <dahdi/user.h>
 #include "tonezone.h"
+#include "version.h"
 
 static int ctl = -1;
 static int span_max_chan_pos;

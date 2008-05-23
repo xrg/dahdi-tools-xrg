@@ -42,6 +42,7 @@
 
 #include <dahdi/user.h>
 #include "tonezone.h"
+#include "version.h"
 
 #include <linux/soundcard.h>
 

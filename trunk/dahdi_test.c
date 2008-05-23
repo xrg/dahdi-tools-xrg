@@ -9,6 +9,8 @@
 #include <math.h>
 #include <getopt.h>
 
+#include "version.h"
+
 #define SIZE 8000
 
 static int pass = 0;
