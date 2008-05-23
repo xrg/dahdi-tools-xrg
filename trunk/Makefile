@@ -75,7 +75,7 @@ ifneq ($(wildcard .version),)
   TOOLSVERSION:=$(shell cat .version)
 else
 ifneq ($(wildcard .svn),)
-  TOOLSVERSION=SVN-$(shell build_tools/make_svn_branch_name)
+  TOOLSVERSION=$(shell build_tools/make_version . dahdi/tools)
 endif
 endif
 
@@ -115,7 +115,7 @@ GROFF_HTML	:= $(GROFF_PAGES:%=%.html)
 all: menuselect.makeopts 
 	@$(MAKE) _all
 
-_all: programs
+_all: prereq programs
 
 libs: $(LTZ_SO) $(LTZ_A)
 

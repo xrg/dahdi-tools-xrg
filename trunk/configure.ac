@@ -1,12 +1,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-
-m4_define([DAHDI_VERSION],
-          m4_bpatsubst(m4_esyscmd([build_tools/make_version .]),
+ 
+m4_define([TOOLSVERSION],
+          m4_bpatsubst(m4_esyscmd([build_tools/make_version . dahdi/tools]),
                        [\([0-9.]*\)\(\w\|\W\)*],
                        [\1]))
-AC_INIT(zaptel, DAHDI_VERSION, www.asterisk.org)
+AC_INIT(dahdi, TOOLSVERSION, www.asterisk.org)
 
 # check existence of the package
 AC_CONFIG_SRCDIR([dahdi_cfg.c])
