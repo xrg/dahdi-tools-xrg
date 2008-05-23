@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	int timeout=0;
 	time_t start_time=0;
 	if (argc < 2 || argc > 3 ) {
-		fprintf(stderr, "Usage: %s <zaptel device> [timeout]\n",argv[0]);
+		fprintf(stderr, "Usage: %s <DAHDI device> [timeout]\n",argv[0]);
 		exit(1);
 	}
 	fd = open(argv[1], O_RDWR, 0600);
