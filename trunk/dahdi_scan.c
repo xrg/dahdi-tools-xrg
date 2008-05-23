@@ -34,19 +34,15 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
+#include <dahdi/user.h>
 
 int main(int argc, char *argv[])
 {
 	int ctl;
 	int x, y;
-	struct zt_params params;
+	struct dahdi_params params;
 	unsigned int basechan = 1;
-	struct zt_spaninfo s;
+	struct dahdi_spaninfo s;
 	char buf[100];
 	char alarms[50];
 
@@ -55,25 +51,25 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	for (x = 1; x < ZT_MAX_SPANS; x++) {
+	for (x = 1; x < DAHDI_MAX_SPANS; x++) {
 		memset(&s, 0, sizeof(s));
 		s.spanno = x;
-		if (ioctl(ctl, ZT_SPANSTAT, &s))
+		if (ioctl(ctl, DAHDI_SPANSTAT, &s))
 			continue;
 
 		alarms[0] = '\0';
 		if (s.alarms) {
-			if (s.alarms & ZT_ALARM_BLUE)
+			if (s.alarms & DAHDI_ALARM_BLUE)
 				strcat(alarms,"BLU/");
-			if (s.alarms & ZT_ALARM_YELLOW)
+			if (s.alarms & DAHDI_ALARM_YELLOW)
 				strcat(alarms, "YEL/");
-			if (s.alarms & ZT_ALARM_RED)
+			if (s.alarms & DAHDI_ALARM_RED)
 				strcat(alarms, "RED/");
-			if (s.alarms & ZT_ALARM_LOOPBACK)
+			if (s.alarms & DAHDI_ALARM_LOOPBACK)
 				strcat(alarms,"LB/");
-			if (s.alarms & ZT_ALARM_RECOVER)
+			if (s.alarms & DAHDI_ALARM_RECOVER)
 				strcat(alarms,"REC/");
-			if (s.alarms & ZT_ALARM_NOTOPEN)
+			if (s.alarms & DAHDI_ALARM_NOTOPEN)
 				strcat(alarms, "NOP/");
 			if (!strlen(alarms))
 				strcat(alarms, "UUU/");
@@ -102,41 +98,41 @@ int main(int argc, char *argv[])
 		y = basechan;
 		memset(&params, 0, sizeof(params));
 		params.channo = y;
-		if (ioctl(ctl, ZT_GET_PARAMS, &params)) {
+		if (ioctl(ctl, DAHDI_GET_PARAMS, &params)) {
 			basechan += s.totalchans;
 			continue;
 		}
 
-		if (params.sigcap & (__ZT_SIG_DACS |  ZT_SIG_CAS)) {
+		if (params.sigcap & (__DAHDI_SIG_DACS |  DAHDI_SIG_CAS)) {
 			/* this is a digital span */
 			fprintf(stdout, "type=digital-%s\n", s.spantype);
 			fprintf(stdout, "syncsrc=%d\n", s.syncsrc);
 			fprintf(stdout, "lbo=%s\n", s.lboname);
 			fprintf(stdout, "coding_opts=");
 			buf[0] = '\0';
-			if (s.linecompat & ZT_CONFIG_B8ZS) strcat(buf, "B8ZS,");
-			if (s.linecompat & ZT_CONFIG_AMI) strcat(buf, "AMI,");
-			if (s.linecompat & ZT_CONFIG_HDB3) strcat(buf, "HDB3,");
+			if (s.linecompat & DAHDI_CONFIG_B8ZS) strcat(buf, "B8ZS,");
+			if (s.linecompat & DAHDI_CONFIG_AMI) strcat(buf, "AMI,");
+			if (s.linecompat & DAHDI_CONFIG_HDB3) strcat(buf, "HDB3,");
 			buf[strlen(buf) - 1] = '\0';
 			fprintf(stdout, "%s\n", buf);
 			fprintf(stdout, "framing_opts=");
 			buf[0] = '\0';
-			if (s.linecompat & ZT_CONFIG_ESF) strcat(buf, "ESF,");
-			if (s.linecompat & ZT_CONFIG_D4) strcat(buf, "D4,");
-			if (s.linecompat & ZT_CONFIG_CCS) strcat(buf, "CCS,");
-			if (s.linecompat & ZT_CONFIG_CRC4) strcat(buf, "CRC4,");
+			if (s.linecompat & DAHDI_CONFIG_ESF) strcat(buf, "ESF,");
+			if (s.linecompat & DAHDI_CONFIG_D4) strcat(buf, "D4,");
+			if (s.linecompat & DAHDI_CONFIG_CCS) strcat(buf, "CCS,");
+			if (s.linecompat & DAHDI_CONFIG_CRC4) strcat(buf, "CRC4,");
 			buf[strlen(buf) - 1] = '\0';
 			fprintf(stdout, "%s\n", buf);
 			fprintf(stdout, "coding=");
-			if (s.lineconfig & ZT_CONFIG_B8ZS) fprintf(stdout, "B8ZS");
-			else if (s.lineconfig & ZT_CONFIG_AMI) fprintf(stdout, "AMI");
-			else if (s.lineconfig & ZT_CONFIG_HDB3) fprintf(stdout, "HDB3");
+			if (s.lineconfig & DAHDI_CONFIG_B8ZS) fprintf(stdout, "B8ZS");
+			else if (s.lineconfig & DAHDI_CONFIG_AMI) fprintf(stdout, "AMI");
+			else if (s.lineconfig & DAHDI_CONFIG_HDB3) fprintf(stdout, "HDB3");
 			fprintf(stdout, "\n");
 			fprintf(stdout, "framing=");
-			if (s.lineconfig & ZT_CONFIG_ESF) fprintf(stdout, "ESF");
-			else if (s.lineconfig & ZT_CONFIG_D4) fprintf(stdout, "D4");
-			else if (s.lineconfig & ZT_CONFIG_CCS) fprintf(stdout, "CCS");
-			else if (s.lineconfig & ZT_CONFIG_CRC4) fprintf(stdout, "/CRC4");
+			if (s.lineconfig & DAHDI_CONFIG_ESF) fprintf(stdout, "ESF");
+			else if (s.lineconfig & DAHDI_CONFIG_D4) fprintf(stdout, "D4");
+			else if (s.lineconfig & DAHDI_CONFIG_CCS) fprintf(stdout, "CCS");
+			else if (s.lineconfig & DAHDI_CONFIG_CRC4) fprintf(stdout, "/CRC4");
 			fprintf(stdout, "\n");
 		} else {
 			/* this is an analog span */
@@ -144,22 +140,22 @@ int main(int argc, char *argv[])
 			for (y = basechan; y < (basechan + s.totalchans); y++) {
 				memset(&params, 0, sizeof(params));
 				params.channo = y;
-				if (ioctl(ctl, ZT_GET_PARAMS, &params)) {
+				if (ioctl(ctl, DAHDI_GET_PARAMS, &params)) {
 					fprintf(stdout, "port=%d,unknown\n", y);
 					continue;
 				};
 				fprintf(stdout, "port=%d,", y);
-				switch (params.sigcap & (__ZT_SIG_FXO | __ZT_SIG_FXS)) {
-				case __ZT_SIG_FXO:
+				switch (params.sigcap & (__DAHDI_SIG_FXO | __DAHDI_SIG_FXS)) {
+				case __DAHDI_SIG_FXO:
 					fprintf(stdout, "FXS");
 					break;
-				case __ZT_SIG_FXS:
+				case __DAHDI_SIG_FXS:
 					fprintf(stdout, "FXO");
 					break;
 				default:
 					fprintf(stdout, "none");
 				}
-				if (params.sigcap & ZT_SIG_BROKEN)
+				if (params.sigcap & DAHDI_SIG_BROKEN)
 					fprintf(stdout, " FAILED");
 				fprintf(stdout, "\n");
 			}

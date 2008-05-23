@@ -4,11 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
+#include <dahdi/user.h>
 
 int main(int argc, char *argv[])
 {
@@ -23,8 +19,8 @@ int main(int argc, char *argv[])
 		perror("open(/dev/zap/ctl");
 		exit(1);
 	}
-	if (ioctl(fd, ZT_CHANDIAG, &chan)) {
-		perror("ioctl(ZT_CHANDIAG)");
+	if (ioctl(fd, DAHDI_CHANDIAG, &chan)) {
+		perror("ioctl(DAHDI_CHANDIAG)");
 		exit(1);
 	}
 	exit(0);

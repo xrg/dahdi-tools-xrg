@@ -22,7 +22,8 @@
 #include <sys/socket.h>
 #include <linux/if.h>
 #include <linux/sockios.h>
-#include "kernel/zaptel.h"
+
+#include <dahdi/user.h>
 
 #if GENERIC_HDLC_VERSION != 4
 #error Generic HDLC layer version mismatch, please get correct sethdlc.c
@@ -674,7 +675,7 @@ int main(int arg_c, char *arg_v[])
 	if (sock < 0)
 		error("Unable to create socket: %s\n", strerror(errno));
   
-	zap_copy_string(req.ifr_name, argv[1], sizeof(req.ifr_name)); /* Device name */
+	dahdi_copy_string(req.ifr_name, argv[1], sizeof(req.ifr_name)); /* Device name */
 
 	if (argc == 2)
 		show_port();

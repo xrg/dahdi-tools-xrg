@@ -1,84 +1,11 @@
 #
-# Makefile for Zaptel driver modules and utilities
+# Makefile for DAHDI tools
 #
-# Copyright (C) 2001-2007 Digium, Inc.
+# Copyright (C) 2001-2008 Digium, Inc.
 #
 #
 
-ifneq ($(KBUILD_EXTMOD),)
-# We only get in here if we're from kernel 2.6 <= 2.6.9 and going through 
-# Kbuild. Later versions will include Kbuild instead of Makefile.
-include $(src)/Kbuild
-
-else
-
-CFLAGS+=-DSTANDALONE_ZAPATA -DBUILDING_TONEZONE
-
-ifeq ($(MAKELEVEL),0)
-PWD:=$(shell pwd)
-endif
-
-ifeq ($(ARCH),)
-ARCH:=$(shell uname -m | sed -e s/i.86/i386/)
-endif
-
-ifeq ($(DEB_HOST_GNU_TYPE),)
-UNAME_M:=$(shell uname -m)
-else
-UNAME_M:=$(DEB_HOST_GNU_TYPE)
-endif
-
-# If you want to build for a kernel other than the current kernel, set KVERS
-ifndef KVERS
-KVERS:=$(shell uname -r)
-endif
-ifndef KSRC
-  ifneq (,$(wildcard /lib/modules/$(KVERS)/build))
-    KSRC:=/lib/modules/$(KVERS)/build
-  else
-    KSRC_SEARCH_PATH:=/usr/src/linux-2.4 /usr/src/linux
-    KSRC:=$(shell for dir in $(KSRC_SEARCH_PATH); do if [ -d $$dir ]; then echo $$dir; break; fi; done)
-  endif
-endif
-KVERS_MAJ:=$(shell echo $(KVERS) | cut -d. -f1-2)
-KINCLUDES:=$(KSRC)/include
-
-# We use the kernel's .config file as an indication that the KSRC
-# directory is indeed a valid and configured kernel source (or partial
-# source) directory.
-#
-# We also source it, as it has the format of Makefile variables list.
-# Thus we will have many CONFIG_* variables from there.
-KCONFIG:=$(KSRC)/.config
-ifneq (,$(wildcard $(KCONFIG)))
-  HAS_KSRC=yes
-  include $(KCONFIG)
-else
-  HAS_KSRC=no
-endif
-
-ifeq ($(KVERS_MAJ),2.4)
-  BUILDVER:=linux24
-else
-  BUILDVER:=linux26
-endif
-
-# Set HOTPLUG_FIRMWARE=no to override automatic building with hotplug support
-# if it is enabled in the kernel.
-ifeq ($(BUILDVER),linux26)
-  ifneq (,$(wildcard $(DESTDIR)/etc/udev/rules.d))
-    DYNFS=yes
-    UDEVRULES=yes
-  endif
-  ifeq (yes,$(HAS_KSRC))
-    HOTPLUG_FIRMWARE:=$(shell if grep -q '^CONFIG_FW_LOADER=[ym]' $(KCONFIG); then echo "yes"; else echo "no"; fi)
-  endif
-endif
-
-ifneq (,$(findstring $(CONFIG_DEVFS_FS),y m))
-  DYNFS=yes
-  HAS_DEVFS=yes
-endif
+CFLAGS+=-DBUILDING_TONEZONE
 
 # If the file .zaptel.makeopts is present in your home directory, you can
 # include all of your favorite menuselect options so that every time you download
@@ -101,57 +28,8 @@ ifeq ($(strip $(foreach var,clean distclean dist-clean update,$(findstring $(var
  endif
 endif
 
-ifeq ($(BUILDVER),linux24)
-MENUSELECT_MODULES+=xpp wctc4xxp wctdm24xxp zttranscode
-endif
-
-ifeq ($(findstring xpp,$(MENUSELECT_MODULES)),)
-  BUILD_XPP:=yes
-endif
-
-SUBDIRS_UTILS_ALL:= kernel/xpp/utils ppp
-SUBDIRS_UTILS	:=
-ifeq ($(BUILD_XPP),yes)
-  SUBDIRS_UTILS	+= kernel/xpp/utils
-endif
-#SUBDIRS_UTILS	+= ppp
-
-TOPDIR_MODULES:=pciradio tor2 torisa wcfxo wct1xxp wctdm wcte11xp wcusb zaptel ztd-eth ztd-loc ztdummy ztdynamic zttranscode
-SUBDIR_MODULES:=wct4xxp wctc4xxp xpp wctdm24xxp wcte12xp
-TOPDIR_MODULES+=$(MODULES_EXTRA)
-SUBDIR_MODULES+=$(SUBDIRS_EXTRA)
-BUILD_TOPDIR_MODULES:=$(filter-out $(MENUSELECT_MODULES),$(TOPDIR_MODULES))
-BUILD_SUBDIR_MODULES:=$(filter-out $(MENUSELECT_MODULES),$(SUBDIR_MODULES))
-BUILD_MODULES:=$(BUILD_TOPDIR_MODULES) $(BUILD_SUBDIR_MODULES)
-
-MOD_DESTDIR:=zaptel
-
-KERN_DIR:=kernel
-
-#NOTE NOTE NOTE
-#
-# all variables set before the include of Makefile.kernel26 are needed by the 2.6 kernel module build process
-
-ifneq ($(KBUILD_EXTMOD),)
-
-obj-m:=$(BUILD_TOPDIR_MODULES:%=%.o)
-obj-m+=$(BUILD_SUBDIR_MODULES:%=%/)
-
-include $(src)/Makefile.kernel26
-
-else
-KBUILD_OBJ_M=$(BUILD_TOPDIR_MODULES:%=%.o) $(BUILD_SUBDIR_MODULES:%=%/)
-
-ifeq ($(BUILDVER),linux24)
-  INSTALL_MODULES:=$(BUILD_TOPDIR_MODULES:%=$(KERN_DIR)/%.o)
-  INSTALL_MODULES+=$(foreach mod,$(BUILD_SUBDIR_MODULES),$(KERN_DIR)/$(mod)/$(mod).o)
-  ALL_MODULES:=$(TOPDIR_MODULES:%=$(KERN_DIR)/%.o)
-  ALL_MODULES+=$(SUBDIR_MODULES:%=$(KERN_DIR)/%/%.o)
-else
-  ALL_MODULES:=$(TOPDIR_MODULES:%=%.ko)
-  ALL_MODULES+=$(foreach mod,$(filter-out xpp,$(SUBDIR_MODULES)),$(mod)/$(mod).ko)
-  ALL_MODULES+=$(patsubst %,xpp/%.ko,xpp_usb xpd_fxo xpd_fxs xpp)
-endif
+SUBDIRS_UTILS_ALL:= ppp
+SUBDIRS_UTILS :=
 
 OPTFLAG=-O2
 CFLAGS+=-I. $(OPTFLAGS) -g -fPIC -Wall -DBUILDING_TONEZONE #-DTONEZONE_DRIVER
@@ -162,66 +40,28 @@ ifneq (,$(findstring x86_64,$(UNAME_M)))
 CFLAGS_x86_64:=-m64
 endif
 CFLAGS+=$(CFLAGS_PPC) $(CFLAGS_x86_64)
-KFLAGS=-I$(KINCLUDES) -O6
-KFLAGS+=-DMODULE -D__KERNEL__ -DEXPORT_SYMTAB -I$(KSRC)/drivers/net \
-	-Wall -I. -Wstrict-prototypes -fomit-frame-pointer -I$(KSRC)/drivers/net/wan -I$(KINCLUDES)/net
-ifneq (,$(wildcard $(KINCLUDES)/linux/modversions.h))
-  KFLAGS+=-DMODVERSIONS -include $(KINCLUDES)/linux/modversions.h
-endif
-ifneq (,$(findstring ppc,$(UNAME_M)))
-KFLAGS_PPC:=-msoft-float -fsigned-char
-endif
-KFLAGS+=$(KFLAGS_PPC)
-ifeq ($(KVERS_MAJ),2.4)
-  ifneq (,$(findstring x86_64,$(UNAME_M)))
-    KFLAGS+=-mcmodel=kernel
-  endif
-endif
-
-#
-# Features are now configured in zconfig.h
-#
-
-MODULE_ALIASES=wcfxs wctdm8xxp wct2xxp
-
-KFLAGS+=-DSTANDALONE_ZAPATA
-CFLAGS+=-DSTANDALONE_ZAPATA
-ifeq ($(BUILDVER),linux24)
-KMAKE	= $(MAKE) -C kernel HOTPLUG_FIRMWARE=no \
-  HOSTCC=$(HOSTCC) ARCH=$(ARCH) KSRC=$(KSRC) LD=$(LD) CC=$(CC) \
-  UNAME_M=$(UNAME_M) \
-  BUILD_TOPDIR_MODULES="$(BUILD_TOPDIR_MODULES)" BUILD_SUBDIR_MODULES="$(BUILD_SUBDIR_MODULES)"
-else
-KMAKE  = $(MAKE) -C $(KSRC) ARCH=$(ARCH) SUBDIRS=$(PWD)/kernel \
-  HOTPLUG_FIRMWARE=$(HOTPLUG_FIRMWARE) KBUILD_OBJ_M="$(KBUILD_OBJ_M)"
-endif
-KMAKE_INST = $(KMAKE) \
-  INSTALL_MOD_PATH=$(DESTDIR) INSTALL_MOD_DIR=misc modules_install
 
 ROOT_PREFIX=
 
-CONFIG_FILE=/etc/zaptel.conf
-CFLAGS+=-DZAPTEL_CONFIG=\"$(CONFIG_FILE)\"
-
-# sample makefile "trace print"
-#tracedummy=$(shell echo ====== GOT HERE ===== >&2; echo >&2)
+CONFIG_FILE=/etc/dahdi.conf
+CFLAGS+=-DDAHDI_CONFIG=\"$(CONFIG_FILE)\"
 
 CHKCONFIG	:= $(wildcard /sbin/chkconfig)
 UPDATE_RCD	:= $(wildcard /usr/sbin/update-rc.d)
 ifeq (,$(DESTDIR))
   ifneq (,$(CHKCONFIG))
-    ADD_INITD	:= $(CHKCONFIG) --add zaptel
+    ADD_INITD	:= $(CHKCONFIG) --add dahdi
   else
     ifndef (,$(UPDATE_RCD))
-      ADD_INITD	:= $(UPDATE_RCD) zaptel defaults 15 30
+      ADD_INITD	:= $(UPDATE_RCD) dahdi defaults 15 30
     endif
   endif
 endif
 
 INITRD_DIR	:= $(firstword $(wildcard /etc/rc.d/init.d /etc/init.d))
 ifneq (,$(INITRD_DIR))
-  INIT_TARGET	:= $(DESTDIR)$(INITRD_DIR)/zaptel
-  COPY_INITD	:= install -D zaptel.init $(INIT_TARGET)
+  INIT_TARGET	:= $(DESTDIR)$(INITRD_DIR)/dahdi
+  COPY_INITD	:= install -D dahdi.init $(INIT_TARGET)
 endif
 RCCONF_DIR	:= $(firstword $(wildcard /etc/sysconfig /etc/default))
 
@@ -232,10 +72,10 @@ ifneq (,$(NETSCR_DIR))
 endif
 
 ifneq ($(wildcard .version),)
-  ZAPTELVERSION:=$(shell cat .version)
+  TOOLSVERSION:=$(shell cat .version)
 else
 ifneq ($(wildcard .svn),)
-  ZAPTELVERSION=SVN-$(shell build_tools/make_svn_branch_name)
+  TOOLSVERSION=SVN-$(shell build_tools/make_svn_branch_name)
 endif
 endif
 
@@ -252,18 +92,11 @@ LTZ_SO_MINOR_VER:=0
 # for historical reasons.
 BIN_DIR:=/sbin
 LIB_DIR:=$(libdir)
-INC_DIR:=$(includedir)/zaptel
 MAN_DIR:=$(mandir)/man8
-MOD_DIR:=$(DESTDIR)/lib/modules/$(KVERS)/misc
 
 # Utilities we build with a standard build procedure:
-UTILS		= zttool zttest ztmonitor ztspeed sethdlc-new ztcfg \
-		  ztcfg-dude usbfxstest fxstest fxotune ztdiag torisatool \
-		  ztscan
-
-
-# Makefile mentions them. Source is not included (anynore?)
-UTILS		+= fxsdump ztprovision
+UTILS		= dahdi_tool dahdi_test dahdi_monitor dahdi_speed sethdlc dahdi_cfg \
+		  fxstest fxotune dahdi_diag dahdi_scan
 
 # some tests:
 UTILS		+= patgen pattest patlooptest hdlcstress hdlctest hdlcgen \
@@ -271,10 +104,7 @@ UTILS		+= patgen pattest patlooptest hdlcstress hdlctest hdlcgen \
 
 UTILSO		= $(UTILS:%=%.o)
 
-BINS:=fxotune fxstest sethdlc-new ztcfg ztdiag ztmonitor ztspeed zttest ztscan
-ifeq (1,$(PBX_LIBNEWT))
-  BINS+=zttool
-endif
+BINS:=fxotune fxstest sethdlc dahdi_cfg dahdi_diag dahdi_monitor dahdi_speed dahdi_test dahdi_scan
 BINS:=$(filter-out $(MENUSELECT_UTILS),$(BINS))
 MAN_PAGES:=$(wildcard $(BINS:%=doc/%.8))
 
@@ -285,7 +115,7 @@ GROFF_HTML	:= $(GROFF_PAGES:%=%.html)
 all: menuselect.makeopts 
 	@$(MAKE) _all
 
-_all: $(if $(BUILD_MODULES),modules) programs
+_all: programs
 
 libs: $(LTZ_SO) $(LTZ_A)
 
@@ -298,15 +128,8 @@ programs: libs utils
 
 utils: $(BINS) utils-subdirs
 
-modules: prereq
-ifeq (no,$(HAS_KSRC))
-	echo "You do not appear to have the sources for the $(KVERS) kernel installed."
-	exit 1
-endif
-	$(KMAKE) modules
-
 version.h:
-	@ZAPTELVERSION="${ZAPTELVERSION}" build_tools/make_version_h > $@.tmp
+	@TOOLSVERSION="${TOOLSVERSION}" build_tools/make_version_h > $@.tmp
 	@if cmp -s $@.tmp $@ ; then :; else \
 		mv $@.tmp $@ ; \
 	fi
@@ -319,26 +142,17 @@ zonedata.o: tonezone.h
 zonedata.lo: zonedata.c tonezone.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-tonezone.o: kernel/zaptel.h tonezone.h
+tonezone.o: tonezone.h
 
-tonezone.lo: tonezone.c tonezone.h kernel/zaptel.h
+tonezone.lo: tonezone.c tonezone.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 prereq: config.status version.h
 
-zttool.o: kernel/zaptel.h
-zttool.o: CFLAGS+=$(NEWT_INCLUDE)
-zttool: LDLIBS+=$(NEWT_LIB)
+dahdi_tool.o: CFLAGS+=$(NEWT_INCLUDE)
+dahdi_tool: LDLIBS+=$(NEWT_LIB)
 
-ztscan.o: kernel/zaptel.h
-
-ztprovision.o: kernel/zaptel.h
-
-ztmonitor.o: kernel/zaptel.h
-
-ztspeed: CFLAGS=
-
-sethdlc-new: CFLAGS+=-I$(KINCLUDES)
+dahdi_speed: CFLAGS=
 
 $(LTZ_A): $(LTZ_A_OBJS)
 	ar rcs $@ $^
@@ -347,44 +161,31 @@ $(LTZ_A): $(LTZ_A_OBJS)
 $(LTZ_SO): $(LTZ_SO_OBJS)
 	$(CC) $(CFLAGS) -shared -Wl,-soname,$(LTZ_SO).$(LTZ_SO_MAJOR_VER).$(LTZ_SO_MINOR_VER) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lm
 
-ztcfg.o: ztcfg.h kernel/zaptel.h
-ztcfg: ztcfg.o $(LTZ_A)
-ztcfg: LDLIBS+=-lm
+dahdi_cfg: dahdi_cfg.o $(LTZ_A)
+dahdi_cfg: LDLIBS+=-lm
 
-ztcfg-shared: ztcfg.o $(LTZ_SO)
+dahdi_cfg-shared: dahdi_cfg.o $(LTZ_SO)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lm
-
-ztcfg-dude: ztcfg-dude.o mknotch.o complex.o $(LTZ_SO)
-ztcfg-dude: LDLIBS+=-lm -lstdc++
-
-data:
-	$(MAKE) -C datamods datamods
 
 # FIXME: we assume CC can build the C++ modules:
 complex.o mknotch.o: %.o: %.cc
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-usbfxstest: LDLIBS+=-lzap
 fxstest: $(LTZ_SO)
 fxstest: LDLIBS+=-lm
 fxotune: LDLIBS+=-lm
-fxsdump: LDLIBS+=-lm
-
-stackcheck: checkstack modules
-	./checkstack kernel/*.ko kernel/*/*.ko
-
 
 tonezones.txt: zonedata.c
 	perl -ne 'next unless (/\.(country|description) = *"([^"]*)/); \
 		print (($$1 eq "country")? "* $$2\t":"$$2\n");' $<  \
 	>$@
 
-zaptel.conf.asciidoc: zaptel.conf.sample
+dahdi.conf.asciidoc: dahdi.conf.sample
 	perl -n -e \
 		'if (/^#($$|\s)(.*)/){ if (!$$in_doc){print "\n"}; $$in_doc=1; print "$$2\n" } else { if ($$in_doc){print "\n"}; $$in_doc=0; print "  $$_" }' \
 		$< >$@
 
-README.html: README zaptel.conf.asciidoc tonezones.txt
+README.html: README dahdi.conf.asciidoc tonezones.txt
 	$(ASCIIDOC) -n -a toc -a toclevels=3 $<
 
 kernel/xpp/README.Astribank.html: kernel/xpp/README.Astribank
@@ -396,39 +197,16 @@ kernel/xpp/README.Astribank.html: kernel/xpp/README.Astribank
 
 htmlman: $(GROFF_HTML)
 
-
-MISDNVERSION=1_1_7_2
-MISDNUSERVERSION=1_1_7_2
-b410p:
-	@if test "$(DOWNLOAD)" = ":" ; then \
-		echo "**************************************************"; \
-		echo "***                                            ***"; \
-		echo "*** You must have either wget or fetch to be   ***"; \
-		echo "*** able to automatically download and install ***"; \
-		echo "*** b410p support.                             ***"; \
-		echo "***                                            ***"; \
-		echo "*** Please install one of these.               ***"; \
-		echo "***                                            ***"; \
-		echo "**************************************************"; \
-		exit 1; \
-	fi
-	[ -f mISDN-$(MISDNVERSION).tar.gz ] || $(DOWNLOAD) http://downloads.digium.com/pub/zaptel/b410p/mISDN-$(MISDNVERSION).tar.gz
-	tar -zxf mISDN-$(MISDNVERSION).tar.gz
-	$(MAKE) -C mISDN-$(MISDNVERSION) install
-	[ -f mISDNuser-$(MISDNUSERVERSION).tar.gz ] || $(DOWNLOAD) http://downloads.digium.com/pub/zaptel/b410p/mISDNuser-$(MISDNUSERVERSION).tar.gz
-	tar -zxf mISDNuser-$(MISDNUSERVERSION).tar.gz
-	$(MAKE) -C mISDNuser-$(MISDNUSERVERSION) install
-
 $(UTILS): %: %.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
 $(UTILSO): %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-install: all devices install-modules install-programs install-firmware
+install: all install-programs
 	@echo "###################################################"
 	@echo "###"
-	@echo "### Zaptel installed successfully."
+	@echo "### DAHDI tools installed successfully."
 	@echo "### If you have not done so before, install init scripts with:"
 	@echo "###"
 	@echo "###   make config"
@@ -445,19 +223,7 @@ ifneq (,$(BINS))
 	install -m 644 $(MAN_PAGES) $(DESTDIR)$(MAN_DIR)/
 endif
 ifeq (,$(wildcard $(DESTDIR)$(CONFIG_FILE)))
-	$(INSTALL) -D -m 644 zaptel.conf.sample $(DESTDIR)$(CONFIG_FILE)
-endif
-
-# Pushing those two to a separate target that is not used by default:
-install-modconf:
-	build_tools/genmodconf $(BUILDVER) "$(ROOT_PREFIX)" "$(filter-out zaptel ztdummy xpp zttranscode ztdynamic,$(BUILD_MODULES)) $(MODULE_ALIASES)"
-	@if [ -d /etc/modutils ]; then \
-		/sbin/update-modules ; \
-	fi
-
-install-firmware:
-ifeq ($(HOTPLUG_FIRMWARE),yes)
-	$(MAKE) -C firmware hotplug-install DESTDIR=$(DESTDIR) HOTPLUG_FIRMWARE=$(HOTPLUG_FIRMWARE)
+	$(INSTALL) -D -m 644 dahdi.conf.sample $(DESTDIR)$(CONFIG_FILE)
 endif
 
 install-libs: libs
@@ -485,68 +251,13 @@ install-utils-subdirs:
 		$(MAKE) -C $$dir install; \
 	done
 
-install-include:
-	$(INSTALL) -D -m 644 kernel/zaptel.h $(DESTDIR)$(INC_DIR)/zaptel.h
-
-devices:
-ifneq (yes,$(DYNFS))
-	mkdir -p $(DESTDIR)/dev/zap
-	rm -f $(DESTDIR)/dev/zap/ctl
-	rm -f $(DESTDIR)/dev/zap/channel
-	rm -f $(DESTDIR)/dev/zap/pseudo
-	rm -f $(DESTDIR)/dev/zap/timer
-	rm -f $(DESTDIR)/dev/zap/transcode
-	rm -f $(DESTDIR)/dev/zap/253
-	rm -f $(DESTDIR)/dev/zap/252
-	rm -f $(DESTDIR)/dev/zap/251
-	rm -f $(DESTDIR)/dev/zap/250
-	mknod $(DESTDIR)/dev/zap/ctl c 196 0
-	mknod $(DESTDIR)/dev/zap/transcode c 196 250
-	mknod $(DESTDIR)/dev/zap/timer c 196 253
-	mknod $(DESTDIR)/dev/zap/channel c 196 254
-	mknod $(DESTDIR)/dev/zap/pseudo c 196 255
-	N=1; \
-	while [ $$N -lt 250 ]; do \
-		rm -f $(DESTDIR)/dev/zap/$$N; \
-		mknod $(DESTDIR)/dev/zap/$$N c 196 $$N; \
-		N=$$[$$N+1]; \
-	done
-else # DYNFS
-  ifneq (yes,$(UDEVRULES)) #!UDEVRULES
-	@echo "**** Dynamic filesystem detected -- not creating device nodes"
-  else # UDEVRULES
-	install -d $(DESTDIR)/etc/udev/rules.d
-	build_tools/genudevrules > $(DESTDIR)/etc/udev/rules.d/zaptel.rules
-  endif
-endif
-
-install-udev: devices
-
-uninstall-hotplug:
-	$(MAKE) -C firmware hotplug-uninstall DESTDIR=$(DESTDIR)
-
-uninstall-modules:
-ifneq ($(BUILDVER),linux24)
-	@./build_tools/uninstall-modules $(DESTDIR)/lib/modules/$(KVERS) $(ALL_MODULES)
-endif
-
-ifeq ($(BUILDVER),linux24)
-install-modules: $(INSTALL_MODULES) uninstall-modules
-	$(INSTALL) -d $(DESTDIR)$(MOD_DIR)
-	$(INSTALL) -m 644 $(INSTALL_MODULES) $(DESTDIR)$(MOD_DIR)
-else
-install-modules: uninstall-modules
-	$(KMAKE_INST)
-endif
-	[ `id -u` = 0 ] && /sbin/depmod -a $(KVERS) || :
-
 config:
 ifneq (,$(COPY_INITD))
 	$(COPY_INITD)
 endif
 ifneq (,$(RCCONF_DIR))
-  ifeq (,$(wildcard $(DESTDIR)$(RCCONF_DIR)/zaptel))
-	$(INSTALL) -D -m 644 zaptel.sysconfig $(DESTDIR)$(RCCONF_DIR)/zaptel
+  ifeq (,$(wildcard $(DESTDIR)$(RCCONF_DIR)/dahdi))
+	$(INSTALL) -D -m 644 dahdi.sysconfig $(DESTDIR)$(RCCONF_DIR)/dahdi
   endif
 endif
 ifneq (,$(COPY_NETSCR))
@@ -555,15 +266,14 @@ endif
 ifneq (,$(ADD_INITD))
 	$(ADD_INITD)
 endif
-	@echo "Zaptel has been configured."
+	@echo "DAHDI has been configured."
 	@echo ""
-	@echo "If you have any zaptel hardware it is now recommended to "
-	@echo "edit /etc/default/zaptel or /etc/sysconfig/zaptel and set there an "
+	@echo "If you have any DAHDI hardware it is now recommended to "
+	@echo "edit /etc/default/dahdi or /etc/sysconfig/dahdi and set there an "
 	@echo "optimal value for the variable MODULES ."
 	@echo ""
-	@echo "I think that the zaptel hardware you have on your system is:"
-	@kernel/xpp/utils/zaptel_hardware || true
-
+	@echo "I think that the DAHDI hardware you have on your system is:"
+	@kernel/xpp/utils/dahdi_hardware || true
 
 update:
 	@if [ -d .svn ]; then \
@@ -581,35 +291,23 @@ update:
 
 clean:
 	-@$(MAKE) -C menuselect clean
-	rm -f torisatool
 	rm -f $(BINS)
-	rm -f *.o ztcfg tzdriver sethdlc sethdlc-new
+	rm -f *.o dahdi_cfg tzdriver sethdlc
 	rm -f $(LTZ_SO) $(LTZ_A) *.lo
-ifeq (yes,$(HAS_KSRC))
-	$(KMAKE) clean
-else
-	rm -f kernel/*.o kernel/*.ko kernel/*/*.o kernel/*/*.ko
-endif
 	@for dir in $(SUBDIRS_UTILS_ALL); do \
 		$(MAKE) -C $$dir clean; \
 	done
-	$(MAKE) -C firmware clean
-	rm -rf .tmp_versions
-	rm -f gendigits tones.h
 	rm -f libtonezone*
 	rm -f fxotune
 	rm -f core
-	rm -f ztcfg-shared fxstest
-	rm -rf misdn*
-	rm -rf mISDNuser*
+	rm -f dahdi_cfg-shared fxstest
 	rm -rf $(GROFF_HTML)
-	rm -rf README.html xpp/README.Astribank.html zaptel.conf.asciidoc
+	rm -rf README.html xpp/README.Astribank.html dahdi.conf.asciidoc
 
 distclean: dist-clean
 
 dist-clean: clean
 	@$(MAKE) -C menuselect dist-clean
-	@$(MAKE) -C firmware dist-clean
 	rm -f makeopts menuselect.makeopts menuselect-tree
 	rm -f config.log config.status
 
@@ -636,9 +334,4 @@ menuselect-tree: dahdi.xml
 	@echo "Generating input for menuselect ..."
 	@build_tools/make_tree > $@
 
-.PHONY: menuselect distclean dist-clean clean version.h all _all install b410p devices programs modules tests devel data stackcheck install-udev config update install-programs install-modules install-include install-libs install-utils-subdirs utils-subdirs uninstall-modules
-
-endif
-
-#end of: ifneq ($(KBUILD_EXTMOD),)
-endif
+.PHONY: menuselect distclean dist-clean clean version.h all _all install programs tests devel data config update install-programs install-libs install-utils-subdirs utils-subdirs

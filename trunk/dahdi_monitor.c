@@ -39,13 +39,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <ctype.h>
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
+
+#include <dahdi/user.h>
 #include "tonezone.h"
-#else
-#include <zaptel/zaptel.h>
-#include <zaptel/tonezone.h>
-#endif
+
 #include <linux/soundcard.h>
 
 /*
@@ -139,13 +136,13 @@ int pseudo_open(void)
 		fprintf(stderr, "Unable to open pseudo channel: %s\n", strerror(errno));
 		return -1;
 	}
-	if (ioctl(fd, ZT_SETLINEAR, &x)) {
+	if (ioctl(fd, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set linear mode: %s\n", strerror(errno));
 		close(fd);
 		return -1;
 	}
 	x = BLOCK_SIZE;
-	if (ioctl(fd, ZT_SET_BLOCKSIZE, &x)) {
+	if (ioctl(fd, DAHDI_SET_BLOCKSIZE, &x)) {
 		fprintf(stderr, "unable to set sane block size: %s\n", strerror(errno));
 		close(fd);
 		return -1;
@@ -168,10 +165,10 @@ void draw_barheader()
 	memset(bar+barlen+2, '>', 1);
 	memset(bar+barlen+3, '\0', 1);
 
-	zap_copy_string(bar+(barlen/2), "(RX)", 4);
+	dahdi_copy_string(bar+(barlen/2), "(RX)", 4);
 	printf("%s", bar);
 
-	zap_copy_string(bar+(barlen/2), "(TX)", 4);
+	dahdi_copy_string(bar+(barlen/2), "(TX)", 4);
 	printf(" %s\n", bar);
 }
 
@@ -283,7 +280,7 @@ int main(int argc, char *argv[])
 	int limit = 0;
 	int readcount = 0;
 	int x, i, chan;
-	struct zt_confinfo zc;
+	struct dahdi_confinfo zc;
 
 	if ((argc < 2) || (atoi(argv[1]) < 1)) {
 		fprintf(stderr, "Usage: ztmonitor <channel num> [-v[v]] [-m] [-o] [-p] [-l limit] [-f FILE | -s FILE | -r FILE1 -t FILE2] [-F FILE | -S FILE | -R FILE1 -T FILE2]\n");
@@ -430,16 +427,16 @@ int main(int argc, char *argv[])
 		zc.chan = 0;
 		zc.confno = chan;
 		/* Two pseudo's, one for tx, one for rx */
-		zc.confmode = ZT_CONF_MONITOR;
-		if (ioctl(pfd[MON_BRX], ZT_SETCONF, &zc) < 0) {
+		zc.confmode = DAHDI_CONF_MONITOR;
+		if (ioctl(pfd[MON_BRX], DAHDI_SETCONF, &zc) < 0) {
 			fprintf(stderr, "Unable to monitor: %s\n", strerror(errno));
 			exit(1);
 		}
 		memset(&zc, 0, sizeof(zc));
 		zc.chan = 0;
 		zc.confno = chan;
-		zc.confmode = ZT_CONF_MONITORTX;
-		if (ioctl(pfd[MON_TX], ZT_SETCONF, &zc) < 0) {
+		zc.confmode = DAHDI_CONF_MONITORTX;
+		if (ioctl(pfd[MON_TX], DAHDI_SETCONF, &zc) < 0) {
 			fprintf(stderr, "Unable to monitor: %s\n", strerror(errno));
 			exit(1);
 		}
@@ -448,16 +445,16 @@ int main(int argc, char *argv[])
 			zc.chan = 0;
 			zc.confno = chan;
 			/* Two pseudo's, one for tx, one for rx */
-			zc.confmode = ZT_CONF_MONITOR_RX_PREECHO;
-			if (ioctl(pfd[MON_PRE_BRX], ZT_SETCONF, &zc) < 0) {
+			zc.confmode = DAHDI_CONF_MONITOR_RX_PREECHO;
+			if (ioctl(pfd[MON_PRE_BRX], DAHDI_SETCONF, &zc) < 0) {
 				fprintf(stderr, "Unable to monitor: %s\n", strerror(errno));
 				exit(1);
 			}
 			memset(&zc, 0, sizeof(zc));
 			zc.chan = 0;
 			zc.confno = chan;
-			zc.confmode = ZT_CONF_MONITOR_TX_PREECHO;
-			if (ioctl(pfd[MON_PRE_TX], ZT_SETCONF, &zc) < 0) {
+			zc.confmode = DAHDI_CONF_MONITOR_TX_PREECHO;
+			if (ioctl(pfd[MON_PRE_TX], DAHDI_SETCONF, &zc) < 0) {
 				fprintf(stderr, "Unable to monitor: %s\n", strerror(errno));
 				exit(1);
 			}
@@ -466,8 +463,8 @@ int main(int argc, char *argv[])
 		memset(&zc, 0, sizeof(zc));
 		zc.chan = 0;
 		zc.confno = chan;
-		zc.confmode = ZT_CONF_MONITORBOTH;
-		if (ioctl(pfd[MON_BRX], ZT_SETCONF, &zc) < 0) {
+		zc.confmode = DAHDI_CONF_MONITORBOTH;
+		if (ioctl(pfd[MON_BRX], DAHDI_SETCONF, &zc) < 0) {
 			fprintf(stderr, "Unable to monitor: %s\n", strerror(errno));
 			exit(1);
 		}
@@ -475,8 +472,8 @@ int main(int argc, char *argv[])
 			memset(&zc, 0, sizeof(zc));
 			zc.chan = 0;
 			zc.confno = chan;
-			zc.confmode = ZT_CONF_MONITORBOTH_PREECHO;
-			if (ioctl(pfd[MON_PRE_BRX], ZT_SETCONF, &zc) < 0) {
+			zc.confmode = DAHDI_CONF_MONITORBOTH_PREECHO;
+			if (ioctl(pfd[MON_PRE_BRX], DAHDI_SETCONF, &zc) < 0) {
 				fprintf(stderr, "Unable to monitor: %s\n", strerror(errno));
 				exit(1);
 			}
