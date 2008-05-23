@@ -92,6 +92,7 @@ LTZ_SO_MINOR_VER:=0
 # for historical reasons.
 BIN_DIR:=/sbin
 LIB_DIR:=$(libdir)
+INC_DIR:=$(includedir)/dahdi
 MAN_DIR:=$(mandir)/man8
 
 # Utilities we build with a standard build procedure:
@@ -213,17 +214,17 @@ install: all install-programs
 	@echo "###"
 	@echo "###################################################"
 
-install-programs: install-utils install-libs install-include
+install-programs: install-utils install-libs
 
 install-utils: utils install-utils-subdirs
 ifneq (,$(BINS))
 	install -d $(DESTDIR)$(BIN_DIR)
 	install  $(BINS) $(DESTDIR)$(BIN_DIR)/
-	install -d $(DESTDIR)$(MAN_DIR)
-	install -m 644 $(MAN_PAGES) $(DESTDIR)$(MAN_DIR)/
+#	install -d $(DESTDIR)$(MAN_DIR)
+#	install -m 644 $(MAN_PAGES) $(DESTDIR)$(MAN_DIR)/
 endif
 ifeq (,$(wildcard $(DESTDIR)$(CONFIG_FILE)))
-	$(INSTALL) -D -m 644 dahdi.conf.sample $(DESTDIR)$(CONFIG_FILE)
+#	$(INSTALL) -D -m 644 dahdi.conf.sample $(DESTDIR)$(CONFIG_FILE)
 endif
 
 install-libs: libs
