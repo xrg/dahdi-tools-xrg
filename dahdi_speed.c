@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "version.h"
+
 static long count=0;
 
 static void alm(int sig)

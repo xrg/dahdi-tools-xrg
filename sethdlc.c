@@ -24,6 +24,7 @@
 #include <linux/sockios.h>
 
 #include <dahdi/user.h>
+#include "version.h"
 
 #if GENERIC_HDLC_VERSION != 4
 #error Generic HDLC layer version mismatch, please get correct sethdlc.c

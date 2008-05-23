@@ -32,6 +32,7 @@
 
 #include "dahdi/user.h"
 #include "tonezone.h"
+#include "version.h"
 
 #define DEFAULT_DAHDI_DEV "/dev/dahdi/ctl"
 

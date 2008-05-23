@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "version.h"
+
 #define RANDOM "/dev/urandom"			/* Not genuinely random */
 /* #define RANDOM "/dev/random" */		/* Quite genuinely random */
 

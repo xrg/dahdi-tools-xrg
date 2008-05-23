@@ -9,6 +9,7 @@
 #include <dahdi/wctdm_user.h>
 
 #include "tonezone.h"
+#include "version.h"
 
 static int tones[] = {
 	DAHDI_TONE_DIALTONE,
