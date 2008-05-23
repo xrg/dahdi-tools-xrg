@@ -1,5 +1,5 @@
 /*
- * Monitor a Zaptel Channel
+ * Monitor a DAHDI Channel
  *
  * Written by Mark Spencer <markster@digium.com>
  * Based on previous works, designs, and architectures conceived and
@@ -132,7 +132,7 @@ int pseudo_open(void)
 {
 	int fd;
 	int x = 1;
-	fd = open("/dev/zap/pseudo", O_RDWR);
+	fd = open("/dev/dahdi/pseudo", O_RDWR);
 	if (fd < 0) {
 		fprintf(stderr, "Unable to open pseudo channel: %s\n", strerror(errno));
 		return -1;

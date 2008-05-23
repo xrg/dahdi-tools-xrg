@@ -1,5 +1,5 @@
 /*
- * Scan and output information about Zaptel spans and ports.
+ * Scan and output information about DAHDI spans and ports.
  * 
  * Written by Brandon Kruse <bkruse@digium.com>
  * and Kevin P. Fleming <kpfleming@digium.com>

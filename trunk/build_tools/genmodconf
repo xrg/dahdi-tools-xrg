@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # this script makes an attempt to build a proper set of rules
-# for loading the Zaptel modules and automatically running ztcfg
+# for loading the DAHDI modules and automatically running dahdi_cfg
 #
 # it accepts three parameters:
 #   the kernel major version being targeted (either linux24 or linux26)
@@ -11,19 +11,19 @@
 # the process is as follows:
 #
 # for linux24, the file can be located either at /etc/modules.conf (combined
-# with all other rules) or in /etc/modutils/zaptel (only the Zaptel rules)
+# with all other rules) or in /etc/modutils/dahdi (only the DAHDI rules)
 #
 # for linux26, the file can be located at /etc/modprobe.conf (combined with all
-# other rules), /etc/modprobe.d/zaptel (Zaptel only) or /etc/modules.d/zaptel
-# (Zaptel only)
+# other rules), /etc/modprobe.d/dahdi (DAHDI only) or /etc/modules.d/dahdi
+# (DAHDI only)
 #
-# when the file is Zaptel rules only, then we don't preserve the existing
+# when the file is DAHDI rules only, then we don't preserve the existing
 # contents of the file; the system administrator can put desired options and
 # overrides in a separate file with a name that appears earlier in the sort
 # order, so there is no need to edit the file produced by this script
 #
 # when the file is combined with all other rules, then we make a backup
-# of it and remove all the old Zaptel rules we can find, replacing them with
+# of it and remove all the old DAHDI rules we can find, replacing them with
 # new ones
 #
 # in addition, for linux26, versions of module-init-tools 3.2.0 and later
@@ -33,7 +33,7 @@
 
 if [ "${1}" = "linux24" ]; then
     if [ -d ${2}/etc/modutils ]; then
-	target=${2}/etc/modutils/zaptel
+	target=${2}/etc/modutils/dahdi
     elif [ -f ${2}/etc/modules.conf ]; then
 	target=${2}/etc/modules.conf
 	combined=1
@@ -47,9 +47,9 @@ elif [ "${1}" = "linux26" ]; then
 	cmdopts=\$CMDLINE_OPTS
     fi
     if [ -d ${2}/etc/modprobe.d ]; then
-	target=${2}/etc/modprobe.d/zaptel
+	target=${2}/etc/modprobe.d/dahdi
     elif [ -d ${2}/etc/modules.d ]; then
-	target=${2}/etc/modules.d/zaptel
+	target=${2}/etc/modules.d/dahdi
     elif [ -f ${2}/etc/modprobe.conf ]; then
 	target=${2}/etc/modprobe.conf
 	combined=1
@@ -102,6 +102,6 @@ if [ -z "${combined}" ]; then
     echo "*** In the future, do not edit ${target}, but"
     echo "*** instead put your changes in another file"
     echo "*** in the same directory so that they will not"
-    echo "*** be overwritten by future Zaptel updates."
+    echo "*** be overwritten by future DAHDI updates."
     echo "***"
 fi

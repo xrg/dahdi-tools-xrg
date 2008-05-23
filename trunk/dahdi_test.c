@@ -57,9 +57,9 @@ int main(int argc, char *argv[])
 	float score;
 	float ms;
 	struct timeval start, now;
-	fd = open("/dev/zap/pseudo", O_RDWR);
+	fd = open("/dev/dahdi/pseudo", O_RDWR);
 	if (fd < 0) {
-		fprintf(stderr, "Unable to open zap interface: %s\n", strerror(errno));
+		fprintf(stderr, "Unable to open dahdi interface: %s\n", strerror(errno));
 		exit(1);
 	}
 	
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 			seconds = atoi(argv[curarg + 1]);
 		curarg++;
 	}
-	printf("Opened pseudo zap interface, measuring accuracy...\n");
+	printf("Opened pseudo dahdi interface, measuring accuracy...\n");
 	signal(SIGHUP, hup_handler);
 	signal(SIGINT, hup_handler);
 	signal(SIGALRM, hup_handler);
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
 			percent = 100.0 * (count - ms) / count;
 			if (verbose)
-				printf("\n%d zaptel samples in %0.3f system clock sample intervals (%.3f%%)", 
+				printf("\n%d samples in %0.3f system clock sample intervals (%.3f%%)", 
 						count, ms, 100 - percent);
 			else if ((pass % 8) == 7) printf("\n");
 			score = 100.0 - fabs(percent);

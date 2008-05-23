@@ -167,7 +167,7 @@ static void sel_callback(newtComponent c, void *cbdata)
 		snprintf(info2, sizeof(info2), "%-59s F1=Details F10=Quit", info);
 	} else {
 		span = -1;
-		strcpy(info, "There are no zaptel spans on this system.");
+		strcpy(info, "There are no DAHDI spans on this system.");
 		snprintf(info2, sizeof(info2), "%-59s            F10=Quit", info);
 	}
 	newtPopHelpLine();
