@@ -2,16 +2,16 @@
 
 AC_PREREQ(2.59)
 
-m4_define([ZAP_VERSION],
+m4_define([DAHDI_VERSION],
           m4_bpatsubst(m4_esyscmd([build_tools/make_version .]),
                        [\([0-9.]*\)\(\w\|\W\)*],
                        [\1]))
-AC_INIT(zaptel, ZAP_VERSION, www.asterisk.org)
+AC_INIT(zaptel, DAHDI_VERSION, www.asterisk.org)
 
 # check existence of the package
-AC_CONFIG_SRCDIR([kernel/zaptel-base.c])
+AC_CONFIG_SRCDIR([dahdi_cfg.c])
 
-AC_COPYRIGHT("Zaptel")
+AC_COPYRIGHT("dahdi-tools")
 AC_REVISION($Revision$)
 
 ac_default_prefix=/usr
@@ -124,9 +124,8 @@ esac
 
 AC_SUBST(PPPD_VERSION)
 
-AC_CONFIG_FILES([build_tools/menuselect-deps makeopts build_tools/make_firmware_object])
+AC_CONFIG_FILES([build_tools/menuselect-deps makeopts])
 AC_OUTPUT
-chmod a+x  build_tools/make_firmware_object
 
-AC_MSG_NOTICE(*** Zaptel build successfully configured ***)
+AC_MSG_NOTICE(*** dahdi-tools build successfully configured ***)
 

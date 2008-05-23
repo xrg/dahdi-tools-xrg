@@ -632,7 +632,7 @@ menuselect: menuselect/menuselect menuselect-tree
 menuselect/menuselect: menuselect/menuselect.c menuselect/menuselect_curses.c menuselect/menuselect_stub.c menuselect/menuselect.h menuselect/linkedlists.h config.status
 	@CFLAGS="" $(MAKE) -C menuselect CC=$(HOSTCC)
 
-menuselect-tree: zaptel.xml firmware/firmware.xml
+menuselect-tree: dahdi.xml
 	@echo "Generating input for menuselect ..."
 	@build_tools/make_tree > $@
 
