@@ -8,11 +8,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
+#include <dahdi/user.h>
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +23,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	printf("Opened timer...\n");
-	if (ioctl(fd, ZT_TIMERCONFIG, &x)) {
+	if (ioctl(fd, DAHDI_TIMERCONFIG, &x)) {
 		fprintf(stderr, "Unable to set timer: %s\n", strerror(errno));
 		exit(1);
 	}
@@ -43,7 +39,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 		x = -1;
-		if (ioctl(fd, ZT_TIMERACK, &x)) {
+		if (ioctl(fd, DAHDI_TIMERACK, &x)) {
 			fprintf(stderr, "Unable to ack timer: %s\n", strerror(errno));
 			exit(1);
 		}

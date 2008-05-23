@@ -2,13 +2,13 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include "kernel/zaptel.h"
 #include <stdio.h>
 #include <linux/types.h>
 #include <linux/ppp_defs.h> 
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <dahdi/user.h>
 #include "bittest.h"
 #define FAST_HDLC_NEED_TABLES
 #include "kernel/fasthdlc.h"
@@ -113,8 +113,8 @@ void send_packet(unsigned char *buf, int len)
 int main(int argc, char *argv[])
 {
 	int res, x;
-	ZT_PARAMS tp;
-	ZT_BUFFERINFO bi;
+	DAHDI_PARAMS tp;
+	DAHDI_BUFFERINFO bi;
 	int bs = BLOCK_SIZE;
 	unsigned char c=0;
 	unsigned char outbuf[BLOCK_SIZE];
@@ -127,30 +127,30 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to open %s: %s\n", argv[1], strerror(errno));
 		exit(1);
 	}
-	if (ioctl(fd, ZT_SET_BLOCKSIZE, &bs)) {
+	if (ioctl(fd, DAHDI_SET_BLOCKSIZE, &bs)) {
 		fprintf(stderr, "Unable to set block size to %d: %s\n", bs, strerror(errno));
 		exit(1);
 	}
-	if (ioctl(fd, ZT_GET_PARAMS, &tp)) {
+	if (ioctl(fd, DAHDI_GET_PARAMS, &tp)) {
 		fprintf(stderr, "Unable to get channel parameters\n");
 		exit(1);
 	}
-	if ((tp.sigtype & ZT_SIG_HDLCRAW) == ZT_SIG_HDLCRAW) {
+	if ((tp.sigtype & DAHDI_SIG_HDLCRAW) == DAHDI_SIG_HDLCRAW) {
 		printf("In HDLC mode\n");
 		hdlcmode = 1;
-	} else if ((tp.sigtype & ZT_SIG_CLEAR) == ZT_SIG_CLEAR) {
+	} else if ((tp.sigtype & DAHDI_SIG_CLEAR) == DAHDI_SIG_CLEAR) {
 		printf("In CLEAR mode\n");
 		hdlcmode = 0;
 	} else {
 		fprintf(stderr, "Not in a reasonable mode\n");
 		exit(1);
 	}
-	res = ioctl(fd, ZT_GET_BUFINFO, &bi);
+	res = ioctl(fd, DAHDI_GET_BUFINFO, &bi);
 	if (!res) {
-		bi.txbufpolicy = ZT_POLICY_IMMEDIATE;
-		bi.rxbufpolicy = ZT_POLICY_IMMEDIATE;
+		bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
+		bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
 		bi.numbufs = 4;
-		res = ioctl(fd, ZT_SET_BUFINFO, &bi);
+		res = ioctl(fd, DAHDI_SET_BUFINFO, &bi);
 		if (res < 0) {
 			fprintf(stderr, "Unable to set buf info: %s\n", strerror(errno));
 			exit(1);
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to get buf info: %s\n", strerror(errno));
 		exit(1);
 	}
-	ioctl(fd, ZT_GETEVENT);
+	ioctl(fd, DAHDI_GETEVENT);
 	fasthdlc_precalc();
 	fasthdlc_init(&fs);
 #if 0

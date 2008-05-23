@@ -24,11 +24,7 @@
 #ifndef _TONEZONE_H
 #define _TONEZONE_H
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
+#include <dahdi/user.h>
 
 struct tone_zone_sound {
 	int toneid;
@@ -44,8 +40,8 @@ struct tone_zone {
 	int zone;				/* Zone number */
 	char country[10];			/* Country code */
 	char description[40];			/* Description */
-	int ringcadence[ZT_MAX_CADENCE];	/* Ring cadence */
-	struct tone_zone_sound tones[ZT_TONE_MAX];
+	int ringcadence[DAHDI_MAX_CADENCE];	/* Ring cadence */
+	struct tone_zone_sound tones[DAHDI_TONE_MAX];
 	int dtmf_high_level;			/* Power level of high frequency component
 						   of DTMF, expressed in dBm0. */
 	int dtmf_low_level;			/* Power level of low frequency component

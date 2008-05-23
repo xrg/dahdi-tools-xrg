@@ -23,12 +23,9 @@
 #include <math.h>
 #include <sys/time.h>
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
-#include "kernel/wctdm.h"
+#include <dahdi/user.h>
+#include <dahdi/wctdm_user.h>
+
 #include "fxotune.h"
 
 #define TEST_DURATION 2000
@@ -148,29 +145,29 @@ static int ensure_silence(struct silence_info *info)
 	/* do a line reset */
 	/* prepare line for silence */
 	/* Do line hookstate reset */
-	int x = ZT_ONHOOK;
+	int x = DAHDI_ONHOOK;
 
-	if (ioctl(info->device, ZT_HOOK, &x)) {
+	if (ioctl(info->device, DAHDI_HOOK, &x)) {
 		fprintf(stderr, "Unable to hang up fd %d\n", info->device);
 		return -1;
 	}
 
 	sleep(2);
-	x = ZT_OFFHOOK;
-	if (ioctl(info->device, ZT_HOOK, &x)) {
+	x = DAHDI_OFFHOOK;
+	if (ioctl(info->device, DAHDI_HOOK, &x)) {
 		fprintf(stderr, "Cannot bring fd %d off hook\n", info->device);
 		return -1;
 	}
 	sleep(2); /* Added to ensure that dial can actually takes place */
 
-	struct zt_dialoperation dop;
+	struct dahdi_dialoperation dop;
 	memset(&dop, 0, sizeof(dop));
-	dop.op = ZT_DIAL_OP_REPLACE;
+	dop.op = DAHDI_DIAL_OP_REPLACE;
 	dop.dialstr[0] = 'T';
-	zap_copy_string(dop.dialstr + 1, info->dialstr, sizeof(dop.dialstr));
+	dahdi_copy_string(dop.dialstr + 1, info->dialstr, sizeof(dop.dialstr));
 
 
-	if (ioctl(info->device, ZT_DIAL, &dop)) {
+	if (ioctl(info->device, DAHDI_DIAL, &dop)) {
 		fprintf(stderr, "Unable to dial!\n");
 		return -1;
 	}
@@ -340,7 +337,7 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 {
 	int i = 0;
 	int res = 0, x = 0;
-	struct zt_bufferinfo bi;
+	struct dahdi_bufferinfo bi;
 	short inbuf[TEST_DURATION]; /* changed from BUFFER_LENGTH - this buffer is for short values, so it should be allocated using the length of the test */
 	FILE *outfile = NULL;
 
@@ -351,21 +348,21 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 	}
 
 	x = 1;
-	if (ioctl(whichzap, ZT_SETLINEAR, &x)) {
+	if (ioctl(whichzap, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set channel to signed linear mode.\n");
 		return -1;
 	}
 
 	memset(&bi, 0, sizeof(bi));
-	if (ioctl(whichzap, ZT_GET_BUFINFO, &bi)) {
+	if (ioctl(whichzap, DAHDI_GET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to get buffer information!\n");
 		return -1;
 	}
 	bi.numbufs = 2;
 	bi.bufsize = TEST_DURATION; /* KD - changed from BUFFER_LENGTH; */
-	bi.txbufpolicy = ZT_POLICY_IMMEDIATE;
-	bi.rxbufpolicy = ZT_POLICY_IMMEDIATE;
-	if (ioctl(whichzap, ZT_SET_BUFINFO, &bi)) {
+	bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
+	bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
+	if (ioctl(whichzap, DAHDI_SET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to set buffer information!\n");
 		return -1;
 	}
@@ -395,8 +392,8 @@ static int maptone(int whichzap, int freq, char *dialstr, int delayuntilsilence)
 	}
 
 	/* Flush buffers */
-	x = ZT_FLUSH_READ | ZT_FLUSH_WRITE | ZT_FLUSH_EVENT;
-	if (ioctl(whichzap, ZT_FLUSH, &x)) {
+	x = DAHDI_FLUSH_READ | DAHDI_FLUSH_WRITE | DAHDI_FLUSH_EVENT;
+	if (ioctl(whichzap, DAHDI_FLUSH, &x)) {
 		fprintf(stderr, "Unable to flush I/O: %s\n", strerror(errno));
 		return -1;
 	}
@@ -414,7 +411,7 @@ retry:
 	if (res != BUFFER_LENGTH) {
 		int x;
 
-		ioctl(whichzap, ZT_GETEVENT, &x);
+		ioctl(whichzap, DAHDI_GETEVENT, &x);
 		goto retry;
 	}
 
@@ -473,7 +470,7 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 	int lowesttry = -1;
 	float lowesttryresult = 999999999999.0;
 	float lowestecho = 999999999999.0;;
-	struct zt_bufferinfo bi;
+	struct dahdi_bufferinfo bi;
 
 	short inbuf[TEST_DURATION * 2];
 
@@ -491,26 +488,26 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 	}
 
 	x = 1;
-	if (ioctl(whichzap, ZT_SETLINEAR, &x)) {
+	if (ioctl(whichzap, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set channel to signed linear mode.\n");
 		return -1;
 	}
 
 	memset(&bi, 0, sizeof(bi));
-	if (ioctl(whichzap, ZT_GET_BUFINFO, &bi)) {
+	if (ioctl(whichzap, DAHDI_GET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to get buffer information!\n");
 		return -1;
 	}
 	bi.numbufs = 2;
 	bi.bufsize = BUFFER_LENGTH;
-	bi.txbufpolicy = ZT_POLICY_IMMEDIATE;
-	bi.rxbufpolicy = ZT_POLICY_IMMEDIATE;
-	if (ioctl(whichzap, ZT_SET_BUFINFO, &bi)) {
+	bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
+	bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
+	if (ioctl(whichzap, DAHDI_SET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to set buffer information!\n");
 		return -1;
 	}
-	x = ZT_OFFHOOK;
-	if (ioctl(whichzap, ZT_HOOK, &x)) {
+	x = DAHDI_OFFHOOK;
+	if (ioctl(whichzap, DAHDI_HOOK, &x)) {
 		fprintf(stderr, "Cannot bring fd %d off hook", whichzap);
 		return -1;
 	}
@@ -550,8 +547,8 @@ static int acim_tune2(int whichzap, int freq, char *dialstr, int delayuntilsilen
 		}
 
 		/* Flush buffers */
-		x = ZT_FLUSH_READ | ZT_FLUSH_WRITE | ZT_FLUSH_EVENT;
-		if (ioctl(whichzap, ZT_FLUSH, &x)) {
+		x = DAHDI_FLUSH_READ | DAHDI_FLUSH_WRITE | DAHDI_FLUSH_EVENT;
+		if (ioctl(whichzap, DAHDI_FLUSH, &x)) {
 			fprintf(stderr, "Unable to flush I/O: %s\n", strerror(errno));
 			return -1;
 		}
@@ -569,7 +566,7 @@ retry:
 		if (res != BUFFER_LENGTH * 2) {
 			int x;
 
-			ioctl(whichzap, ZT_GETEVENT, &x);
+			ioctl(whichzap, DAHDI_GETEVENT, &x);
 			goto retry;
 		}
 
@@ -630,7 +627,7 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 {
 	int i = 0, freq = 0, acim = 0;
 	int res = 0, x = 0;
-	struct zt_bufferinfo bi;
+	struct dahdi_bufferinfo bi;
 	struct wctdm_echo_coefs coefs;
 	short inbuf[TEST_DURATION]; /* changed from BUFFER_LENGTH - this buffer is for short values, so it should be allocated using the length of the test */
 	int lowest = 0;
@@ -662,21 +659,21 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 	}
 
 	x = 1;
-	if (ioctl(whichzap, ZT_SETLINEAR, &x)) {
+	if (ioctl(whichzap, DAHDI_SETLINEAR, &x)) {
 		fprintf(stderr, "Unable to set channel to signed linear mode.\n");
 		return -1;
 	}
 
 	memset(&bi, 0, sizeof(bi));
-	if (ioctl(whichzap, ZT_GET_BUFINFO, &bi)) {
+	if (ioctl(whichzap, DAHDI_GET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to get buffer information!\n");
 		return -1;
 	}
 	bi.numbufs = 2;
 	bi.bufsize = BUFFER_LENGTH;
-	bi.txbufpolicy = ZT_POLICY_IMMEDIATE;
-	bi.rxbufpolicy = ZT_POLICY_IMMEDIATE;
-	if (ioctl(whichzap, ZT_SET_BUFINFO, &bi)) {
+	bi.txbufpolicy = DAHDI_POLICY_IMMEDIATE;
+	bi.rxbufpolicy = DAHDI_POLICY_IMMEDIATE;
+	if (ioctl(whichzap, DAHDI_SET_BUFINFO, &bi)) {
 		fprintf(stderr, "Unable to set buffer information!\n");
 		return -1;
 	}
@@ -703,8 +700,8 @@ static int acim_tune(int whichzap, char *dialstr, int delayuntilsilence, int sil
 			
 
 			/* Flush buffers */
-			x = ZT_FLUSH_READ | ZT_FLUSH_WRITE | ZT_FLUSH_EVENT;
-			if (ioctl(whichzap, ZT_FLUSH, &x)) {
+			x = DAHDI_FLUSH_READ | DAHDI_FLUSH_WRITE | DAHDI_FLUSH_EVENT;
+			if (ioctl(whichzap, DAHDI_FLUSH, &x)) {
 				fprintf(stderr, "Unable to flush I/O: %s\n", strerror(errno));
 				return -1;
 			}
@@ -723,7 +720,7 @@ retry:
 			if (res != BUFFER_LENGTH) {
 				int x;
 	
-				ioctl(whichzap, ZT_GETEVENT, &x);
+				ioctl(whichzap, DAHDI_GETEVENT, &x);
 				goto retry;
 			}
 

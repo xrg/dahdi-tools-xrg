@@ -8,11 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
+#include <dahdi/user.h>
 
 #define BLOCK_SIZE 2039
 
@@ -30,7 +26,7 @@ int main(int argc, char *argv[])
 	int fd;
 	int res, x;
 	int i;
-	ZT_PARAMS tp;
+	DAHDI_PARAMS tp;
 	int bs = BLOCK_SIZE;
 	int skipcount = 10;
 	unsigned char c=0,c1=0;
@@ -50,18 +46,18 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to open %s: %s\n", argv[1], strerror(errno));
 		exit(1);
 	}
-	if (ioctl(fd, ZT_SET_BLOCKSIZE, &bs)) {
+	if (ioctl(fd, DAHDI_SET_BLOCKSIZE, &bs)) {
 		fprintf(stderr, "Unable to set block size to %d: %s\n", bs, strerror(errno));
 		exit(1);
 	}
-	if (ioctl(fd, ZT_GET_PARAMS, &tp)) {
+	if (ioctl(fd, DAHDI_GET_PARAMS, &tp)) {
 		fprintf(stderr, "Unable to get channel parameters\n");
 		exit(1);
 	}
-	ioctl(fd, ZT_GETEVENT);
+	ioctl(fd, DAHDI_GETEVENT);
 
-	i = ZT_FLUSH_ALL;
-	if (ioctl(fd,ZT_FLUSH,&i) == -1)
+	i = DAHDI_FLUSH_ALL;
+	if (ioctl(fd,DAHDI_FLUSH,&i) == -1)
 	   {
 		perror("tor_flush");
 		exit(255);
@@ -81,7 +77,7 @@ int main(int argc, char *argv[])
 		if (res != bs)
 		   {
 			printf("Res is %d: %s\n", res, strerror(errno));
-			ioctl(fd, ZT_GETEVENT, &x);
+			ioctl(fd, DAHDI_GETEVENT, &x);
 			printf("Event: %d\n", x);
 			exit(1);
 		}

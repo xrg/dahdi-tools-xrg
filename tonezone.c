@@ -30,10 +30,10 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "kernel/zaptel.h"
+#include "dahdi/user.h"
 #include "tonezone.h"
 
-#define DEFAULT_ZT_DEV "/dev/zap/ctl"
+#define DEFAULT_DAHDI_DEV "/dev/zap/ctl"
 
 #define MAX_SIZE 16384
 #define CLIP 32635
@@ -68,7 +68,7 @@ struct tone_zone *tone_zone_find_by_num(int id)
 static int build_tone(void *data, int size, struct tone_zone_sound *t, int *count)
 {
 	char *dup, *s;
-	struct zt_tone_def *td=NULL;
+	struct dahdi_tone_def *td=NULL;
 	int firstnobang = -1;
 	int freq1, freq2, time;
 	int modulate = 0;
@@ -176,27 +176,27 @@ char *tone_zone_tone_name(int id)
 {
 	static char tmp[80];
 	switch(id) {
-	case ZT_TONE_DIALTONE:
+	case DAHDI_TONE_DIALTONE:
 		return "Dialtone";
-	case ZT_TONE_BUSY:
+	case DAHDI_TONE_BUSY:
 		return "Busy";
-	case ZT_TONE_RINGTONE:
+	case DAHDI_TONE_RINGTONE:
 		return "Ringtone";
-	case ZT_TONE_CONGESTION:
+	case DAHDI_TONE_CONGESTION:
 		return "Congestion";
-	case ZT_TONE_CALLWAIT:
+	case DAHDI_TONE_CALLWAIT:
 		return "Call Waiting";
-	case ZT_TONE_DIALRECALL:
+	case DAHDI_TONE_DIALRECALL:
 		return "Dial Recall";
-	case ZT_TONE_RECORDTONE:
+	case DAHDI_TONE_RECORDTONE:
 		return "Record Tone";
-	case ZT_TONE_CUST1:
+	case DAHDI_TONE_CUST1:
 		return "Custom 1";
-	case ZT_TONE_CUST2:
+	case DAHDI_TONE_CUST2:
 		return "Custom 2";
-	case ZT_TONE_INFO:
+	case DAHDI_TONE_INFO:
 		return "Special Information";
-	case ZT_TONE_STUTTER:
+	case DAHDI_TONE_STUTTER:
 		return "Stutter Dialtone";
 	default:
 		snprintf(tmp, sizeof(tmp), "Unknown tone %d", id);
@@ -207,8 +207,8 @@ char *tone_zone_tone_name(int id)
 #ifdef TONEZONE_DRIVER
 static void dump_tone_zone(void *data, int size)
 {
-	struct zt_tone_def_header *z;
-	struct zt_tone_def *td;
+	struct dahdi_tone_def_header *z;
+	struct dahdi_tone_def *td;
 	int x;
 	int len = sizeof(*z);
 
@@ -235,85 +235,85 @@ struct mf_tone {
 };
  
 static struct mf_tone dtmf_tones[] = {
-	{ ZT_TONE_DTMF_0, 941.0, 1336.0 },
-	{ ZT_TONE_DTMF_1, 697.0, 1209.0 },
-	{ ZT_TONE_DTMF_2, 697.0, 1336.0 },
-	{ ZT_TONE_DTMF_3, 697.0, 1477.0 },
-	{ ZT_TONE_DTMF_4, 770.0, 1209.0 },
-	{ ZT_TONE_DTMF_5, 770.0, 1336.0 },
-	{ ZT_TONE_DTMF_6, 770.0, 1477.0 },
-	{ ZT_TONE_DTMF_7, 852.0, 1209.0 },
-	{ ZT_TONE_DTMF_8, 852.0, 1336.0 },
-	{ ZT_TONE_DTMF_9, 852.0, 1477.0 },
-	{ ZT_TONE_DTMF_s, 941.0, 1209.0 },
-	{ ZT_TONE_DTMF_p, 941.0, 1477.0 },
-	{ ZT_TONE_DTMF_A, 697.0, 1633.0 },
-	{ ZT_TONE_DTMF_B, 770.0, 1633.0 },
-	{ ZT_TONE_DTMF_C, 852.0, 1633.0 },
-	{ ZT_TONE_DTMF_D, 941.0, 1633.0 },
+	{ DAHDI_TONE_DTMF_0, 941.0, 1336.0 },
+	{ DAHDI_TONE_DTMF_1, 697.0, 1209.0 },
+	{ DAHDI_TONE_DTMF_2, 697.0, 1336.0 },
+	{ DAHDI_TONE_DTMF_3, 697.0, 1477.0 },
+	{ DAHDI_TONE_DTMF_4, 770.0, 1209.0 },
+	{ DAHDI_TONE_DTMF_5, 770.0, 1336.0 },
+	{ DAHDI_TONE_DTMF_6, 770.0, 1477.0 },
+	{ DAHDI_TONE_DTMF_7, 852.0, 1209.0 },
+	{ DAHDI_TONE_DTMF_8, 852.0, 1336.0 },
+	{ DAHDI_TONE_DTMF_9, 852.0, 1477.0 },
+	{ DAHDI_TONE_DTMF_s, 941.0, 1209.0 },
+	{ DAHDI_TONE_DTMF_p, 941.0, 1477.0 },
+	{ DAHDI_TONE_DTMF_A, 697.0, 1633.0 },
+	{ DAHDI_TONE_DTMF_B, 770.0, 1633.0 },
+	{ DAHDI_TONE_DTMF_C, 852.0, 1633.0 },
+	{ DAHDI_TONE_DTMF_D, 941.0, 1633.0 },
 	{ 0, 0, 0 }
 };
  
 static struct mf_tone mfr1_tones[] = {
-	{ ZT_TONE_MFR1_0, 1300.0, 1500.0 },
-	{ ZT_TONE_MFR1_1, 700.0, 900.0 },
-	{ ZT_TONE_MFR1_2, 700.0, 1100.0 },
-	{ ZT_TONE_MFR1_3, 900.0, 1100.0 },
-	{ ZT_TONE_MFR1_4, 700.0, 1300.0 },
-	{ ZT_TONE_MFR1_5, 900.0, 1300.0 },
-	{ ZT_TONE_MFR1_6, 1100.0, 1300.0 },
-	{ ZT_TONE_MFR1_7, 700.0, 1500.0 },
-	{ ZT_TONE_MFR1_8, 900.0, 1500.0 },
-	{ ZT_TONE_MFR1_9, 1100.0, 1500.0 },
-	{ ZT_TONE_MFR1_KP, 1100.0, 1700.0 },	/* KP */
-	{ ZT_TONE_MFR1_ST, 1500.0, 1700.0 },	/* ST */
-	{ ZT_TONE_MFR1_STP, 900.0, 1700.0 },	/* KP' or ST' */
-	{ ZT_TONE_MFR1_ST2P, 1300.0, 1700.0 },	/* KP'' or ST'' */ 
-	{ ZT_TONE_MFR1_ST3P, 700.0, 1700.0 },	/* KP''' or ST''' */
+	{ DAHDI_TONE_MFR1_0, 1300.0, 1500.0 },
+	{ DAHDI_TONE_MFR1_1, 700.0, 900.0 },
+	{ DAHDI_TONE_MFR1_2, 700.0, 1100.0 },
+	{ DAHDI_TONE_MFR1_3, 900.0, 1100.0 },
+	{ DAHDI_TONE_MFR1_4, 700.0, 1300.0 },
+	{ DAHDI_TONE_MFR1_5, 900.0, 1300.0 },
+	{ DAHDI_TONE_MFR1_6, 1100.0, 1300.0 },
+	{ DAHDI_TONE_MFR1_7, 700.0, 1500.0 },
+	{ DAHDI_TONE_MFR1_8, 900.0, 1500.0 },
+	{ DAHDI_TONE_MFR1_9, 1100.0, 1500.0 },
+	{ DAHDI_TONE_MFR1_KP, 1100.0, 1700.0 },	/* KP */
+	{ DAHDI_TONE_MFR1_ST, 1500.0, 1700.0 },	/* ST */
+	{ DAHDI_TONE_MFR1_STP, 900.0, 1700.0 },	/* KP' or ST' */
+	{ DAHDI_TONE_MFR1_ST2P, 1300.0, 1700.0 },	/* KP'' or ST'' */ 
+	{ DAHDI_TONE_MFR1_ST3P, 700.0, 1700.0 },	/* KP''' or ST''' */
 	{ 0, 0, 0 }
 };
 
 static struct mf_tone mfr2_fwd_tones[] = {
-	{ ZT_TONE_MFR2_FWD_1, 1380.0, 1500.0 },
-	{ ZT_TONE_MFR2_FWD_2, 1380.0, 1620.0 },
-	{ ZT_TONE_MFR2_FWD_3, 1500.0, 1620.0 },
-	{ ZT_TONE_MFR2_FWD_4, 1380.0, 1740.0 },
-	{ ZT_TONE_MFR2_FWD_5, 1500.0, 1740.0 },
-	{ ZT_TONE_MFR2_FWD_6, 1620.0, 1740.0 },
-	{ ZT_TONE_MFR2_FWD_7, 1380.0, 1860.0 },
-	{ ZT_TONE_MFR2_FWD_8, 1500.0, 1860.0 },
-	{ ZT_TONE_MFR2_FWD_9, 1620.0, 1860.0 },
-	{ ZT_TONE_MFR2_FWD_10, 1740.0, 1860.0 },
-	{ ZT_TONE_MFR2_FWD_11, 1380.0, 1980.0 },
-	{ ZT_TONE_MFR2_FWD_12, 1500.0, 1980.0 },
-	{ ZT_TONE_MFR2_FWD_13, 1620.0, 1980.0 },
-	{ ZT_TONE_MFR2_FWD_14, 1740.0, 1980.0 },
-	{ ZT_TONE_MFR2_FWD_15, 1860.0, 1980.0 },
+	{ DAHDI_TONE_MFR2_FWD_1, 1380.0, 1500.0 },
+	{ DAHDI_TONE_MFR2_FWD_2, 1380.0, 1620.0 },
+	{ DAHDI_TONE_MFR2_FWD_3, 1500.0, 1620.0 },
+	{ DAHDI_TONE_MFR2_FWD_4, 1380.0, 1740.0 },
+	{ DAHDI_TONE_MFR2_FWD_5, 1500.0, 1740.0 },
+	{ DAHDI_TONE_MFR2_FWD_6, 1620.0, 1740.0 },
+	{ DAHDI_TONE_MFR2_FWD_7, 1380.0, 1860.0 },
+	{ DAHDI_TONE_MFR2_FWD_8, 1500.0, 1860.0 },
+	{ DAHDI_TONE_MFR2_FWD_9, 1620.0, 1860.0 },
+	{ DAHDI_TONE_MFR2_FWD_10, 1740.0, 1860.0 },
+	{ DAHDI_TONE_MFR2_FWD_11, 1380.0, 1980.0 },
+	{ DAHDI_TONE_MFR2_FWD_12, 1500.0, 1980.0 },
+	{ DAHDI_TONE_MFR2_FWD_13, 1620.0, 1980.0 },
+	{ DAHDI_TONE_MFR2_FWD_14, 1740.0, 1980.0 },
+	{ DAHDI_TONE_MFR2_FWD_15, 1860.0, 1980.0 },
 	{ 0, 0, 0 }
 };
 
 static struct mf_tone mfr2_rev_tones[] = {
-	{ ZT_TONE_MFR2_REV_1, 1020.0, 1140.0 },
-	{ ZT_TONE_MFR2_REV_2, 900.0, 1140.0 },
-	{ ZT_TONE_MFR2_REV_3, 900.0, 1020.0 },
-	{ ZT_TONE_MFR2_REV_4, 780.0, 1140.0 },
-	{ ZT_TONE_MFR2_REV_5, 780.0, 1020.0 },
-	{ ZT_TONE_MFR2_REV_6, 780.0, 900.0 },
-	{ ZT_TONE_MFR2_REV_7, 660.0, 1140.0 },
-	{ ZT_TONE_MFR2_REV_8, 660.0, 1020.0 },
-	{ ZT_TONE_MFR2_REV_9, 660.0, 900.0 },
-	{ ZT_TONE_MFR2_REV_10, 660.0, 780.0 },
-	{ ZT_TONE_MFR2_REV_11, 540.0, 1140.0 },
-	{ ZT_TONE_MFR2_REV_12, 540.0, 1020.0 },
-	{ ZT_TONE_MFR2_REV_13, 540.0, 900.0 },
-	{ ZT_TONE_MFR2_REV_14, 540.0, 780.0 },
-	{ ZT_TONE_MFR2_REV_15, 540.0, 660.0 },
+	{ DAHDI_TONE_MFR2_REV_1, 1020.0, 1140.0 },
+	{ DAHDI_TONE_MFR2_REV_2, 900.0, 1140.0 },
+	{ DAHDI_TONE_MFR2_REV_3, 900.0, 1020.0 },
+	{ DAHDI_TONE_MFR2_REV_4, 780.0, 1140.0 },
+	{ DAHDI_TONE_MFR2_REV_5, 780.0, 1020.0 },
+	{ DAHDI_TONE_MFR2_REV_6, 780.0, 900.0 },
+	{ DAHDI_TONE_MFR2_REV_7, 660.0, 1140.0 },
+	{ DAHDI_TONE_MFR2_REV_8, 660.0, 1020.0 },
+	{ DAHDI_TONE_MFR2_REV_9, 660.0, 900.0 },
+	{ DAHDI_TONE_MFR2_REV_10, 660.0, 780.0 },
+	{ DAHDI_TONE_MFR2_REV_11, 540.0, 1140.0 },
+	{ DAHDI_TONE_MFR2_REV_12, 540.0, 1020.0 },
+	{ DAHDI_TONE_MFR2_REV_13, 540.0, 900.0 },
+	{ DAHDI_TONE_MFR2_REV_14, 540.0, 780.0 },
+	{ DAHDI_TONE_MFR2_REV_15, 540.0, 660.0 },
 	{ 0, 0, 0 }
 };
 
 static int build_mf_tones(void *data, int size, int *count, struct mf_tone *tone, int low_tone_level, int high_tone_level)
 {
-	struct zt_tone_def *td;
+	struct dahdi_tone_def *td;
 	float gain;
 	int used = 0;
 
@@ -355,7 +355,7 @@ int tone_zone_register_zone(int fd, struct tone_zone *z)
 	int space = MAX_SIZE;
 	void *ptr = buf;
 	int iopenedit = 1;
-	struct zt_tone_def_header *h;
+	struct dahdi_tone_def_header *h;
 
 	memset(buf, 0, sizeof(buf));
 
@@ -364,12 +364,12 @@ int tone_zone_register_zone(int fd, struct tone_zone *z)
 	space -= sizeof(*h);
 	h->zone = z->zone;
 
-	zap_copy_string(h->name, z->description, sizeof(h->name));
+	dahdi_copy_string(h->name, z->description, sizeof(h->name));
 
-	for (x = 0; x < ZT_MAX_CADENCE; x++) 
+	for (x = 0; x < DAHDI_MAX_CADENCE; x++) 
 		h->ringcadence[x] = z->ringcadence[x];
 
-	for (x = 0; x < ZT_TONE_MAX; x++) {
+	for (x = 0; x < DAHDI_TONE_MAX; x++) {
 		if (!strlen(z->tones[x].data))
 			continue;
 
@@ -415,17 +415,17 @@ int tone_zone_register_zone(int fd, struct tone_zone *z)
 	h->count = count;
 
 	if (fd < 0) {
-		if ((fd = open(DEFAULT_ZT_DEV, O_RDWR)) < 0) {
-			fprintf(stderr, "Unable to open %s and fd not provided\n", DEFAULT_ZT_DEV);
+		if ((fd = open(DEFAULT_DAHDI_DEV, O_RDWR)) < 0) {
+			fprintf(stderr, "Unable to open %s and fd not provided\n", DEFAULT_DAHDI_DEV);
 			return -1;
 		}
 		iopenedit = 1;
 	}
 
 	x = z->zone;
-	if ((res = ioctl(fd, ZT_FREEZONE, &x))) {
+	if ((res = ioctl(fd, DAHDI_FREEZONE, &x))) {
 		if (errno != EBUSY)
-			fprintf(stderr, "ioctl(ZT_FREEZONE) failed: %s\n", strerror(errno));
+			fprintf(stderr, "ioctl(DAHDI_FREEZONE) failed: %s\n", strerror(errno));
 		return res;
 	}
 
@@ -433,8 +433,8 @@ int tone_zone_register_zone(int fd, struct tone_zone *z)
 	dump_tone_zone(h, MAX_SIZE - space);
 #endif
 
-	if ((res = ioctl(fd, ZT_LOADZONE, h))) {
-		fprintf(stderr, "ioctl(ZT_LOADZONE) failed: %s\n", strerror(errno));
+	if ((res = ioctl(fd, DAHDI_LOADZONE, h))) {
+		fprintf(stderr, "ioctl(DAHDI_LOADZONE) failed: %s\n", strerror(errno));
 		return res;
 	}
 
@@ -462,10 +462,10 @@ int tone_zone_set_zone(int fd, char *country)
 	if (fd > -1) {
 		z = tone_zone_find(country);
 		if (z)
-			res = ioctl(fd, ZT_SETTONEZONE, &z->zone);
+			res = ioctl(fd, DAHDI_SETTONEZONE, &z->zone);
 		if ((res < 0) && (errno == ENODATA)) {
 			tone_zone_register_zone(fd, z);
-			res = ioctl(fd, ZT_SETTONEZONE, &z->zone);
+			res = ioctl(fd, DAHDI_SETTONEZONE, &z->zone);
 		}
 	}
 	return res;
@@ -475,7 +475,7 @@ int tone_zone_get_zone(int fd)
 {
 	int x=-1;
 	if (fd > -1) {
-		ioctl(fd, ZT_GETTONEZONE, &x);
+		ioctl(fd, DAHDI_GETTONEZONE, &x);
 		return x;
 	}
 	return -1;
@@ -491,18 +491,18 @@ int tone_zone_play_tone(int fd, int tone)
 	fprintf(stderr, "Playing tone %d (%s) on %d\n", tone, tone_zone_tone_name(tone), fd);
 #endif
 	if (fd > -1) {
-		res = ioctl(fd, ZT_SENDTONE, &tone);
+		res = ioctl(fd, DAHDI_SENDTONE, &tone);
 		if ((res < 0) && (errno == ENODATA)) {
-			ioctl(fd, ZT_GETTONEZONE, &zone);
+			ioctl(fd, DAHDI_GETTONEZONE, &zone);
 			z = tone_zone_find_by_num(zone);
 			if (z) {
 				res = tone_zone_register_zone(fd, z);
 				/* Recall the zone */
-				ioctl(fd, ZT_SETTONEZONE, &zone);
+				ioctl(fd, DAHDI_SETTONEZONE, &zone);
 				if (res < 0) {
 					fprintf(stderr, "Failed to register zone '%s': %s\n", z->description, strerror(errno));
 				} else {
-					res = ioctl(fd, ZT_SENDTONE, &tone);
+					res = ioctl(fd, DAHDI_SENDTONE, &tone);
 				}
 			} else
 				fprintf(stderr, "Don't know anything about zone %d\n", zone);

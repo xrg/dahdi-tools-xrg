@@ -42,20 +42,16 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <newt.h>
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
+
+#include <dahdi/user.h>
 #include "tonezone.h"
-#else
-#include <zaptel/zaptel.h>
-#include <zaptel/tonezone.h>
-#endif
 
 static int ctl = -1;
 static int span_max_chan_pos;
 
-static ZT_SPANINFO s[ZT_MAX_SPANS];
+static DAHDI_SPANINFO s[DAHDI_MAX_SPANS];
 
-static char *zt_txlevelnames[] = {
+static char *dahdi_txlevelnames[] = {
 "0 db (CSU)/0-133 feet (DSX-1)",
 "133-266 feet (DSX-1)",
 "266-399 feet (DSX-1)",
@@ -71,17 +67,17 @@ static char *alarmstr(int span)
 	static char alarms[80];
 	strcpy(alarms, "");
 	if (s[span].alarms > 0) {
-		if (s[span].alarms & ZT_ALARM_BLUE)
+		if (s[span].alarms & DAHDI_ALARM_BLUE)
 			strcat(alarms,"Blue Alarm/");
-		if (s[span].alarms & ZT_ALARM_YELLOW)
+		if (s[span].alarms & DAHDI_ALARM_YELLOW)
 			strcat(alarms, "Yellow Alarm/");
-		if (s[span].alarms & ZT_ALARM_RED)
+		if (s[span].alarms & DAHDI_ALARM_RED)
 			strcat(alarms, "Red Alarm/");
-		if (s[span].alarms & ZT_ALARM_LOOPBACK)
+		if (s[span].alarms & DAHDI_ALARM_LOOPBACK)
 			strcat(alarms,"Loopback/");
-		if (s[span].alarms & ZT_ALARM_RECOVER)
+		if (s[span].alarms & DAHDI_ALARM_RECOVER)
 			strcat(alarms,"Recovering/");
-		if (s[span].alarms & ZT_ALARM_NOTOPEN)
+		if (s[span].alarms & DAHDI_ALARM_NOTOPEN)
 			strcat(alarms, "Not Open/");
 		if (!strlen(alarms))
 			strcat(alarms, "<unknown>/");
@@ -100,7 +96,7 @@ static char *getalarms(int span, int err)
 	static char tmp[256];
 	char alarms[50];
 	s[span].spanno = span;
-	res = ioctl(ctl, ZT_SPANSTAT, &s[span]);
+	res = ioctl(ctl, DAHDI_SPANSTAT, &s[span]);
 	if (res) {
 		if (err)
 			fprintf(stderr, "Unable to get span info on span %d: %s\n", span, strerror(errno)); 
@@ -108,17 +104,17 @@ static char *getalarms(int span, int err)
 	}
 	strcpy(alarms, "");
 	if (s[span].alarms > 0) {
-		if (s[span].alarms & ZT_ALARM_BLUE)
+		if (s[span].alarms & DAHDI_ALARM_BLUE)
 			strcat(alarms,"BLU/");
-		if (s[span].alarms & ZT_ALARM_YELLOW)
+		if (s[span].alarms & DAHDI_ALARM_YELLOW)
 			strcat(alarms, "YEL/");
-		if (s[span].alarms & ZT_ALARM_RED)
+		if (s[span].alarms & DAHDI_ALARM_RED)
 			strcat(alarms, "RED/");
-		if (s[span].alarms & ZT_ALARM_LOOPBACK)
+		if (s[span].alarms & DAHDI_ALARM_LOOPBACK)
 			strcat(alarms,"LB/");
-		if (s[span].alarms & ZT_ALARM_RECOVER)
+		if (s[span].alarms & DAHDI_ALARM_RECOVER)
 			strcat(alarms,"REC/");
-		if (s[span].alarms & ZT_ALARM_NOTOPEN)
+		if (s[span].alarms & DAHDI_ALARM_NOTOPEN)
 			strcat(alarms, "NOP/");
 		if (!strlen(alarms))
 			strcat(alarms, "UUU/");
@@ -146,7 +142,7 @@ static void add_cards(newtComponent spans)
 	if (spans)
 		prev = newtListboxGetCurrent(spans);
 	newtListboxClear(spans);
-	for (x=0;x<ZT_MAX_SPANS;x++) {
+	for (x=0;x<DAHDI_MAX_SPANS;x++) {
 		s = getalarms(x, 0);
 		if (s && spans) {
 			/* Found one! */
@@ -180,7 +176,7 @@ static void sel_callback(newtComponent c, void *cbdata)
 static void show_bits(int span, newtComponent bitbox, newtComponent inuse, newtComponent levels, newtComponent bpvcount,
 						newtComponent alarms, newtComponent syncsrc, newtComponent irqmisses)
 {
-	ZT_PARAMS zp;
+	DAHDI_PARAMS zp;
 	int x;
 	int res;
 	char c;
@@ -213,44 +209,44 @@ static void show_bits(int span, newtComponent bitbox, newtComponent inuse, newtC
 	memset(rcbits,32, span_max_chan_pos);
 	memset(rdbits,32, span_max_chan_pos);
 	
-	for (x=0;x<ZT_MAX_CHANNELS;x++) {
+	for (x=0;x<DAHDI_MAX_CHANNELS;x++) {
 		memset(&zp, 0, sizeof(zp));
 		zp.channo = x;
-		res = ioctl(ctl, ZT_GET_PARAMS, &zp);
+		res = ioctl(ctl, DAHDI_GET_PARAMS, &zp);
 		if (!res) {
 			if (zp.spanno == span) {
 				if (zp.sigtype && (zp.rxbits > -1)) {
-					if (zp.rxbits & ZT_ABIT)
+					if (zp.rxbits & DAHDI_ABIT)
 						rabits[zp.chanpos - 1] = '1';
 					else
 						rabits[zp.chanpos - 1] = '0';
-					if (zp.rxbits & ZT_BBIT)
+					if (zp.rxbits & DAHDI_BBIT)
 						rbbits[zp.chanpos - 1] = '1';
 					else
 						rbbits[zp.chanpos - 1] = '0';
 
-					if (zp.rxbits & ZT_CBIT)
+					if (zp.rxbits & DAHDI_CBIT)
 						rcbits[zp.chanpos - 1] = '1';
 					else
 						rcbits[zp.chanpos - 1] = '0';
-					if (zp.rxbits & ZT_DBIT)
+					if (zp.rxbits & DAHDI_DBIT)
 						rdbits[zp.chanpos - 1] = '1';
 					else
 						rdbits[zp.chanpos - 1] = '0';
 
-					if (zp.txbits & ZT_ABIT)
+					if (zp.txbits & DAHDI_ABIT)
 						tabits[zp.chanpos - 1] = '1';
 					else
 						tabits[zp.chanpos - 1] = '0';
-					if (zp.txbits & ZT_BBIT)
+					if (zp.txbits & DAHDI_BBIT)
 						tbbits[zp.chanpos - 1] = '1';
 					else
 						tbbits[zp.chanpos - 1] = '0';
-					if (zp.txbits & ZT_CBIT)
+					if (zp.txbits & DAHDI_CBIT)
 						tcbits[zp.chanpos - 1] = '1';
 					else
 						tcbits[zp.chanpos - 1] = '0';
-					if (zp.txbits & ZT_DBIT)
+					if (zp.txbits & DAHDI_DBIT)
 						tdbits[zp.chanpos - 1] = '1';
 					else
 						tdbits[zp.chanpos - 1] = '0';
@@ -276,8 +272,8 @@ static void show_bits(int span, newtComponent bitbox, newtComponent inuse, newtC
 	newtTextboxSetText(bitbox, tmp);	
 	sprintf(tmp, "%3d/%3d/%3d", s[span].totalchans, s[span].numchans, use);
 	newtTextboxSetText(inuse, tmp);
-	sprintf(tmp, "%s/", zt_txlevelnames[s[span].txlevel]);
-	strcat(tmp, zt_txlevelnames[s[span].rxlevel]);
+	sprintf(tmp, "%s/", dahdi_txlevelnames[s[span].txlevel]);
+	strcat(tmp, dahdi_txlevelnames[s[span].rxlevel]);
 	sprintf(tmp, "%3d/%3d", s[span].txlevel, s[span].rxlevel);
 	newtTextboxSetText(levels, tmp);
 	sprintf(tmp, "%7d", s[span].bpvcount);
@@ -299,7 +295,7 @@ static void do_loop(int span, int looped)
 	newtComponent form;
 	newtComponent label;
 	char s1[256];
-	struct zt_maintinfo m;
+	struct dahdi_maintinfo m;
 	int res;
 	struct newtExitStruct es;
 
@@ -309,10 +305,10 @@ static void do_loop(int span, int looped)
 	m.spanno = span;
 	if (looped) {
 		snprintf(s1, sizeof(s1), "Looping UP span %d...\n", span);
-		m.command = ZT_MAINT_LOOPUP;
+		m.command = DAHDI_MAINT_LOOPUP;
 	} else {
 		snprintf(s1, sizeof(s1), "Looping DOWN span %d...\n", span);
-		m.command = ZT_MAINT_LOOPDOWN;
+		m.command = DAHDI_MAINT_LOOPDOWN;
 	}
 
 	label = newtLabel(3,1,s1);
@@ -321,7 +317,7 @@ static void do_loop(int span, int looped)
 
 	newtFormSetTimer(form, 200);
 	newtFormRun(form, &es);
-	res = ioctl(ctl, ZT_MAINT, &m);
+	res = ioctl(ctl, DAHDI_MAINT, &m);
 	newtFormDestroy(form);
 	newtPopWindow();
 	newtPopHelpLine();
@@ -370,12 +366,12 @@ static void show_span(int span)
 	newtFormAddComponents(form, back, loop, NULL);
 
 	span_max_chan_pos = s[span].totalchans;
-	for (x=0;x<ZT_MAX_CHANNELS;x++) {
-		ZT_PARAMS zp;
+	for (x=0;x<DAHDI_MAX_CHANNELS;x++) {
+		DAHDI_PARAMS zp;
 		int res;
 		memset(&zp, 0, sizeof(zp));
 		zp.channo = x;
-		res = ioctl(ctl, ZT_GET_PARAMS, &zp);
+		res = ioctl(ctl, DAHDI_GET_PARAMS, &zp);
 		if (!res && zp.spanno == span && zp.chanpos > span_max_chan_pos )
 			span_max_chan_pos = zp.chanpos;
 	}

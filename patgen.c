@@ -10,11 +10,7 @@
 #include <stdlib.h>
 #include "bittest.h"
 
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#else
-#include <zaptel/zaptel.h>
-#endif
+#include <dahdi/user.h>
 
 /* #define BLOCK_SIZE 2048 */
 #define BLOCK_SIZE 2041
@@ -32,7 +28,7 @@ int main(int argc, char *argv[])
 {
 	int fd;
 	int res, res1, x;
-	ZT_PARAMS tp;
+	DAHDI_PARAMS tp;
 	int bs = BLOCK_SIZE;
 	unsigned char c=0;
 	unsigned char outbuf[BLOCK_SIZE];
@@ -45,15 +41,15 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to open %s: %s\n", argv[1], strerror(errno));
 		exit(1);
 	}
-	if (ioctl(fd, ZT_SET_BLOCKSIZE, &bs)) {
+	if (ioctl(fd, DAHDI_SET_BLOCKSIZE, &bs)) {
 		fprintf(stderr, "Unable to set block size to %d: %s\n", bs, strerror(errno));
 		exit(1);
 	}
-	if (ioctl(fd, ZT_GET_PARAMS, &tp)) {
+	if (ioctl(fd, DAHDI_GET_PARAMS, &tp)) {
 		fprintf(stderr, "Unable to get channel parameters\n");
 		exit(1);
 	}
-	ioctl(fd, ZT_GETEVENT);
+	ioctl(fd, DAHDI_GETEVENT);
 #if 0
 	print_packet(outbuf, res);
 	printf("FCS is %x, PPP_GOODFCS is %x\n",
@@ -68,22 +64,22 @@ int main(int argc, char *argv[])
 		res1 = write(fd, outbuf, res);
 		if (res1 < res) {
 			int e;
-			ZT_SPANINFO zi;
-			res = ioctl(fd,ZT_GETEVENT,&e);
+			DAHDI_SPANINFO zi;
+			res = ioctl(fd,DAHDI_GETEVENT,&e);
 			if (res == -1)
 			{
-				perror("ZT_GETEVENT");
+				perror("DAHDI_GETEVENT");
 				exit(1);
 			}
-			if (e == ZT_EVENT_NOALARM)
+			if (e == DAHDI_EVENT_NOALARM)
 				printf("ALARMS CLEARED\n");
-			if (e == ZT_EVENT_ALARM)
+			if (e == DAHDI_EVENT_ALARM)
 			{
 				zi.spanno = 0;
-				res = ioctl(fd,ZT_SPANSTAT,&zi);
+				res = ioctl(fd,DAHDI_SPANSTAT,&zi);
 				if (res == -1)
 				{
-					perror("ZT_SPANSTAT");
+					perror("DAHDI_SPANSTAT");
 					exit(1);
 				}
 				printf("Alarm mask %x hex\n",zi.alarms);

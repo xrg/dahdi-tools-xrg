@@ -5,16 +5,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "kernel/zaptel.h"
+#include <dahdi/user.h>
+#include <dahdi/wctdm_user.h>
+
 #include "tonezone.h"
-#include "kernel/wctdm.h"
 
 static int tones[] = {
-	ZT_TONE_DIALTONE,
-	ZT_TONE_BUSY,
-	ZT_TONE_RINGTONE,
-	ZT_TONE_CONGESTION,
-	ZT_TONE_DIALRECALL,
+	DAHDI_TONE_DIALTONE,
+	DAHDI_TONE_BUSY,
+	DAHDI_TONE_RINGTONE,
+	DAHDI_TONE_CONGESTION,
+	DAHDI_TONE_DIALRECALL,
 };
 
 int main(int argc, char *argv[])
@@ -39,8 +40,8 @@ int main(int argc, char *argv[])
 	}
 	if (!strcasecmp(argv[2], "ring")) {
 		fprintf(stderr, "Ringing phone...\n");
-		x = ZT_RING;
-		res = ioctl(fd, ZT_HOOK, &x);
+		x = DAHDI_RING;
+		res = ioctl(fd, DAHDI_HOOK, &x);
 		if (res) {
 			fprintf(stderr, "Unable to ring phone...\n");
 		} else {
@@ -50,18 +51,18 @@ int main(int argc, char *argv[])
 	} else if (!strcasecmp(argv[2], "polarity")) {
 		fprintf(stderr, "Twiddling polarity...\n");
 		x = 0;
-		res = ioctl(fd, ZT_SETPOLARITY, &x);
+		res = ioctl(fd, DAHDI_SETPOLARITY, &x);
 		if (res) {
 			fprintf(stderr, "Unable to polarity...\n");
 		} else {
 			fprintf(stderr, "Polarity is forward...\n");
 			sleep(2);
 			x = 1;
-			ioctl(fd, ZT_SETPOLARITY, &x);
+			ioctl(fd, DAHDI_SETPOLARITY, &x);
 			fprintf(stderr, "Polarity is reversed...\n");
 			sleep(5);
 			x = 0;
-			ioctl(fd, ZT_SETPOLARITY, &x);
+			ioctl(fd, DAHDI_SETPOLARITY, &x);
 			fprintf(stderr, "Polarity is forward...\n");
 			sleep(2);
 		}

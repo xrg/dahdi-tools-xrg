@@ -37,16 +37,14 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
-#ifdef STANDALONE_ZAPATA
-#include "kernel/zaptel.h"
-#include "tonezone.h"
-#else
-#include <zaptel/zaptel.h>
-#include <zaptel/tonezone.h>
-#endif
-#include "ztcfg.h"
 
-#define NUM_SPANS ZT_MAX_SPANS
+#include <dahdi/user.h>
+#include "tonezone.h"
+
+#define CONFIG_FILENAME DAHDI_CONFIG
+#define MASTER_DEVICE   "/dev/dahdi/ctl"
+
+#define NUM_SPANS DAHDI_MAX_SPANS
 
 #define NUM_TONES 15
 
@@ -76,15 +74,15 @@ static int errcnt = 0;
 
 static int deftonezone = -1;
 
-static struct zt_lineconfig lc[ZT_MAX_SPANS];
+static struct dahdi_lineconfig lc[DAHDI_MAX_SPANS];
 
-static struct zt_chanconfig cc[ZT_MAX_CHANNELS];
+static struct dahdi_chanconfig cc[DAHDI_MAX_CHANNELS];
 
-static struct zt_dynamic_span zds[NUM_DYNAMIC];
+static struct dahdi_dynamic_span zds[NUM_DYNAMIC];
 
-static const char *sig[ZT_MAX_CHANNELS];		/* Signalling */
+static const char *sig[DAHDI_MAX_CHANNELS];		/* Signalling */
 
-static int slineno[ZT_MAX_CHANNELS];	/* Line number where signalling specified */
+static int slineno[DAHDI_MAX_CHANNELS];	/* Line number where signalling specified */
 
 static int spans=0;
 
@@ -98,7 +96,7 @@ static int stopmode = 0;
 
 static int numdynamic = 0;
 
-static char zonestoload[ZT_TONE_ZONE_MAX][10];
+static char zonestoload[DAHDI_TONE_ZONE_MAX][10];
 
 static int numzones = 0;
 
@@ -126,41 +124,41 @@ static const char *sigtype_to_str(const int sig)
 	switch (sig) {
 	case 0:
 		return "Unused";
-	case ZT_SIG_EM:
+	case DAHDI_SIG_EM:
 		return "E & M";
-	case ZT_SIG_EM_E1:
+	case DAHDI_SIG_EM_E1:
 		return "E & M E1";
-	case ZT_SIG_FXSLS:
+	case DAHDI_SIG_FXSLS:
 		return "FXS Loopstart";
-	case ZT_SIG_FXSGS:
+	case DAHDI_SIG_FXSGS:
 		return "FXS Groundstart";
-	case ZT_SIG_FXSKS:
+	case DAHDI_SIG_FXSKS:
 		return "FXS Kewlstart";
-	case ZT_SIG_FXOLS:
+	case DAHDI_SIG_FXOLS:
 		return "FXO Loopstart";
-	case ZT_SIG_FXOGS:
+	case DAHDI_SIG_FXOGS:
 		return "FXO Groundstart";
-	case ZT_SIG_FXOKS:
+	case DAHDI_SIG_FXOKS:
 		return "FXO Kewlstart";
-	case ZT_SIG_CAS:
+	case DAHDI_SIG_CAS:
 		return "CAS / User";
-	case ZT_SIG_DACS:
+	case DAHDI_SIG_DACS:
 		return "DACS";
-	case ZT_SIG_DACS_RBS:
+	case DAHDI_SIG_DACS_RBS:
 		return "DACS w/RBS";
-	case ZT_SIG_CLEAR:
+	case DAHDI_SIG_CLEAR:
 		return "Clear channel";
-	case ZT_SIG_SLAVE:
+	case DAHDI_SIG_SLAVE:
 		return "Slave channel";
-	case ZT_SIG_HDLCRAW:
+	case DAHDI_SIG_HDLCRAW:
 		return "Raw HDLC";
-	case ZT_SIG_HDLCNET:
+	case DAHDI_SIG_HDLCNET:
 		return "Network HDLC";
-	case ZT_SIG_HDLCFCS:
+	case DAHDI_SIG_HDLCFCS:
 		return "HDLC with FCS check";
-	case ZT_SIG_HARDHDLC:
+	case DAHDI_SIG_HARDHDLC:
 		return "Hardware assisted D-channel";
-	case ZT_SIG_MTP2:
+	case DAHDI_SIG_MTP2:
 		return "MTP2";
 	default:
 		return "Unknown";
@@ -169,12 +167,12 @@ static const char *sigtype_to_str(const int sig)
 
 int ind_ioctl(int channo, int fd, int op, void *data)
 {
-ZT_INDIRECT_DATA ind;
+DAHDI_INDIRECT_DATA ind;
 
 	ind.chan = channo;
 	ind.op = op;
 	ind.data = data;
-	return ioctl(fd,ZT_INDIRECT,&ind);
+	return ioctl(fd,DAHDI_INDIRECT,&ind);
 }
 
 static void clear_fields()
@@ -270,8 +268,8 @@ int dspanconfig(char *keyword, char *args)
 	}
 
 
-	zap_copy_string(zds[numdynamic].driver, realargs[0], sizeof(zds[numdynamic].driver));
-	zap_copy_string(zds[numdynamic].addr, realargs[1], sizeof(zds[numdynamic].addr));
+	dahdi_copy_string(zds[numdynamic].driver, realargs[0], sizeof(zds[numdynamic].driver));
+	dahdi_copy_string(zds[numdynamic].addr, realargs[1], sizeof(zds[numdynamic].addr));
 	zds[numdynamic].numchans = chans;
 	zds[numdynamic].timing = timing;
 	
@@ -310,41 +308,41 @@ int spanconfig(char *keyword, char *args)
 		return -1;
 	}
 	if (!strcasecmp(realargs[3], "d4")) {
-		lc[spans].lineconfig |= ZT_CONFIG_D4;
-		lc[spans].lineconfig &= ~ZT_CONFIG_ESF;
-		lc[spans].lineconfig &= ~ZT_CONFIG_CCS;
+		lc[spans].lineconfig |= DAHDI_CONFIG_D4;
+		lc[spans].lineconfig &= ~DAHDI_CONFIG_ESF;
+		lc[spans].lineconfig &= ~DAHDI_CONFIG_CCS;
 	} else if (!strcasecmp(realargs[3], "esf")) {
-		lc[spans].lineconfig |= ZT_CONFIG_ESF;
-		lc[spans].lineconfig &= ~ZT_CONFIG_D4;
-		lc[spans].lineconfig &= ~ZT_CONFIG_CCS;
+		lc[spans].lineconfig |= DAHDI_CONFIG_ESF;
+		lc[spans].lineconfig &= ~DAHDI_CONFIG_D4;
+		lc[spans].lineconfig &= ~DAHDI_CONFIG_CCS;
 	} else if (!strcasecmp(realargs[3], "ccs")) {
-		lc[spans].lineconfig |= ZT_CONFIG_CCS;
-		lc[spans].lineconfig &= ~(ZT_CONFIG_ESF | ZT_CONFIG_D4);
+		lc[spans].lineconfig |= DAHDI_CONFIG_CCS;
+		lc[spans].lineconfig &= ~(DAHDI_CONFIG_ESF | DAHDI_CONFIG_D4);
 	} else if (!strcasecmp(realargs[3], "cas")) {
-		lc[spans].lineconfig &= ~ZT_CONFIG_CCS;
-		lc[spans].lineconfig &= ~(ZT_CONFIG_ESF | ZT_CONFIG_D4);
+		lc[spans].lineconfig &= ~DAHDI_CONFIG_CCS;
+		lc[spans].lineconfig &= ~(DAHDI_CONFIG_ESF | DAHDI_CONFIG_D4);
 	} else {
 		error("Framing(T1)/Signalling(E1) must be one of 'd4', 'esf', 'cas' or 'ccs', not '%s'\n", realargs[3]);
 		return -1;
 	}
 	if (!strcasecmp(realargs[4], "ami")) {
-		lc[spans].lineconfig &= ~(ZT_CONFIG_B8ZS | ZT_CONFIG_HDB3);
-		lc[spans].lineconfig |= ZT_CONFIG_AMI;
+		lc[spans].lineconfig &= ~(DAHDI_CONFIG_B8ZS | DAHDI_CONFIG_HDB3);
+		lc[spans].lineconfig |= DAHDI_CONFIG_AMI;
 	} else if (!strcasecmp(realargs[4], "b8zs")) {
-		lc[spans].lineconfig |= ZT_CONFIG_B8ZS;
-		lc[spans].lineconfig &= ~(ZT_CONFIG_AMI | ZT_CONFIG_HDB3);
+		lc[spans].lineconfig |= DAHDI_CONFIG_B8ZS;
+		lc[spans].lineconfig &= ~(DAHDI_CONFIG_AMI | DAHDI_CONFIG_HDB3);
 	} else if (!strcasecmp(realargs[4], "hdb3")) {
-		lc[spans].lineconfig |= ZT_CONFIG_HDB3;
-		lc[spans].lineconfig &= ~(ZT_CONFIG_AMI | ZT_CONFIG_B8ZS);
+		lc[spans].lineconfig |= DAHDI_CONFIG_HDB3;
+		lc[spans].lineconfig &= ~(DAHDI_CONFIG_AMI | DAHDI_CONFIG_B8ZS);
 	} else {
 		error("Coding must be one of 'ami', 'b8zs' or 'hdb3', not '%s'\n", realargs[4]);
 		return -1;
 	}
 	if (argc > 5) {
 		if (!strcasecmp(realargs[5], "yellow"))
-			lc[spans].lineconfig |= ZT_CONFIG_NOTOPEN;
+			lc[spans].lineconfig |= DAHDI_CONFIG_NOTOPEN;
 		else if (!strcasecmp(realargs[5], "crc4")) {
-			lc[spans].lineconfig |= ZT_CONFIG_CRC4;
+			lc[spans].lineconfig |= DAHDI_CONFIG_CRC4;
 		} else {
 			error("Only valid fifth arguments are 'yellow' or 'crc4', not '%s'\n", realargs[5]);
 			return -1;
@@ -352,7 +350,7 @@ int spanconfig(char *keyword, char *args)
 	}
 	if (argc > 6) {
 		if (!strcasecmp(realargs[6], "yellow"))
-			lc[spans].lineconfig |= ZT_CONFIG_NOTOPEN;
+			lc[spans].lineconfig |= DAHDI_CONFIG_NOTOPEN;
 		else {
 			error("Only valid sixth argument is 'yellow', not '%s'\n", realargs[6]);
 			return -1;
@@ -367,19 +365,19 @@ int spanconfig(char *keyword, char *args)
 
 int apply_channels(int chans[], char *argstr)
 {
-	char *args[ZT_MAX_CHANNELS+1];
+	char *args[DAHDI_MAX_CHANNELS+1];
 	char *range[3];
 	int res,x, res2,y;
 	int chan;
 	int start, finish;
 	char argcopy[256];
-	res = parseargs(argstr, args, ZT_MAX_CHANNELS, ',');
+	res = parseargs(argstr, args, DAHDI_MAX_CHANNELS, ',');
 	if (res < 0)
-		error("Too many arguments...  Max is %d\n", ZT_MAX_CHANNELS);
+		error("Too many arguments...  Max is %d\n", DAHDI_MAX_CHANNELS);
 	for (x=0;x<res;x++) {
 		if (strchr(args[x], '-')) {
 			/* It's a range */
-			zap_copy_string(argcopy, args[x], sizeof(argcopy));
+			dahdi_copy_string(argcopy, args[x], sizeof(argcopy));
 			res2 = parseargs(argcopy, range, 2, '-');
 			if (res2 != 2) {
 				error("Syntax error in range '%s'.  Should be <val1>-<val2>.\n", args[x]);
@@ -387,18 +385,18 @@ int apply_channels(int chans[], char *argstr)
 			}
 			res2 =sscanf(range[0], "%i", &start);
 			if (res2 != 1) {
-				error("Syntax error.  Start of range '%s' should be a number from 1 to %d\n", args[x], ZT_MAX_CHANNELS - 1);
+				error("Syntax error.  Start of range '%s' should be a number from 1 to %d\n", args[x], DAHDI_MAX_CHANNELS - 1);
 				return -1;
-			} else if ((start < 1) || (start >= ZT_MAX_CHANNELS)) {
-				error("Start of range '%s' must be between 1 and %d (not '%d')\n", args[x], ZT_MAX_CHANNELS - 1, start);
+			} else if ((start < 1) || (start >= DAHDI_MAX_CHANNELS)) {
+				error("Start of range '%s' must be between 1 and %d (not '%d')\n", args[x], DAHDI_MAX_CHANNELS - 1, start);
 				return -1;
 			}
 			res2 =sscanf(range[1], "%i", &finish);
 			if (res2 != 1) {
-				error("Syntax error.  End of range '%s' should be a number from 1 to %d\n", args[x], ZT_MAX_CHANNELS - 1);
+				error("Syntax error.  End of range '%s' should be a number from 1 to %d\n", args[x], DAHDI_MAX_CHANNELS - 1);
 				return -1;
-			} else if ((finish < 1) || (finish >= ZT_MAX_CHANNELS)) {
-				error("end of range '%s' must be between 1 and %d (not '%d')\n", args[x], ZT_MAX_CHANNELS - 1, finish);
+			} else if ((finish < 1) || (finish >= DAHDI_MAX_CHANNELS)) {
+				error("end of range '%s' must be between 1 and %d (not '%d')\n", args[x], DAHDI_MAX_CHANNELS - 1, finish);
 				return -1;
 			}
 			if (start > finish) {
@@ -411,10 +409,10 @@ int apply_channels(int chans[], char *argstr)
 			/* It's a single channel */
 			res2 =sscanf(args[x], "%i", &chan);
 			if (res2 != 1) {
-				error("Syntax error.  Channel should be a number from 1 to %d, not '%s'\n", ZT_MAX_CHANNELS - 1, args[x]);
+				error("Syntax error.  Channel should be a number from 1 to %d, not '%s'\n", DAHDI_MAX_CHANNELS - 1, args[x]);
 				return -1;
-			} else if ((chan < 1) || (chan >= ZT_MAX_CHANNELS)) {
-				error("Channel must be between 1 and %d (not '%d')\n", ZT_MAX_CHANNELS - 1, chan);
+			} else if ((chan < 1) || (chan >= DAHDI_MAX_CHANNELS)) {
+				error("Channel must be between 1 and %d (not '%d')\n", DAHDI_MAX_CHANNELS - 1, chan);
 				return -1;
 			}
 			chans[chan]=1;
@@ -431,13 +429,13 @@ int parse_idle(int *i, char *s)
 			if (((a == '0') || (a == '1')) && ((b == '0') || (b == '1')) && ((c == '0') || (c == '1')) && ((d == '0') || (d == '1'))) {
 				*i = 0;
 				if (a == '1') 
-					*i |= ZT_ABIT;
+					*i |= DAHDI_ABIT;
 				if (b == '1')
-					*i |= ZT_BBIT;
+					*i |= DAHDI_BBIT;
 				if (c == '1')
-					*i |= ZT_CBIT;
+					*i |= DAHDI_CBIT;
 				if (d == '1')
-					*i |= ZT_DBIT;
+					*i |= DAHDI_DBIT;
 				return 0;
 			}
 		}
@@ -458,7 +456,7 @@ static int parse_channel(char *channel, int *startchan)
 
 static int chanconfig(char *keyword, char *args)
 {
-	int chans[ZT_MAX_CHANNELS];
+	int chans[DAHDI_MAX_CHANNELS];
 	int res = 0;
 	int x;
 	int master=0;
@@ -474,7 +472,7 @@ static int chanconfig(char *keyword, char *args)
 		res = apply_channels(chans, args);
 	if (res <= 0)
 		return -1;
-	for (x=1;x<ZT_MAX_CHANNELS;x++) 
+	for (x=1;x<DAHDI_MAX_CHANNELS;x++) 
 		if (chans[x]) {
 			if (slineno[x]) {
 				error("Channel %d already configured as '%s' at line %d\n", x, sig[x], slineno[x]);
@@ -492,109 +490,109 @@ static int chanconfig(char *keyword, char *args)
 			cc[x].master = x;
 			slineno[x] = lineno;
 			if (!strcasecmp(keyword, "e&m")) {
-				cc[x].sigtype = ZT_SIG_EM;
+				cc[x].sigtype = DAHDI_SIG_EM;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "e&me1")) {
-				cc[x].sigtype = ZT_SIG_EM_E1;
+				cc[x].sigtype = DAHDI_SIG_EM_E1;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "fxsls")) {
-				cc[x].sigtype = ZT_SIG_FXSLS;
+				cc[x].sigtype = DAHDI_SIG_FXSLS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "fxsgs")) {
-				cc[x].sigtype = ZT_SIG_FXSGS;
+				cc[x].sigtype = DAHDI_SIG_FXSGS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "fxsks")) {
-				cc[x].sigtype = ZT_SIG_FXSKS;
+				cc[x].sigtype = DAHDI_SIG_FXSKS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "fxols")) {
-				cc[x].sigtype = ZT_SIG_FXOLS;
+				cc[x].sigtype = DAHDI_SIG_FXOLS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "fxogs")) {
-				cc[x].sigtype = ZT_SIG_FXOGS;
+				cc[x].sigtype = DAHDI_SIG_FXOGS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "fxoks")) {
-				cc[x].sigtype = ZT_SIG_FXOKS;
+				cc[x].sigtype = DAHDI_SIG_FXOKS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "cas") || !strcasecmp(keyword, "user")) {
 				if (parse_idle(&cc[x].idlebits, idle))
 					return -1;
-				cc[x].sigtype = ZT_SIG_CAS;
+				cc[x].sigtype = DAHDI_SIG_CAS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "dacs")) {
 				/* Setup channel for monitor */
 				cc[x].idlebits = dacschan;
-				cc[x].sigtype = ZT_SIG_DACS;
+				cc[x].sigtype = DAHDI_SIG_DACS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 				/* Setup inverse */
 				cc[dacschan].idlebits = x;
-				cc[dacschan].sigtype = ZT_SIG_DACS;
+				cc[dacschan].sigtype = DAHDI_SIG_DACS;
 				sig[x] = sigtype_to_str(cc[dacschan].sigtype);
 				dacschan++;
 			} else if (!strcasecmp(keyword, "dacsrbs")) {
 				/* Setup channel for monitor */
 				cc[x].idlebits = dacschan;
-				cc[x].sigtype = ZT_SIG_DACS_RBS;
+				cc[x].sigtype = DAHDI_SIG_DACS_RBS;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 				/* Setup inverse */
 				cc[dacschan].idlebits = x;
-				cc[dacschan].sigtype = ZT_SIG_DACS_RBS;
+				cc[dacschan].sigtype = DAHDI_SIG_DACS_RBS;
 				sig[x] = sigtype_to_str(cc[dacschan].sigtype);
 				dacschan++;
 			} else if (!strcasecmp(keyword, "unused")) {
 				cc[x].sigtype = 0;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "indclear") || !strcasecmp(keyword, "bchan")) {
-				cc[x].sigtype = ZT_SIG_CLEAR;
+				cc[x].sigtype = DAHDI_SIG_CLEAR;
 				sig[x] = sigtype_to_str(cc[x].sigtype);
 			} else if (!strcasecmp(keyword, "clear")) {
-				sig[x] = sigtype_to_str(ZT_SIG_CLEAR);
+				sig[x] = sigtype_to_str(DAHDI_SIG_CLEAR);
 				if (master) {
-					cc[x].sigtype = ZT_SIG_SLAVE;
+					cc[x].sigtype = DAHDI_SIG_SLAVE;
 					cc[x].master = master;
 				} else {
-					cc[x].sigtype = ZT_SIG_CLEAR;
+					cc[x].sigtype = DAHDI_SIG_CLEAR;
 					master = x;
 				}
 			} else if (!strcasecmp(keyword, "rawhdlc")) {
-				sig[x] = sigtype_to_str(ZT_SIG_HDLCRAW);
+				sig[x] = sigtype_to_str(DAHDI_SIG_HDLCRAW);
 				if (master) {
-					cc[x].sigtype = ZT_SIG_SLAVE;
+					cc[x].sigtype = DAHDI_SIG_SLAVE;
 					cc[x].master = master;
 				} else {
-					cc[x].sigtype = ZT_SIG_HDLCRAW;
+					cc[x].sigtype = DAHDI_SIG_HDLCRAW;
 					master = x;
 				}
 			} else if (!strcasecmp(keyword, "nethdlc")) {
-				sig[x] = sigtype_to_str(ZT_SIG_HDLCNET);
+				sig[x] = sigtype_to_str(DAHDI_SIG_HDLCNET);
 				memset(cc[x].netdev_name, 0, sizeof(cc[x].netdev_name));
 				if (master) {
-					cc[x].sigtype = ZT_SIG_SLAVE;
+					cc[x].sigtype = DAHDI_SIG_SLAVE;
 					cc[x].master = master;
 				} else {
-					cc[x].sigtype = ZT_SIG_HDLCNET;
+					cc[x].sigtype = DAHDI_SIG_HDLCNET;
 					if (idle) {
-					    zap_copy_string(cc[x].netdev_name, idle, sizeof(cc[x].netdev_name));
+					    dahdi_copy_string(cc[x].netdev_name, idle, sizeof(cc[x].netdev_name));
 					}
 					master = x;
 				}
 			} else if (!strcasecmp(keyword, "fcshdlc")) {
-				sig[x] = sigtype_to_str(ZT_SIG_HDLCFCS);
+				sig[x] = sigtype_to_str(DAHDI_SIG_HDLCFCS);
 				if (master) {
-					cc[x].sigtype = ZT_SIG_SLAVE;
+					cc[x].sigtype = DAHDI_SIG_SLAVE;
 					cc[x].master = master;
 				} else {
-					cc[x].sigtype = ZT_SIG_HDLCFCS;
+					cc[x].sigtype = DAHDI_SIG_HDLCFCS;
 					master = x;
 				}
 			} else if (!strcasecmp(keyword, "dchan")) {
 				sig[x] = "D-channel";
-				cc[x].sigtype = ZT_SIG_HDLCFCS;
+				cc[x].sigtype = DAHDI_SIG_HDLCFCS;
 			} else if (!strcasecmp(keyword, "hardhdlc")) {
 				sig[x] = "Hardware assisted D-channel";
-				cc[x].sigtype = ZT_SIG_HARDHDLC;
+				cc[x].sigtype = DAHDI_SIG_HARDHDLC;
 			} else if (!strcasecmp(keyword, "mtp2")) {
 				sig[x] = "MTP2";
-				cc[x].sigtype = ZT_SIG_MTP2;
+				cc[x].sigtype = DAHDI_SIG_MTP2;
 			} else {
 				fprintf(stderr, "Huh? (%s)\n", keyword);
 			}
@@ -607,23 +605,23 @@ static int setlaw(char *keyword, char *args)
 	int res;
 	int law;
 	int x;
-	int chans[ZT_MAX_CHANNELS];
+	int chans[DAHDI_MAX_CHANNELS];
 
 	bzero(chans, sizeof(chans));
 	res = apply_channels(chans, args);
 	if (res <= 0)
 		return -1;
 	if (!strcasecmp(keyword, "alaw")) {
-		law = ZT_LAW_ALAW;
+		law = DAHDI_LAW_ALAW;
 	} else if (!strcasecmp(keyword, "mulaw")) {
-		law = ZT_LAW_MULAW;
+		law = DAHDI_LAW_MULAW;
 	} else if (!strcasecmp(keyword, "deflaw")) {
-		law = ZT_LAW_DEFAULT;
+		law = DAHDI_LAW_DEFAULT;
 	} else {
 		fprintf(stderr, "Huh??? Don't know about '%s' law\n", keyword);
 		return -1;
 	}
-	for (x=0;x<ZT_MAX_CHANNELS;x++) {
+	for (x=0;x<DAHDI_MAX_CHANNELS;x++) {
 		if (chans[x])
 			cc[x].deflaw = law;
 	}
@@ -632,11 +630,11 @@ static int setlaw(char *keyword, char *args)
 
 static int registerzone(char *keyword, char *args)
 {
-	if (numzones >= ZT_TONE_ZONE_MAX) {
+	if (numzones >= DAHDI_TONE_ZONE_MAX) {
 		error("Too many tone zones specified\n");
 		return 0;
 	}
-	zap_copy_string(zonestoload[numzones++], args, sizeof(zonestoload[0]));
+	dahdi_copy_string(zonestoload[numzones++], args, sizeof(zonestoload[0]));
 	return 0;
 }
 
@@ -960,19 +958,19 @@ int cor_thresh(char *keyword, char *args)
 
 int rad_apply_channels(int chans[], char *argstr)
 {
-	char *args[ZT_MAX_CHANNELS+1];
+	char *args[DAHDI_MAX_CHANNELS+1];
 	char *range[3];
 	int res,x, res2,y;
 	int chan;
 	int start, finish;
 	char argcopy[256];
-	res = parseargs(argstr, args, ZT_MAX_CHANNELS, ',');
+	res = parseargs(argstr, args, DAHDI_MAX_CHANNELS, ',');
 	if (res < 0)
-		error("Too many arguments...  Max is %d\n", ZT_MAX_CHANNELS);
+		error("Too many arguments...  Max is %d\n", DAHDI_MAX_CHANNELS);
 	for (x=0;x<res;x++) {
 		if (strchr(args[x], '-')) {
 			/* It's a range */
-			zap_copy_string(argcopy, args[x], sizeof(argcopy));
+			dahdi_copy_string(argcopy, args[x], sizeof(argcopy));
 			res2 = parseargs(argcopy, range, 2, '-');
 			if (res2 != 2) {
 				error("Syntax error in range '%s'.  Should be <val1>-<val2>.\n", args[x]);
@@ -980,18 +978,18 @@ int rad_apply_channels(int chans[], char *argstr)
 			}
 			res2 =sscanf(range[0], "%i", &start);
 			if (res2 != 1) {
-				error("Syntax error.  Start of range '%s' should be a number from 1 to %d\n", args[x], ZT_MAX_CHANNELS - 1);
+				error("Syntax error.  Start of range '%s' should be a number from 1 to %d\n", args[x], DAHDI_MAX_CHANNELS - 1);
 				return -1;
-			} else if ((start < 1) || (start >= ZT_MAX_CHANNELS)) {
-				error("Start of range '%s' must be between 1 and %d (not '%d')\n", args[x], ZT_MAX_CHANNELS - 1, start);
+			} else if ((start < 1) || (start >= DAHDI_MAX_CHANNELS)) {
+				error("Start of range '%s' must be between 1 and %d (not '%d')\n", args[x], DAHDI_MAX_CHANNELS - 1, start);
 				return -1;
 			}
 			res2 =sscanf(range[1], "%i", &finish);
 			if (res2 != 1) {
-				error("Syntax error.  End of range '%s' should be a number from 1 to %d\n", args[x], ZT_MAX_CHANNELS - 1);
+				error("Syntax error.  End of range '%s' should be a number from 1 to %d\n", args[x], DAHDI_MAX_CHANNELS - 1);
 				return -1;
-			} else if ((finish < 1) || (finish >= ZT_MAX_CHANNELS)) {
-				error("end of range '%s' must be between 1 and %d (not '%d')\n", args[x], ZT_MAX_CHANNELS - 1, finish);
+			} else if ((finish < 1) || (finish >= DAHDI_MAX_CHANNELS)) {
+				error("end of range '%s' must be between 1 and %d (not '%d')\n", args[x], DAHDI_MAX_CHANNELS - 1, finish);
 				return -1;
 			}
 			if (start > finish) {
@@ -1004,10 +1002,10 @@ int rad_apply_channels(int chans[], char *argstr)
 			/* It's a single channel */
 			res2 =sscanf(args[x], "%i", &chan);
 			if (res2 != 1) {
-				error("Syntax error.  Channel should be a number from 1 to %d, not '%s'\n", ZT_MAX_CHANNELS - 1, args[x]);
+				error("Syntax error.  Channel should be a number from 1 to %d, not '%s'\n", DAHDI_MAX_CHANNELS - 1, args[x]);
 				return -1;
-			} else if ((chan < 1) || (chan >= ZT_MAX_CHANNELS)) {
-				error("Channel must be between 1 and %d (not '%d')\n", ZT_MAX_CHANNELS - 1, chan);
+			} else if ((chan < 1) || (chan >= DAHDI_MAX_CHANNELS)) {
+				error("Channel must be between 1 and %d (not '%d')\n", DAHDI_MAX_CHANNELS - 1, chan);
 				return -1;
 			}
 			chans[chan]=1;
@@ -1018,108 +1016,108 @@ int rad_apply_channels(int chans[], char *argstr)
 
 static int rad_chanconfig(char *keyword, char *args)
 {
-	int chans[ZT_MAX_CHANNELS];
+	int chans[DAHDI_MAX_CHANNELS];
 	int res = 0;
 	int x,i,n;
-	struct zt_radio_param p;
+	struct dahdi_radio_param p;
 
 	toneindex = 1;
 	bzero(chans, sizeof(chans));
 	res = rad_apply_channels(chans, args);
 	if (res <= 0)
 		return -1;
-	for (x=1;x<ZT_MAX_CHANNELS;x++) {
+	for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
 		if (chans[x]) {
-			p.radpar = ZT_RADPAR_NUMTONES;
-			if (ind_ioctl(x,fd,ZT_RADIO_GETPARAM,&p) == -1)
+			p.radpar = DAHDI_RADPAR_NUMTONES;
+			if (ind_ioctl(x,fd,DAHDI_RADIO_GETPARAM,&p) == -1)
 				n = 0; else n = p.data;
 			if (n)
 			{
-				p.radpar = ZT_RADPAR_INITTONE;
-				if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+				p.radpar = DAHDI_RADPAR_INITTONE;
+				if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 					error("Cannot init tones for channel %d\n",x);
 				if (!rxtones[0]) for(i = 1; i <= n; i++)
 				{
 					if (rxtones[i])
 					{
-						p.radpar = ZT_RADPAR_RXTONE;
+						p.radpar = DAHDI_RADPAR_RXTONE;
 						p.index = i;
 						p.data = rxtones[i];
-						if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+						if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 							error("Cannot set rxtone on channel %d\n",x);
 					}
 					if (rxtags[i])
 					{
-						p.radpar = ZT_RADPAR_RXTONECLASS;
+						p.radpar = DAHDI_RADPAR_RXTONECLASS;
 						p.index = i;
 						p.data = rxtags[i];
-						if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+						if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 							error("Cannot set rxtag on channel %d\n",x);
 					}
 					if (txtones[i])
 					{
-						p.radpar = ZT_RADPAR_TXTONE;
+						p.radpar = DAHDI_RADPAR_TXTONE;
 						p.index = i;
 						p.data = txtones[i];
-						if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+						if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 							error("Cannot set txtone on channel %d\n",x);
 					}
 				} else { /* if we may have DCS receive */
 					if (rxtones[0])
 					{
-						p.radpar = ZT_RADPAR_RXTONE;
+						p.radpar = DAHDI_RADPAR_RXTONE;
 						p.index = 0;
 						p.data = rxtones[0];
-						if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+						if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 							error("Cannot set DCS rxtone on channel %d\n",x);
 					}
 				}
 				if (txtones[0])
 				{
-					p.radpar = ZT_RADPAR_TXTONE;
+					p.radpar = DAHDI_RADPAR_TXTONE;
 					p.index = 0;
 					p.data = txtones[0];
-					if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+					if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 						error("Cannot set default txtone on channel %d\n",x);
 				}
 			}
 			if (debouncetime)
 			{
-				p.radpar = ZT_RADPAR_DEBOUNCETIME;
+				p.radpar = DAHDI_RADPAR_DEBOUNCETIME;
 				p.data = debouncetime;
-				if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+				if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 					error("Cannot set debouncetime on channel %d\n",x);
 			}
 			if (bursttime)
 			{
-				p.radpar = ZT_RADPAR_BURSTTIME;
+				p.radpar = DAHDI_RADPAR_BURSTTIME;
 				p.data = bursttime;
-				if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+				if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 					error("Cannot set bursttime on channel %d\n",x);
 			}
-			p.radpar = ZT_RADPAR_DEEMP;
+			p.radpar = DAHDI_RADPAR_DEEMP;
 			p.data = deemp;
-			ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p);
-			p.radpar = ZT_RADPAR_PREEMP;
+			ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p);
+			p.radpar = DAHDI_RADPAR_PREEMP;
 			p.data = preemp;
-			ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p);
-			p.radpar = ZT_RADPAR_TXGAIN;
+			ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p);
+			p.radpar = DAHDI_RADPAR_TXGAIN;
 			p.data = txgain;
-			ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p);
-			p.radpar = ZT_RADPAR_RXGAIN;
+			ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p);
+			p.radpar = DAHDI_RADPAR_RXGAIN;
 			p.data = rxgain;
-			ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p);
-			p.radpar = ZT_RADPAR_INVERTCOR;
+			ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p);
+			p.radpar = DAHDI_RADPAR_INVERTCOR;
 			p.data = invertcor;
-			ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p);
-			p.radpar = ZT_RADPAR_EXTRXTONE;
+			ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p);
+			p.radpar = DAHDI_RADPAR_EXTRXTONE;
 			p.data = exttone;
-			ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p);
+			ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p);
 			if (corthresh)
 			{
-				p.radpar = ZT_RADPAR_CORTHRESH;
+				p.radpar = DAHDI_RADPAR_CORTHRESH;
 				p.data = corthresh - 1;
-				if (ind_ioctl(x,fd,ZT_RADIO_SETPARAM,&p) == -1)
+				if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
 					error("Cannot set corthresh on channel %d\n",x);
 			}
 		}
@@ -1135,12 +1133,12 @@ static void printconfig(int fd)
 	int x,y;
 	int ps;
 	int configs=0;
-	struct zt_versioninfo vi;
+	struct dahdi_versioninfo vi;
 
 	strcpy(vi.version, "Unknown");
 	strcpy(vi.echo_canceller, "Unknown");
 
-	if (ioctl(fd, ZT_GETVERSION, &vi))
+	if (ioctl(fd, DAHDI_GETVERSION, &vi))
 		error("Unable to read Zaptel version information.\n");
 
 	printf("\nZaptel Version: %s\n"
@@ -1149,12 +1147,12 @@ static void printconfig(int fd)
 	       "======================\n\n", vi.version, vi.echo_canceller);
 	for (x=0;x<spans;x++) 
 		printf("SPAN %d: %3s/%4s Build-out: %s\n",
-		       x+1, ( lc[x].lineconfig & ZT_CONFIG_D4 ? "D4" :
-			      lc[x].lineconfig & ZT_CONFIG_ESF ? "ESF" :
-			      lc[x].lineconfig & ZT_CONFIG_CCS ? "CCS" : "CAS" ),
-			( lc[x].lineconfig & ZT_CONFIG_AMI ? "AMI" :
-			  lc[x].lineconfig & ZT_CONFIG_B8ZS ? "B8ZS" :
-			  lc[x].lineconfig & ZT_CONFIG_HDB3 ? "HDB3" : "???" ),
+		       x+1, ( lc[x].lineconfig & DAHDI_CONFIG_D4 ? "D4" :
+			      lc[x].lineconfig & DAHDI_CONFIG_ESF ? "ESF" :
+			      lc[x].lineconfig & DAHDI_CONFIG_CCS ? "CCS" : "CAS" ),
+			( lc[x].lineconfig & DAHDI_CONFIG_AMI ? "AMI" :
+			  lc[x].lineconfig & DAHDI_CONFIG_B8ZS ? "B8ZS" :
+			  lc[x].lineconfig & DAHDI_CONFIG_HDB3 ? "HDB3" : "???" ),
 			lbostr[lc[x].lbo]);
 	for (x=0;x<numdynamic;x++) {
 		printf("Dynamic span %d: driver %s, addr %s, channels %d, timing %d\n",
@@ -1162,15 +1160,15 @@ static void printconfig(int fd)
 	}
 	if (verbose > 1) {
 		printf("\nChannel map:\n\n");
-		for (x=1;x<ZT_MAX_CHANNELS;x++) {
-			if ((cc[x].sigtype != ZT_SIG_SLAVE) && (cc[x].sigtype)) {
+		for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
+			if ((cc[x].sigtype != DAHDI_SIG_SLAVE) && (cc[x].sigtype)) {
 				configs++;
 				ps = 0;
-				if ((cc[x].sigtype & __ZT_SIG_DACS) == __ZT_SIG_DACS)
+				if ((cc[x].sigtype & __DAHDI_SIG_DACS) == __DAHDI_SIG_DACS)
 					printf("Channel %02d %s to %02d", x, sig[x], cc[x].idlebits);
 				else {
 					printf("Channel %02d: %s (%s)", x, sig[x], laws[cc[x].deflaw]);
-					for (y=1;y<ZT_MAX_CHANNELS;y++) 
+					for (y=1;y<DAHDI_MAX_CHANNELS;y++) 
 						if (cc[y].master == x)  {
 							printf("%s%02d", ps++ ? " " : " (Slaves: ", y);
 						}
@@ -1180,7 +1178,7 @@ static void printconfig(int fd)
 				if (cc[x].sigtype) configs++;
 		}
 	} else 
-		for (x=1;x<ZT_MAX_CHANNELS;x++) 
+		for (x=1;x<DAHDI_MAX_CHANNELS;x++) 
 			if (cc[x].sigtype)
 				configs++;
 	printf("\n%d channels to configure.\n\n", configs);
@@ -1362,11 +1360,11 @@ int main(int argc, char *argv[])
 			}
 			for (x=0;x<numdynamic;x++) {
 				/* destroy them all */
-				ioctl(fd, ZT_DYNAMIC_DESTROY, &zds[x]);
+				ioctl(fd, DAHDI_DYNAMIC_DESTROY, &zds[x]);
 			}
 			if (stopmode) {
 				for (x=0;x<spans;x++) {
-					if (ioctl(fd, ZT_SHUTDOWN, &lc[x].span)) {
+					if (ioctl(fd, DAHDI_SHUTDOWN, &lc[x].span)) {
 						fprintf(stderr, "Zaptel shutdown failed: %s\n", strerror(errno));
 						close(fd);
 						exit(1);
@@ -1374,21 +1372,21 @@ int main(int argc, char *argv[])
 				}
 			} else {
 				for (x=0;x<spans;x++) {
-					if (ioctl(fd, ZT_SPANCONFIG, lc + x)) {
-						fprintf(stderr, "ZT_SPANCONFIG failed on span %d: %s (%d)\n", lc[x].span, strerror(errno), errno);
+					if (ioctl(fd, DAHDI_SPANCONFIG, lc + x)) {
+						fprintf(stderr, "DAHDI_SPANCONFIG failed on span %d: %s (%d)\n", lc[x].span, strerror(errno), errno);
 						close(fd);
 						exit(1);
 					}
 				}
 				for (x=0;x<numdynamic;x++) {
-					if (ioctl(fd, ZT_DYNAMIC_CREATE, &zds[x])) {
+					if (ioctl(fd, DAHDI_DYNAMIC_CREATE, &zds[x])) {
 						fprintf(stderr, "Zaptel dynamic span creation failed: %s\n", strerror(errno));
 						close(fd);
 						exit(1);
 					}
 				}
-				for (x=1;x<ZT_MAX_CHANNELS;x++) {
-					struct zt_params current_state;
+				for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
+					struct dahdi_params current_state;
 					int master;
 					int needupdate = force;
 					
@@ -1401,8 +1399,8 @@ int main(int argc, char *argv[])
 					
 					if (!needupdate) {
 						memset(&current_state, 0, sizeof(current_state));
-						current_state.channo = cc[x].chan | ZT_GET_PARAMS_RETURN_MASTER;
-						if (ioctl(fd, ZT_GET_PARAMS, &current_state))
+						current_state.channo = cc[x].chan | DAHDI_GET_PARAMS_RETURN_MASTER;
+						if (ioctl(fd, DAHDI_GET_PARAMS, &current_state))
 							needupdate = 1;
 					}
 					
@@ -1417,7 +1415,7 @@ int main(int argc, char *argv[])
 								       sigtype_to_str(cc[x].sigtype));
 						}
 						
-						if ((cc[x].deflaw != ZT_LAW_DEFAULT) && (cc[x].deflaw != current_state.curlaw)) {
+						if ((cc[x].deflaw != DAHDI_LAW_DEFAULT) && (cc[x].deflaw != current_state.curlaw)) {
 							needupdate++;
 							if (verbose > 1)
 								printf("Changing law on channel %d from %s to %s\n",
@@ -1442,8 +1440,8 @@ int main(int argc, char *argv[])
 						}
 					}
 					
-					if (needupdate && ioctl(fd, ZT_CHANCONFIG, &cc[x])) {
-						fprintf(stderr, "ZT_CHANCONFIG failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
+					if (needupdate && ioctl(fd, DAHDI_CHANCONFIG, &cc[x])) {
+						fprintf(stderr, "DAHDI_CHANCONFIG failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
 						if (errno == EINVAL) {
 							fprintf(stderr, "Did you forget that FXS interfaces are configured with FXO signalling\n"
 								"and that FXO interfaces use FXS signalling?\n");
@@ -1466,14 +1464,14 @@ int main(int argc, char *argv[])
 					fflush(stdout);
 				}
 				if (deftonezone > -1) {
-					if (ioctl(fd, ZT_DEFAULTZONE, &deftonezone)) {
-						fprintf(stderr, "ZT_DEFAULTZONE failed: %s (%d)\n", strerror(errno), errno);
+					if (ioctl(fd, DAHDI_DEFAULTZONE, &deftonezone)) {
+						fprintf(stderr, "DAHDI_DEFAULTZONE failed: %s (%d)\n", strerror(errno), errno);
 						close(fd);
 						exit(1);
 					}
 				}
 				for (x=0;x<spans;x++) {
-					if (ioctl(fd, ZT_STARTUP, &lc[x].span)) {
+					if (ioctl(fd, DAHDI_STARTUP, &lc[x].span)) {
 						fprintf(stderr, "Zaptel startup failed: %s\n", strerror(errno));
 						close(fd);
 						exit(1);
