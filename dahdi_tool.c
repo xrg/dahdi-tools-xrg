@@ -6,7 +6,7 @@
  * written by Jim Dixon <jim@lambdatel.com>.
  *
  * Copyright (C) 2001 Jim Dixon / Zapata Telephony.
- * Copyright (C) 2001 Linux Support Services, Inc.
+ * Copyright (C) 2001-2008 Digium, Inc.
  *
  * All rights reserved.
  *
@@ -577,8 +577,8 @@ int main(int argc, char *argv[])
 	newtInit();
 	newtCls();
 	
-	newtDrawRootText(0,0,"Zaptel Tool (C)2002 Linux Support Services, Inc.");
-	newtPushHelpLine("Welcome to the Zaptel Tool!");
+	newtDrawRootText(0,0,"Zaptel Tool (C)2002-2008 Digium, Inc.");
+	newtPushHelpLine("Welcome to the DAHDI Tool!");
 	show_spans();
 	cleanup();
 	newtFinished();
