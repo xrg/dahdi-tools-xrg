@@ -1260,6 +1260,7 @@ static void usage(char *argv0, int exitcode)
 		c = argv0;
 	else
 		c++;
+	fprintf(stderr, "%s\n", tools_version);
 	fprintf(stderr, 
 		"Usage: %s [options]\n"
 		"    Valid options are:\n"
@@ -1280,6 +1281,7 @@ int main(int argc, char *argv[])
 	char *buf;
 	char *key, *value;
 	int x,found;
+
 	while((c = getopt(argc, argv, "fthc:vsd::")) != -1) {
 		switch(c) {
 		case 'c':
@@ -1311,6 +1313,11 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+	
+	if (verbose) {
+		fprintf(stderr, "%s\n", tools_version);
+	}
+
 	if (fd == -1) fd = open(MASTER_DEVICE, O_RDWR);
 	if (fd < 0) 
 		error("Unable to open master device '%s'\n", MASTER_DEVICE);
