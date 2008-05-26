@@ -63,10 +63,17 @@ AC_SUBST(DOWNLOAD)
 
 AC_LANG(C)
 
-AST_EXT_LIB([curses], [initscr], [curses.h], [CURSES], [curses], [])
-AST_EXT_LIB([ncurses], [initscr], [curses.h], [NCURSES], [ncurses], [])
-AST_EXT_LIB([newt], [newtBell], [newt.h], [NEWT], [newt])
-AST_EXT_LIB([usb], [usb_init], [usb.h], [USB], [libusb])
+AST_EXT_LIB_SETUP([CURSES], [curses], [curses])
+AST_EXT_LIB_SETUP([DAHDI], [DAHDI], [dahdi])
+AST_EXT_LIB_SETUP([NCURSES], [ncurses], [ncurses])
+AST_EXT_LIB_SETUP([NEWT], [newt], [newt])
+AST_EXT_LIB_SETUP([USB], [usb], [usb])
+
+AST_EXT_LIB_CHECK([CURSES], [curses], [initscr], [curses.h])
+AST_C_DEFINE_CHECK([DAHDI], [DAHDI_CODE], [dahdi/user.h])
+AST_EXT_LIB_CHECK([NCURSES], [ncurses], [initscr], [curses.h])
+AST_EXT_LIB_CHECK([NEWT], [newt], [newtBell], [newt.h])
+AST_EXT_LIB_CHECK([USB], [libusb], [usb_init], [usb.h])
 
 AC_ARG_WITH(selinux,
 	[AS_HELP_STRING([--with-selinux],
@@ -92,7 +99,7 @@ fi
 AC_SUBST(ASCIIDOC)
 
 AC_ARG_WITH(ppp,
-	    [AS_HELP_STRING([--with-ppp=PATH],[Use ppp support from PATH])],
+	    [AS_HELP_STRING([--with-ppp=PATH],[Use PPP support from PATH])],
 	    [],
 	    [with_ppp=check]
 	    )
@@ -122,10 +129,17 @@ case "$with_ppp" in
 	;;
 esac
 
+if test "x${PBX_DAHDI}" != "x1"; then
+   AC_MSG_NOTICE([***])
+   AC_MSG_NOTICE([*** Building this package requires DAHDI support. *** ])
+   AC_MSG_NOTICE([*** Please install the dahdi-linux package. ***])
+   AC_MSG_NOTICE([***])
+   exit 1
+fi
+
 AC_SUBST(PPPD_VERSION)
 
 AC_CONFIG_FILES([build_tools/menuselect-deps makeopts])
 AC_OUTPUT
 
 AC_MSG_NOTICE(*** dahdi-tools build successfully configured ***)
-

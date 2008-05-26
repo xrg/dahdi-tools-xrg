@@ -675,19 +675,27 @@ LN
 WGET
 FETCH
 DOWNLOAD
-EGREP
 CURSES_LIB
 CURSES_INCLUDE
-PBX_LIBCURSES
+CURSES_DIR
+PBX_CURSES
+DAHDI_LIB
+DAHDI_INCLUDE
+DAHDI_DIR
+PBX_DAHDI
 NCURSES_LIB
 NCURSES_INCLUDE
-PBX_LIBNCURSES
+NCURSES_DIR
+PBX_NCURSES
 NEWT_LIB
 NEWT_INCLUDE
-PBX_LIBNEWT
+NEWT_DIR
+PBX_NEWT
 USB_LIB
 USB_INCLUDE
-PBX_LIBUSB
+USB_DIR
+PBX_USB
+EGREP
 USE_SELINUX
 ASCIIDOC
 PPPD_VERSION
@@ -1272,11 +1280,12 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-curses=PATH      use curses files in PATH
+  --with-dahdi=PATH       use DAHDI files in PATH
   --with-ncurses=PATH     use ncurses files in PATH
   --with-newt=PATH        use newt files in PATH
-  --with-usb=PATH         use libusb files in PATH
+  --with-usb=PATH         use usb files in PATH
   --with-selinux          enable (with) / disable (without) SELinux
-  --with-ppp=PATH         Use ppp support from PATH
+  --with-ppp=PATH         Use PPP support from PATH
 
 Some influential environment variables:
   CC          C compiler command
@@ -3017,10 +3026,14 @@ if test "${GNU_MAKE+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   GNU_MAKE='Not Found' ;
+   GNU_MAKE_VERSION_MAJOR=0 ;
+   GNU_MAKE_VERSION_MINOR=0 ;
    for a in make gmake gnumake ; do
       if test -z "$a" ; then continue ; fi ;
       if ( sh -c "$a --version" 2> /dev/null | grep GNU  2>&1 > /dev/null ) ;  then
          GNU_MAKE=$a ;
+         GNU_MAKE_VERSION_MAJOR=`$GNU_MAKE --version | grep "GNU Make" | cut -f3 -d' ' | cut -f1 -d'.'`
+         GNU_MAKE_VERSION_MINOR=`$GNU_MAKE --version | grep "GNU Make" | cut -f2 -d'.' | cut -c1-2`
          break;
       fi
    done ;
@@ -3029,9 +3042,10 @@ fi
 { echo "$as_me:$LINENO: result: $GNU_MAKE" >&5
 echo "${ECHO_T}$GNU_MAKE" >&6; } ;
 if test  "x$GNU_MAKE" = "xNot Found"  ; then
-   { { echo "$as_me:$LINENO: error: *** Please install GNU make.  It is required to build DAHDI tools!" >&5
-echo "$as_me: error: *** Please install GNU make.  It is required to build DAHDI tools!" >&2;}
+   { { echo "$as_me:$LINENO: error: *** Please install GNU make.  It is required to build Asterisk!" >&5
+echo "$as_me: error: *** Please install GNU make.  It is required to build Asterisk!" >&2;}
    { (exit 1); exit 1; }; }
+   exit 1
 fi
 
 
@@ -3300,6 +3314,147 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+    CURSES_DESCRIP="curses"
+    CURSES_OPTION="curses"
+
+# Check whether --with-curses was given.
+if test "${with_curses+set}" = set; then
+  withval=$with_curses;
+	case ${withval} in
+	n|no)
+	USE_CURSES=no
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} CURSES"
+	;;
+	*)
+	CURSES_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} CURSES"
+	;;
+	esac
+
+fi
+
+    PBX_CURSES=0
+
+
+
+
+
+
+    DAHDI_DESCRIP="DAHDI"
+    DAHDI_OPTION="dahdi"
+
+# Check whether --with-dahdi was given.
+if test "${with_dahdi+set}" = set; then
+  withval=$with_dahdi;
+	case ${withval} in
+	n|no)
+	USE_DAHDI=no
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} DAHDI"
+	;;
+	*)
+	DAHDI_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} DAHDI"
+	;;
+	esac
+
+fi
+
+    PBX_DAHDI=0
+
+
+
+
+
+
+    NCURSES_DESCRIP="ncurses"
+    NCURSES_OPTION="ncurses"
+
+# Check whether --with-ncurses was given.
+if test "${with_ncurses+set}" = set; then
+  withval=$with_ncurses;
+	case ${withval} in
+	n|no)
+	USE_NCURSES=no
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} NCURSES"
+	;;
+	*)
+	NCURSES_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} NCURSES"
+	;;
+	esac
+
+fi
+
+    PBX_NCURSES=0
+
+
+
+
+
+
+    NEWT_DESCRIP="newt"
+    NEWT_OPTION="newt"
+
+# Check whether --with-newt was given.
+if test "${with_newt+set}" = set; then
+  withval=$with_newt;
+	case ${withval} in
+	n|no)
+	USE_NEWT=no
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} NEWT"
+	;;
+	*)
+	NEWT_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} NEWT"
+	;;
+	esac
+
+fi
+
+    PBX_NEWT=0
+
+
+
+
+
+
+    USB_DESCRIP="usb"
+    USB_OPTION="usb"
+
+# Check whether --with-usb was given.
+if test "${with_usb+set}" = set; then
+  withval=$with_usb;
+	case ${withval} in
+	n|no)
+	USE_USB=no
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} USB"
+	;;
+	*)
+	USB_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} USB"
+	;;
+	esac
+
+fi
+
+    PBX_USB=0
+
+
+
+
 
 
 
@@ -3709,36 +3864,24 @@ done
 
 
 
-
-# Check whether --with-curses was given.
-if test "${with_curses+set}" = set; then
-  withval=$with_curses;
-case ${withval} in
-     n|no)
-     USE_CURSES=no
-     ;;
-     y|ye|yes)
-     CURSES_MANDATORY="yes"
-     ;;
-     *)
-     CURSES_DIR="${withval}"
-     CURSES_MANDATORY="yes"
-     ;;
-esac
-
-fi
-
-
-PBX_LIBCURSES=0
-
-if test "${USE_CURSES}" != "no"; then
+if test "x${PBX_CURSES}" != "x1" -a "${USE_CURSES}" != "no"; then
    pbxlibdir=""
+   # if --with-CURSES=DIR has been specified, use it.
    if test "x${CURSES_DIR}" != "x"; then
-      pbxlibdir="-L${curses_DIR}/lib"
+      if test -d ${CURSES_DIR}/lib; then
+      	 pbxlibdir="-L${CURSES_DIR}/lib"
+      else
+      	 pbxlibdir="-L${CURSES_DIR}"
+      fi
    fi
-   { echo "$as_me:$LINENO: checking for initscr in -lcurses" >&5
-echo $ECHO_N "checking for initscr in -lcurses... $ECHO_C" >&6; }
-if test "${ac_cv_lib_curses_initscr+set}" = set; then
+   pbxfuncname="initscr"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_CURSES_FOUND=yes
+   else
+      as_ac_Lib=`echo "ac_cv_lib_curses_${pbxfuncname}" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for ${pbxfuncname} in -lcurses" >&5
+echo $ECHO_N "checking for ${pbxfuncname} in -lcurses... $ECHO_C" >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -3756,11 +3899,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char initscr ();
+char ${pbxfuncname} ();
 int
 main ()
 {
-return initscr ();
+return ${pbxfuncname} ();
   ;
   return 0;
 }
@@ -3783,173 +3926,43 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest$ac_exeext &&
        $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_curses_initscr=yes
+  eval "$as_ac_Lib=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_curses_initscr=no
+	eval "$as_ac_Lib=no"
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_curses_initscr" >&5
-echo "${ECHO_T}$ac_cv_lib_curses_initscr" >&6; }
-if test $ac_cv_lib_curses_initscr = yes; then
+ac_res=`eval echo '${'$as_ac_Lib'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_Lib'}'` = yes; then
   AST_CURSES_FOUND=yes
 else
   AST_CURSES_FOUND=no
 fi
 
+   fi
 
+   # now check for the header.
    if test "${AST_CURSES_FOUND}" = "yes"; then
-      CURSES_LIB="-lcurses "
-      CURSES_HEADER_FOUND="1"
+      CURSES_LIB="${pbxlibdir} -lcurses "
+      # if --with-CURSES=DIR has been specified, use it.
       if test "x${CURSES_DIR}" != "x"; then
-         CURSES_LIB="${pbxlibdir} ${CURSES_LIB}"
 	 CURSES_INCLUDE="-I${CURSES_DIR}/include"
-	 if test "xcurses.h" != "x" ; then
-	    as_ac_Header=`echo "ac_cv_header_${CURSES_DIR}/include/curses.h" | $as_tr_sh`
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  { echo "$as_me:$LINENO: checking for ${CURSES_DIR}/include/curses.h" >&5
-echo $ECHO_N "checking for ${CURSES_DIR}/include/curses.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking ${CURSES_DIR}/include/curses.h usability" >&5
-echo $ECHO_N "checking ${CURSES_DIR}/include/curses.h usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <${CURSES_DIR}/include/curses.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking ${CURSES_DIR}/include/curses.h presence" >&5
-echo $ECHO_N "checking ${CURSES_DIR}/include/curses.h presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <${CURSES_DIR}/include/curses.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${CURSES_DIR}/include/curses.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: ${CURSES_DIR}/include/curses.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for ${CURSES_DIR}/include/curses.h" >&5
-echo $ECHO_N "checking for ${CURSES_DIR}/include/curses.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=\$ac_header_preproc"
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  CURSES_HEADER_FOUND=1
-else
-  CURSES_HEADER_FOUND=0
-fi
-
-
-	 fi
-      else
-	 if test "xcurses.h" != "x" ; then
-            if test "${ac_cv_header_curses_h+set}" = set; then
+      fi
+      CURSES_INCLUDE="${CURSES_INCLUDE} "
+      if test "xcurses.h" = "x" ; then	# no header, assume found
+         CURSES_HEADER_FOUND="1"
+      else				# check for the header
+         saved_cppflags="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${CURSES_INCLUDE} "
+	 if test "${ac_cv_header_curses_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for curses.h" >&5
 echo $ECHO_N "checking for curses.h... $ECHO_C" >&6; }
 if test "${ac_cv_header_curses_h+set}" = set; then
@@ -4081,80 +4094,126 @@ else
 fi
 
 
-	 fi
+         CPPFLAGS="${saved_cppflags}"
       fi
       if test "x${CURSES_HEADER_FOUND}" = "x0" ; then
-         if test ! -z "${CURSES_MANDATORY}" ;
-         then
-            { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-            { echo "$as_me:$LINENO: *** It appears that you do not have the curses development package installed." >&5
-echo "$as_me: *** It appears that you do not have the curses development package installed." >&6;}
-            { echo "$as_me:$LINENO: *** Please install it to include curses support" >&5
-echo "$as_me: *** Please install it to include curses support" >&or re-run configure;}
-            { echo "$as_me:$LINENO: *** without explicitly specifying --with-curses" >&5
-echo "$as_me: *** without explicitly specifying --with-curses" >&6;}
-            exit 1
-         fi
          CURSES_LIB=""
          CURSES_INCLUDE=""
-         PBX_LIBCURSES=0
       else
-         PBX_LIBCURSES=1
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+	    CURSES_LIB=""
+	 fi
+         PBX_CURSES=1
+         # XXX don't know how to evaluate the description (third argument) in AC_DEFINE_UNQUOTED
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_CURSES 1
 _ACEOF
 
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CURSES_VERSION
+_ACEOF
+
       fi
-   elif test ! -z "${CURSES_MANDATORY}";
-   then
-      { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-      { echo "$as_me:$LINENO: *** The curses installation on this system appears to be broken." >&5
-echo "$as_me: *** The curses installation on this system appears to be broken." >&6;}
-      { echo "$as_me:$LINENO: *** Either correct the installation" >&5
-echo "$as_me: *** Either correct the installation" >&or run configure;}
-      { echo "$as_me:$LINENO: *** without explicity specifying --with-curses" >&5
-echo "$as_me: *** without explicity specifying --with-curses" >&6;}
-      exit 1
    fi
 fi
 
 
+    if test "x${PBX_DAHDI}" != "x1"; then
+	{ echo "$as_me:$LINENO: checking for DAHDI_CODE in dahdi/user.h" >&5
+echo $ECHO_N "checking for DAHDI_CODE in dahdi/user.h... $ECHO_C" >&6; }
+	saved_cppflags="${CPPFLAGS}"
+	if test "x${DAHDI_DIR}" != "x"; then
+	    DAHDI_INCLUDE="-I${DAHDI_DIR}/include"
+	fi
+	CPPFLAGS="${CPPFLAGS} ${DAHDI_INCLUDE}"
 
+	cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <dahdi/user.h>
+int
+main ()
+{
+#if defined(DAHDI_CODE)
+				int foo = 0;
+			        #else
+			        int foo = bar;
+			        #endif
+				0
 
-
-
-# Check whether --with-ncurses was given.
-if test "${with_ncurses+set}" = set; then
-  withval=$with_ncurses;
-case ${withval} in
-     n|no)
-     USE_NCURSES=no
-     ;;
-     y|ye|yes)
-     NCURSES_MANDATORY="yes"
-     ;;
-     *)
-     NCURSES_DIR="${withval}"
-     NCURSES_MANDATORY="yes"
-     ;;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
 esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+     { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+		PBX_DAHDI=1
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_DAHDI 1
+_ACEOF
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_DAHDI_VERSION
+_ACEOF
+
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	   { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
 
 fi
 
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CPPFLAGS="${saved_cppflags}"
+    fi
 
-PBX_LIBNCURSES=0
 
-if test "${USE_NCURSES}" != "no"; then
+
+if test "x${PBX_NCURSES}" != "x1" -a "${USE_NCURSES}" != "no"; then
    pbxlibdir=""
+   # if --with-NCURSES=DIR has been specified, use it.
    if test "x${NCURSES_DIR}" != "x"; then
-      pbxlibdir="-L${ncurses_DIR}/lib"
+      if test -d ${NCURSES_DIR}/lib; then
+      	 pbxlibdir="-L${NCURSES_DIR}/lib"
+      else
+      	 pbxlibdir="-L${NCURSES_DIR}"
+      fi
    fi
-   { echo "$as_me:$LINENO: checking for initscr in -lncurses" >&5
-echo $ECHO_N "checking for initscr in -lncurses... $ECHO_C" >&6; }
-if test "${ac_cv_lib_ncurses_initscr+set}" = set; then
+   pbxfuncname="initscr"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_NCURSES_FOUND=yes
+   else
+      as_ac_Lib=`echo "ac_cv_lib_ncurses_${pbxfuncname}" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for ${pbxfuncname} in -lncurses" >&5
+echo $ECHO_N "checking for ${pbxfuncname} in -lncurses... $ECHO_C" >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -4172,11 +4231,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char initscr ();
+char ${pbxfuncname} ();
 int
 main ()
 {
-return initscr ();
+return ${pbxfuncname} ();
   ;
   return 0;
 }
@@ -4199,173 +4258,43 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest$ac_exeext &&
        $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_ncurses_initscr=yes
+  eval "$as_ac_Lib=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_ncurses_initscr=no
+	eval "$as_ac_Lib=no"
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_ncurses_initscr" >&5
-echo "${ECHO_T}$ac_cv_lib_ncurses_initscr" >&6; }
-if test $ac_cv_lib_ncurses_initscr = yes; then
+ac_res=`eval echo '${'$as_ac_Lib'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_Lib'}'` = yes; then
   AST_NCURSES_FOUND=yes
 else
   AST_NCURSES_FOUND=no
 fi
 
+   fi
 
+   # now check for the header.
    if test "${AST_NCURSES_FOUND}" = "yes"; then
-      NCURSES_LIB="-lncurses "
-      NCURSES_HEADER_FOUND="1"
+      NCURSES_LIB="${pbxlibdir} -lncurses "
+      # if --with-NCURSES=DIR has been specified, use it.
       if test "x${NCURSES_DIR}" != "x"; then
-         NCURSES_LIB="${pbxlibdir} ${NCURSES_LIB}"
 	 NCURSES_INCLUDE="-I${NCURSES_DIR}/include"
-	 if test "xcurses.h" != "x" ; then
-	    as_ac_Header=`echo "ac_cv_header_${NCURSES_DIR}/include/curses.h" | $as_tr_sh`
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  { echo "$as_me:$LINENO: checking for ${NCURSES_DIR}/include/curses.h" >&5
-echo $ECHO_N "checking for ${NCURSES_DIR}/include/curses.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking ${NCURSES_DIR}/include/curses.h usability" >&5
-echo $ECHO_N "checking ${NCURSES_DIR}/include/curses.h usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <${NCURSES_DIR}/include/curses.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking ${NCURSES_DIR}/include/curses.h presence" >&5
-echo $ECHO_N "checking ${NCURSES_DIR}/include/curses.h presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <${NCURSES_DIR}/include/curses.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NCURSES_DIR}/include/curses.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: ${NCURSES_DIR}/include/curses.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for ${NCURSES_DIR}/include/curses.h" >&5
-echo $ECHO_N "checking for ${NCURSES_DIR}/include/curses.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=\$ac_header_preproc"
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  NCURSES_HEADER_FOUND=1
-else
-  NCURSES_HEADER_FOUND=0
-fi
-
-
-	 fi
-      else
-	 if test "xcurses.h" != "x" ; then
-            if test "${ac_cv_header_curses_h+set}" = set; then
+      fi
+      NCURSES_INCLUDE="${NCURSES_INCLUDE} "
+      if test "xcurses.h" = "x" ; then	# no header, assume found
+         NCURSES_HEADER_FOUND="1"
+      else				# check for the header
+         saved_cppflags="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${NCURSES_INCLUDE} "
+	 if test "${ac_cv_header_curses_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for curses.h" >&5
 echo $ECHO_N "checking for curses.h... $ECHO_C" >&6; }
 if test "${ac_cv_header_curses_h+set}" = set; then
@@ -4497,80 +4426,50 @@ else
 fi
 
 
-	 fi
+         CPPFLAGS="${saved_cppflags}"
       fi
       if test "x${NCURSES_HEADER_FOUND}" = "x0" ; then
-         if test ! -z "${NCURSES_MANDATORY}" ;
-         then
-            { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-            { echo "$as_me:$LINENO: *** It appears that you do not have the ncurses development package installed." >&5
-echo "$as_me: *** It appears that you do not have the ncurses development package installed." >&6;}
-            { echo "$as_me:$LINENO: *** Please install it to include ncurses support" >&5
-echo "$as_me: *** Please install it to include ncurses support" >&or re-run configure;}
-            { echo "$as_me:$LINENO: *** without explicitly specifying --with-ncurses" >&5
-echo "$as_me: *** without explicitly specifying --with-ncurses" >&6;}
-            exit 1
-         fi
          NCURSES_LIB=""
          NCURSES_INCLUDE=""
-         PBX_LIBNCURSES=0
       else
-         PBX_LIBNCURSES=1
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+	    NCURSES_LIB=""
+	 fi
+         PBX_NCURSES=1
+         # XXX don't know how to evaluate the description (third argument) in AC_DEFINE_UNQUOTED
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_NCURSES 1
 _ACEOF
 
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_NCURSES_VERSION
+_ACEOF
+
       fi
-   elif test ! -z "${NCURSES_MANDATORY}";
-   then
-      { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-      { echo "$as_me:$LINENO: *** The ncurses installation on this system appears to be broken." >&5
-echo "$as_me: *** The ncurses installation on this system appears to be broken." >&6;}
-      { echo "$as_me:$LINENO: *** Either correct the installation" >&5
-echo "$as_me: *** Either correct the installation" >&or run configure;}
-      { echo "$as_me:$LINENO: *** without explicity specifying --with-ncurses" >&5
-echo "$as_me: *** without explicity specifying --with-ncurses" >&6;}
-      exit 1
    fi
 fi
 
 
-
-
-
-
-# Check whether --with-newt was given.
-if test "${with_newt+set}" = set; then
-  withval=$with_newt;
-case ${withval} in
-     n|no)
-     USE_NEWT=no
-     ;;
-     y|ye|yes)
-     NEWT_MANDATORY="yes"
-     ;;
-     *)
-     NEWT_DIR="${withval}"
-     NEWT_MANDATORY="yes"
-     ;;
-esac
-
-fi
-
-
-PBX_LIBNEWT=0
-
-if test "${USE_NEWT}" != "no"; then
+if test "x${PBX_NEWT}" != "x1" -a "${USE_NEWT}" != "no"; then
    pbxlibdir=""
+   # if --with-NEWT=DIR has been specified, use it.
    if test "x${NEWT_DIR}" != "x"; then
-      pbxlibdir="-L${newt_DIR}/lib"
+      if test -d ${NEWT_DIR}/lib; then
+      	 pbxlibdir="-L${NEWT_DIR}/lib"
+      else
+      	 pbxlibdir="-L${NEWT_DIR}"
+      fi
    fi
-   { echo "$as_me:$LINENO: checking for newtBell in -lnewt" >&5
-echo $ECHO_N "checking for newtBell in -lnewt... $ECHO_C" >&6; }
-if test "${ac_cv_lib_newt_newtBell+set}" = set; then
+   pbxfuncname="newtBell"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_NEWT_FOUND=yes
+   else
+      as_ac_Lib=`echo "ac_cv_lib_newt_${pbxfuncname}" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for ${pbxfuncname} in -lnewt" >&5
+echo $ECHO_N "checking for ${pbxfuncname} in -lnewt... $ECHO_C" >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -4588,11 +4487,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char newtBell ();
+char ${pbxfuncname} ();
 int
 main ()
 {
-return newtBell ();
+return ${pbxfuncname} ();
   ;
   return 0;
 }
@@ -4615,173 +4514,43 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest$ac_exeext &&
        $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_newt_newtBell=yes
+  eval "$as_ac_Lib=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_newt_newtBell=no
+	eval "$as_ac_Lib=no"
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_newt_newtBell" >&5
-echo "${ECHO_T}$ac_cv_lib_newt_newtBell" >&6; }
-if test $ac_cv_lib_newt_newtBell = yes; then
+ac_res=`eval echo '${'$as_ac_Lib'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_Lib'}'` = yes; then
   AST_NEWT_FOUND=yes
 else
   AST_NEWT_FOUND=no
 fi
 
+   fi
 
+   # now check for the header.
    if test "${AST_NEWT_FOUND}" = "yes"; then
-      NEWT_LIB="-lnewt "
-      NEWT_HEADER_FOUND="1"
+      NEWT_LIB="${pbxlibdir} -lnewt "
+      # if --with-NEWT=DIR has been specified, use it.
       if test "x${NEWT_DIR}" != "x"; then
-         NEWT_LIB="${pbxlibdir} ${NEWT_LIB}"
 	 NEWT_INCLUDE="-I${NEWT_DIR}/include"
-	 if test "xnewt.h" != "x" ; then
-	    as_ac_Header=`echo "ac_cv_header_${NEWT_DIR}/include/newt.h" | $as_tr_sh`
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  { echo "$as_me:$LINENO: checking for ${NEWT_DIR}/include/newt.h" >&5
-echo $ECHO_N "checking for ${NEWT_DIR}/include/newt.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking ${NEWT_DIR}/include/newt.h usability" >&5
-echo $ECHO_N "checking ${NEWT_DIR}/include/newt.h usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <${NEWT_DIR}/include/newt.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking ${NEWT_DIR}/include/newt.h presence" >&5
-echo $ECHO_N "checking ${NEWT_DIR}/include/newt.h presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <${NEWT_DIR}/include/newt.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${NEWT_DIR}/include/newt.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: ${NEWT_DIR}/include/newt.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for ${NEWT_DIR}/include/newt.h" >&5
-echo $ECHO_N "checking for ${NEWT_DIR}/include/newt.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=\$ac_header_preproc"
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  NEWT_HEADER_FOUND=1
-else
-  NEWT_HEADER_FOUND=0
-fi
-
-
-	 fi
-      else
-	 if test "xnewt.h" != "x" ; then
-            if test "${ac_cv_header_newt_h+set}" = set; then
+      fi
+      NEWT_INCLUDE="${NEWT_INCLUDE} "
+      if test "xnewt.h" = "x" ; then	# no header, assume found
+         NEWT_HEADER_FOUND="1"
+      else				# check for the header
+         saved_cppflags="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${NEWT_INCLUDE} "
+	 if test "${ac_cv_header_newt_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for newt.h" >&5
 echo $ECHO_N "checking for newt.h... $ECHO_C" >&6; }
 if test "${ac_cv_header_newt_h+set}" = set; then
@@ -4913,84 +4682,54 @@ else
 fi
 
 
-	 fi
+         CPPFLAGS="${saved_cppflags}"
       fi
       if test "x${NEWT_HEADER_FOUND}" = "x0" ; then
-         if test ! -z "${NEWT_MANDATORY}" ;
-         then
-            { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-            { echo "$as_me:$LINENO: *** It appears that you do not have the newt development package installed." >&5
-echo "$as_me: *** It appears that you do not have the newt development package installed." >&6;}
-            { echo "$as_me:$LINENO: *** Please install it to include newt support" >&5
-echo "$as_me: *** Please install it to include newt support" >&or re-run configure;}
-            { echo "$as_me:$LINENO: *** without explicitly specifying --with-newt" >&5
-echo "$as_me: *** without explicitly specifying --with-newt" >&6;}
-            exit 1
-         fi
          NEWT_LIB=""
          NEWT_INCLUDE=""
-         PBX_LIBNEWT=0
       else
-         PBX_LIBNEWT=1
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+	    NEWT_LIB=""
+	 fi
+         PBX_NEWT=1
+         # XXX don't know how to evaluate the description (third argument) in AC_DEFINE_UNQUOTED
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_NEWT 1
 _ACEOF
 
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_NEWT_VERSION
+_ACEOF
+
       fi
-   elif test ! -z "${NEWT_MANDATORY}";
-   then
-      { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-      { echo "$as_me:$LINENO: *** The newt installation on this system appears to be broken." >&5
-echo "$as_me: *** The newt installation on this system appears to be broken." >&6;}
-      { echo "$as_me:$LINENO: *** Either correct the installation" >&5
-echo "$as_me: *** Either correct the installation" >&or run configure;}
-      { echo "$as_me:$LINENO: *** without explicity specifying --with-newt" >&5
-echo "$as_me: *** without explicity specifying --with-newt" >&6;}
-      exit 1
    fi
 fi
 
 
-
-
-
-
-# Check whether --with-usb was given.
-if test "${with_usb+set}" = set; then
-  withval=$with_usb;
-case ${withval} in
-     n|no)
-     USE_USB=no
-     ;;
-     y|ye|yes)
-     USB_MANDATORY="yes"
-     ;;
-     *)
-     USB_DIR="${withval}"
-     USB_MANDATORY="yes"
-     ;;
-esac
-
-fi
-
-
-PBX_LIBUSB=0
-
-if test "${USE_USB}" != "no"; then
+if test "x${PBX_USB}" != "x1" -a "${USE_USB}" != "no"; then
    pbxlibdir=""
+   # if --with-USB=DIR has been specified, use it.
    if test "x${USB_DIR}" != "x"; then
-      pbxlibdir="-L${usb_DIR}/lib"
+      if test -d ${USB_DIR}/lib; then
+      	 pbxlibdir="-L${USB_DIR}/lib"
+      else
+      	 pbxlibdir="-L${USB_DIR}"
+      fi
    fi
-   { echo "$as_me:$LINENO: checking for usb_init in -lusb" >&5
-echo $ECHO_N "checking for usb_init in -lusb... $ECHO_C" >&6; }
-if test "${ac_cv_lib_usb_usb_init+set}" = set; then
+   pbxfuncname="usb_init"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_USB_FOUND=yes
+   else
+      as_ac_Lib=`echo "ac_cv_lib_libusb_${pbxfuncname}" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for ${pbxfuncname} in -llibusb" >&5
+echo $ECHO_N "checking for ${pbxfuncname} in -llibusb... $ECHO_C" >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lusb ${pbxlibdir}  $LIBS"
+LIBS="-llibusb ${pbxlibdir}  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -5004,11 +4743,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char usb_init ();
+char ${pbxfuncname} ();
 int
 main ()
 {
-return usb_init ();
+return ${pbxfuncname} ();
   ;
   return 0;
 }
@@ -5031,173 +4770,43 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest$ac_exeext &&
        $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_usb_usb_init=yes
+  eval "$as_ac_Lib=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_usb_usb_init=no
+	eval "$as_ac_Lib=no"
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_usb_usb_init" >&5
-echo "${ECHO_T}$ac_cv_lib_usb_usb_init" >&6; }
-if test $ac_cv_lib_usb_usb_init = yes; then
+ac_res=`eval echo '${'$as_ac_Lib'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_Lib'}'` = yes; then
   AST_USB_FOUND=yes
 else
   AST_USB_FOUND=no
 fi
 
+   fi
 
+   # now check for the header.
    if test "${AST_USB_FOUND}" = "yes"; then
-      USB_LIB="-lusb "
-      USB_HEADER_FOUND="1"
+      USB_LIB="${pbxlibdir} -llibusb "
+      # if --with-USB=DIR has been specified, use it.
       if test "x${USB_DIR}" != "x"; then
-         USB_LIB="${pbxlibdir} ${USB_LIB}"
 	 USB_INCLUDE="-I${USB_DIR}/include"
-	 if test "xusb.h" != "x" ; then
-	    as_ac_Header=`echo "ac_cv_header_${USB_DIR}/include/usb.h" | $as_tr_sh`
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  { echo "$as_me:$LINENO: checking for ${USB_DIR}/include/usb.h" >&5
-echo $ECHO_N "checking for ${USB_DIR}/include/usb.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking ${USB_DIR}/include/usb.h usability" >&5
-echo $ECHO_N "checking ${USB_DIR}/include/usb.h usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <${USB_DIR}/include/usb.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking ${USB_DIR}/include/usb.h presence" >&5
-echo $ECHO_N "checking ${USB_DIR}/include/usb.h presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <${USB_DIR}/include/usb.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: ${USB_DIR}/include/usb.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: ${USB_DIR}/include/usb.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for ${USB_DIR}/include/usb.h" >&5
-echo $ECHO_N "checking for ${USB_DIR}/include/usb.h... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=\$ac_header_preproc"
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  USB_HEADER_FOUND=1
-else
-  USB_HEADER_FOUND=0
-fi
-
-
-	 fi
-      else
-	 if test "xusb.h" != "x" ; then
-            if test "${ac_cv_header_usb_h+set}" = set; then
+      fi
+      USB_INCLUDE="${USB_INCLUDE} "
+      if test "xusb.h" = "x" ; then	# no header, assume found
+         USB_HEADER_FOUND="1"
+      else				# check for the header
+         saved_cppflags="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${USB_INCLUDE} "
+	 if test "${ac_cv_header_usb_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for usb.h" >&5
 echo $ECHO_N "checking for usb.h... $ECHO_C" >&6; }
 if test "${ac_cv_header_usb_h+set}" = set; then
@@ -5329,48 +4938,30 @@ else
 fi
 
 
-	 fi
+         CPPFLAGS="${saved_cppflags}"
       fi
       if test "x${USB_HEADER_FOUND}" = "x0" ; then
-         if test ! -z "${USB_MANDATORY}" ;
-         then
-            { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-            { echo "$as_me:$LINENO: *** It appears that you do not have the usb development package installed." >&5
-echo "$as_me: *** It appears that you do not have the usb development package installed." >&6;}
-            { echo "$as_me:$LINENO: *** Please install it to include libusb support" >&5
-echo "$as_me: *** Please install it to include libusb support" >&or re-run configure;}
-            { echo "$as_me:$LINENO: *** without explicitly specifying --with-usb" >&5
-echo "$as_me: *** without explicitly specifying --with-usb" >&6;}
-            exit 1
-         fi
          USB_LIB=""
          USB_INCLUDE=""
-         PBX_LIBUSB=0
       else
-         PBX_LIBUSB=1
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+	    USB_LIB=""
+	 fi
+         PBX_USB=1
+         # XXX don't know how to evaluate the description (third argument) in AC_DEFINE_UNQUOTED
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_USB 1
 _ACEOF
 
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_USB_VERSION
+_ACEOF
+
       fi
-   elif test ! -z "${USB_MANDATORY}";
-   then
-      { echo "$as_me:$LINENO: ***" >&5
-echo "$as_me: ***" >&6;}
-      { echo "$as_me:$LINENO: *** The libusb installation on this system appears to be broken." >&5
-echo "$as_me: *** The libusb installation on this system appears to be broken." >&6;}
-      { echo "$as_me:$LINENO: *** Either correct the installation" >&5
-echo "$as_me: *** Either correct the installation" >&or run configure;}
-      { echo "$as_me:$LINENO: *** without explicity specifying --with-usb" >&5
-echo "$as_me: *** without explicity specifying --with-usb" >&6;}
-      exit 1
    fi
 fi
-
-
-
 
 
 
@@ -5435,6 +5026,18 @@ echo "$as_me: error: failed to find pppd/patchlevel.h: no ppp support." >&2;}
 	fi
 	;;
 esac
+
+if test "x${PBX_DAHDI}" != "x1"; then
+   { echo "$as_me:$LINENO: ***" >&5
+echo "$as_me: ***" >&6;}
+   { echo "$as_me:$LINENO: *** Building this package requires DAHDI support. *** " >&5
+echo "$as_me: *** Building this package requires DAHDI support. *** " >&6;}
+   { echo "$as_me:$LINENO: *** Please install the dahdi-linux package. ***" >&5
+echo "$as_me: *** Please install the dahdi-linux package. ***" >&6;}
+   { echo "$as_me:$LINENO: ***" >&5
+echo "$as_me: ***" >&6;}
+   exit 1
+fi
 
 
 
@@ -6128,19 +5731,27 @@ LN!$LN$ac_delim
 WGET!$WGET$ac_delim
 FETCH!$FETCH$ac_delim
 DOWNLOAD!$DOWNLOAD$ac_delim
-EGREP!$EGREP$ac_delim
 CURSES_LIB!$CURSES_LIB$ac_delim
 CURSES_INCLUDE!$CURSES_INCLUDE$ac_delim
-PBX_LIBCURSES!$PBX_LIBCURSES$ac_delim
+CURSES_DIR!$CURSES_DIR$ac_delim
+PBX_CURSES!$PBX_CURSES$ac_delim
+DAHDI_LIB!$DAHDI_LIB$ac_delim
+DAHDI_INCLUDE!$DAHDI_INCLUDE$ac_delim
+DAHDI_DIR!$DAHDI_DIR$ac_delim
+PBX_DAHDI!$PBX_DAHDI$ac_delim
 NCURSES_LIB!$NCURSES_LIB$ac_delim
 NCURSES_INCLUDE!$NCURSES_INCLUDE$ac_delim
-PBX_LIBNCURSES!$PBX_LIBNCURSES$ac_delim
+NCURSES_DIR!$NCURSES_DIR$ac_delim
+PBX_NCURSES!$PBX_NCURSES$ac_delim
 NEWT_LIB!$NEWT_LIB$ac_delim
 NEWT_INCLUDE!$NEWT_INCLUDE$ac_delim
-PBX_LIBNEWT!$PBX_LIBNEWT$ac_delim
+NEWT_DIR!$NEWT_DIR$ac_delim
+PBX_NEWT!$PBX_NEWT$ac_delim
 USB_LIB!$USB_LIB$ac_delim
 USB_INCLUDE!$USB_INCLUDE$ac_delim
-PBX_LIBUSB!$PBX_LIBUSB$ac_delim
+USB_DIR!$USB_DIR$ac_delim
+PBX_USB!$PBX_USB$ac_delim
+EGREP!$EGREP$ac_delim
 USE_SELINUX!$USE_SELINUX$ac_delim
 ASCIIDOC!$ASCIIDOC$ac_delim
 PPPD_VERSION!$PPPD_VERSION$ac_delim
@@ -6148,7 +5759,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 76; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -6483,4 +6094,3 @@ fi
 
 { echo "$as_me:$LINENO: *** dahdi-tools build successfully configured ***" >&5
 echo "$as_me: *** dahdi-tools build successfully configured ***" >&6;}
-
