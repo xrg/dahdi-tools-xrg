@@ -40,12 +40,12 @@ sub blink($$) {
 	return $result;
 }
 
-sub zt_registration($$) {
+sub dahdi_registration($$) {
 	my $self = shift;
 	my $on = shift;
 	my $result;
 
-	my $file = "$proc_base/" . $self->fqn . "/zt_registration";
+	my $file = "$proc_base/" . $self->fqn . "/dahdi_registration";
 	die "$file is missing" unless -f $file;
 	# First query
 	open(F, "$file") or die "Failed to open $file for reading: $!";
