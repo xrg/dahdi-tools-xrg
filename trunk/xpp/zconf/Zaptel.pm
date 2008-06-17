@@ -32,7 +32,7 @@ hardware and loaded Zaptel devices.
   }
 =cut
 
-my $proc_base = "/proc/zaptel";
+my $proc_base = "/proc/dahdi";
 
 =head1 spans()
 

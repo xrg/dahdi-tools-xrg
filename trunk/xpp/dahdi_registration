@@ -46,7 +46,7 @@ foreach my $xbus (Zaptel::Xpp::xbuses('SORT_CONNECTOR')) {
 	myprintf "%-10s\t%s\t%s\n", $xbus->name, $xbus->label, $xbus->connector;
 	next unless $xbus->status eq 'CONNECTED';
 	foreach my $xpd ($xbus->xpds()) {
-		my $prev = $xpd->zt_registration($on);
+		my $prev = $xpd->dahdi_registration($on);
 		if(!defined($prev)) {			# Failure
 			printf "%s: Failed %s\n", $xpd->fqn, $!;
 			next;
@@ -66,11 +66,11 @@ __END__
 
 =head1 NAME
 
-zt_registration - Handle registration of Xorcom XPD modules in zaptel.
+dahdi_registration - Handle registration of Xorcom XPD modules in zaptel.
 
 =head1 SYNOPSIS
 
-zt_registration [on|off]
+dahdi_registration [on|off]
 
 =head1 DESCRIPTION
 
@@ -92,10 +92,10 @@ on -- registers all XPD's to zaptel.
 
 =head2 Sample Output
 
-An example of the output of zt_registration for some registered
+An example of the output of dahdi_registration for some registered
 Astribanks:
 
-  $ zt_registration
+  $ dahdi_registration
   XBUS-02         []      usb-0000:00:1d.7-4
           XBUS-00/XPD-00: on Span 1
           XBUS-00/XPD-10: on Span 2
@@ -114,7 +114,7 @@ Astribanks:
 
 =over
 
-=item /proc/xpp/XBUS-nn/XPD-mm/zt_registration
+=item /proc/xpp/XBUS-nn/XPD-mm/dahdi_registration
 
 Reading from this file shows if if the if the specific XPD is
 registered. Writing to it 0 or 1 registers / unregisters the device.

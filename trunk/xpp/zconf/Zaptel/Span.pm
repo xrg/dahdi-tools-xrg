@@ -113,7 +113,7 @@ actually set in the module as capital-letter propeties. To look at e.g.
 
 =cut
 
-my $proc_base = "/proc/zaptel";
+my $proc_base = "/proc/dahdi";
 
 sub chans($) {
 	my $span = shift;
