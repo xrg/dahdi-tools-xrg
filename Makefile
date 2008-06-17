@@ -45,6 +45,7 @@ ROOT_PREFIX=
 
 CONFIG_FILE=/etc/dahdi.conf
 CFLAGS+=-DDAHDI_CONFIG=\"$(CONFIG_FILE)\"
+CFLAGS+=$(DAHDI_INCLUDE)
 
 CHKCONFIG	:= $(wildcard /sbin/chkconfig)
 UPDATE_RCD	:= $(wildcard /usr/sbin/update-rc.d)

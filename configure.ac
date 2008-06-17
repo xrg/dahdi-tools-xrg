@@ -73,7 +73,7 @@ AST_EXT_LIB_CHECK([CURSES], [curses], [initscr], [curses.h])
 AST_C_DEFINE_CHECK([DAHDI], [DAHDI_CODE], [dahdi/user.h])
 AST_EXT_LIB_CHECK([NCURSES], [ncurses], [initscr], [curses.h])
 AST_EXT_LIB_CHECK([NEWT], [newt], [newtBell], [newt.h])
-AST_EXT_LIB_CHECK([USB], [libusb], [usb_init], [usb.h])
+AST_EXT_LIB_CHECK([USB], [usb], [usb_init], [usb.h])
 
 AC_ARG_WITH(selinux,
 	[AS_HELP_STRING([--with-selinux],
