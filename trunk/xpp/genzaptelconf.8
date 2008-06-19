@@ -1,7 +1,7 @@
 .TH GENZAPTELCONF 8 "July 18th, 2005" "Xorcom Rapid Asterisk" "Linux Programmer's Manual"
 .SH "NAME" 
 .B genzaptelconf 
--- generates zaptel configuration (TDM adaptors)
+-- generates dahdi configuration (TDM adaptors)
 .SH SYNOPSIS
 .PP 
 .B genzaptelconf 
@@ -11,16 +11,16 @@
 [-sRdv] -l -- only list to standard output
    
 .B genzaptelconf 
--su -- only unload zaptel modules
+-su -- only unload dahdi modules
 
 .B genzaptelconf 
 -h -- Help screen
     
 .SH DESCRIPTION
 .B genzaptelconf 
-is a script to detect zaptel devices (currently mostly TDM cards are 
+is a script to detect dahdi devices (currently mostly TDM cards are 
 supported). It generates both 
-.I /etc/zaptel.conf
+.I /etc/dahdi.conf
 and 
 .I /etc/asterisk/zapata-channels.conf
 
@@ -36,7 +36,7 @@ configiration is a default that I only hope is sane. Looking for feedback
 .RS
 A two-letter country code. Sets the country-code for the zonezone 
 entries in 
-.I zaptel.conf
+.I dahdi.conf
 , The default is the value of
 .I lc_country
 from 
@@ -46,7 +46,7 @@ and failing that, "us".
 
 .B -d
 .RS
-Also try to detect modules. Unloads all zaptel modules and loads them
+Also try to detect modules. Unloads all dahdi modules and loads them
 one by one. Considers a module useful if it loaded successfully and if 
 loading it has generated at least one zapata channel.
 
@@ -109,7 +109,7 @@ Don't restart asterisk even if it was stopped using
 .B -s
 .RS
 Stop asterisk for the duration of the test. The detection will only
-work if nobody uses the zaptel channels: 
+work if nobody uses the dahdi channels: 
 
 * To allow unloading of modules
 
@@ -124,7 +124,7 @@ try to start it after the end of the test.
 Be verbose. lists the detected modules if 
 .I -d
 is used. Lists detected channls. In the end tries to connect to asterisk
-to get a list of configured zaptel channels.
+to get a list of configured dahdi channels.
 .RE
 
 .B -z
@@ -174,12 +174,12 @@ If set to 'yes', no context changes are made in zapata-channels.conf
 
 .I context_lines
 .RS
-The context into which calls will go from zaptel trunks.
+The context into which calls will go from dahdi trunks.
 .RE
 
 .I context_phones
 .RS
-The context into which calls will go from zaptel phones.
+The context into which calls will go from dahdi phones.
 .RE
 
 .I context_manual
@@ -189,12 +189,12 @@ If set to 'yes', no group settings are made in zapata-channels.conf
 
 .I group_lines
 .RS
-The group number for zaptel trunks.
+The group number for dahdi trunks.
 .RE
 
 .I group_phones
 .RS
-The group number for zaptel phones.
+The group number for dahdi phones.
 .RE
 
 .I ALL_MODULES
@@ -205,7 +205,7 @@ is the same for both.
 
 .I ZAPCONF_FILE
 .RS
-ztcfg's configuration file. The sane default is /etc/zaptel.conf .
+ztcfg's configuration file. The sane default is /etc/dahdi.conf .
 .RE
 
 .I ZAPATA_FILE
@@ -216,7 +216,7 @@ The generated partial zapata.conf snippet. Default:
 
 .I ZAPTEL_BOOT_DEBIAN
 .RS
-The Debian Zaptel defaults file. Normally
+The Debian Dahdi defaults file. Normally
 .I /etc/default/zaptel
 .
 .RE
@@ -224,7 +224,7 @@ The Debian Zaptel defaults file. Normally
 
 .I ZAPTEL_BOOT_FEDORA
 .RS
-The Zaptel defaults file on various other distributions. Normally
+The Dahdi defaults file on various other distributions. Normally
 .I /etc/sysconfig/zaptel
  .
 .RE
@@ -246,14 +246,14 @@ as a last resort.
 .RE
 
 .SH FILES
-.I /etc/zaptel.conf
+.I /etc/dahdi.conf
 .RS
 The configuration file used by 
 .I ztcfg
-to configure zaptel devices. re-written by 
+to configure dahdi devices. re-written by 
 .I genzaptelconf
  . A backup copy is saved to
-.I /etc/zaptel.conf.bak
+.I /etc/dahdi.conf.bak
  .
 .RE
 
@@ -287,7 +287,7 @@ configuration file that
 This file holds configuration for both 
 .I genzaptelconf
 and
-.I /etc/init.d/zaptel .
+.I /etc/init.d/dahdi .
 It is sourced by both scripts and can thus be used to override settings 
 of variables from those scripts.
 .RE
@@ -297,7 +297,7 @@ of variables from those scripts.
 A debian-specific list of kernel modules to be loaded by modprobe at 
 boot time. When the option 
 .I -d
-(detect) is used, genzaptelconf will write in this file zaptel modules
+(detect) is used, genzaptelconf will write in this file dahdi modules
 to be loaded. If you want to use a different file, set 
 .I MOD_FILELIST
  . If it is rewritten, a backup copy is saved to

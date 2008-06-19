@@ -9,10 +9,10 @@
 #
 use strict;
 use File::Basename;
-BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/zconf"); }
+BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
-use Zaptel::Xpp;
-use Zaptel::Xpp::Xbus;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Xbus;
 
 my $sync;
 my $autoselect;
@@ -22,7 +22,7 @@ sub usage() {
 		"$0: show / set Astribank sync source\n".
 		"\n".
 		"Usage: $0                    Show sync source.\n".
-		"       $0 <auto|NN|zaptel>   Set sync source.\n".
+		"       $0 <auto|NN|dahdi>   Set sync source.\n".
 		"";
 }
 
@@ -39,10 +39,10 @@ if(@ARGV == 1) {
 sub get_sorted_xpds() {
 	my @good_xpds;
 
-	foreach my $xbus (Zaptel::Xpp::xbuses('SORT_CONNECTOR')) {
+	foreach my $xbus (Dahdi::Xpp::xbuses('SORT_CONNECTOR')) {
 		next unless $xbus->status eq 'CONNECTED';
 		foreach my $xpd ($xbus->xpds()) {
-			my $isreg = $xpd->zt_registration();
+			my $isreg = $xpd->dahdi_registration();
 			if(!defined($isreg)) {			# Failure
 				printf STDERR "%s: Failed %s\n", $xpd->fqn, $!;
 				next;
@@ -78,7 +78,7 @@ sub do_select(@) {
 		$busnum =~ s/XBUS-//;
 		die "bad bus name" unless $busnum =~ /^\d+$/;
 		#printf "Setting sync: %-10s (%s)\n", $xpd->fqn, $xpd->type;
-		if(Zaptel::Xpp::sync($busnum)) {
+		if(Dahdi::Xpp::sync($busnum)) {
 			#print "SET $busnum\n";
 			$found = 1;
 			last;
@@ -90,7 +90,7 @@ sub do_select(@) {
 
 sub do_set($) {
 	my $sync = shift;
-	die "Failed to set sync to '$sync'" unless Zaptel::Xpp::sync($sync);
+	die "Failed to set sync to '$sync'" unless Dahdi::Xpp::sync($sync);
 }
 
 sub unique_xbus(@) {
@@ -99,7 +99,7 @@ sub unique_xbus(@) {
 	grep { !$seen{$_->xbus}++; } @_;
 }
 
-my $curr_sync = Zaptel::Xpp::sync;
+my $curr_sync = Dahdi::Xpp::sync;
 my @sync_xpds = unique_xbus(get_sorted_xpds());
 
 sub show_sync() {
@@ -138,8 +138,8 @@ if($sync) {
 		$sync = uc($sync);
 		do_set($sync);
 	}
-	$curr_sync = Zaptel::Xpp::sync;
-	#print "New sync: ", Zaptel::Xpp::sync, "\n";
+	$curr_sync = Dahdi::Xpp::sync;
+	#print "New sync: ", Dahdi::Xpp::sync, "\n";
 } else {
 	print "Current sync: ", $curr_sync, "\n";
 	print "Best Available Syncers:\n";
@@ -155,7 +155,7 @@ xpp_sync - Handle sync selection of Xorcom Astribanks.
 
 =head1 SYNOPSIS
 
-xpp_sync [auto|zaptel|nn]
+xpp_sync [auto|dahdi|nn]
 
 =head1 DESCRIPTION
 
@@ -163,11 +163,11 @@ On a normal operation one Astribank device provides timing for all the
 other Astribank devices.
 
 When run without parameters, xpp_sync will display a list of Astribanks
-(xbuses) that are connected and registered as Zaptel spans. The current
+(xbuses) that are connected and registered as Dahdi spans. The current
 xpp sync master will be marked.
 
 If you this an Astribank is connected and yet it does not appear on the 
-output of xpp_sync, it may be unregistered. Try running zt_registration .
+output of xpp_sync, it may be unregistered. Try running dahdi_registration .
 
 =head2 Parameters
 
@@ -177,9 +177,9 @@ output of xpp_sync, it may be unregistered. Try running zt_registration .
 
 Automatically selects the best Astribank for syncing.
 
-=item zaptel
+=item dahdi
 
-Gets synchronization from the Zaptel sync master.
+Gets synchronization from the Dahdi sync master.
 
 =item nn
 
@@ -207,10 +207,10 @@ In this example we see that the recommended xpp sync master is XBUS-02 -
 it is the first on the list. It is also the actual syncer, as we can see
 from the '+' beside it.
 
-xpp_sync is normally called from both the zaptel init.d script and the 
+xpp_sync is normally called from both the dahdi init.d script and the 
 the Astribank udev script. The parameter it is called with defaults to 
 I<auto>, but it is possible to override that parameter (e.g: set it to
-I<zaptel>) through the value of XPP_SYNC in either /etc/defualt/zaptel
+I<dahdi>) through the value of XPP_SYNC in either /etc/defualt/zaptel
 or /etc/sysconfig/zaptel .
 
 =head1 FILES

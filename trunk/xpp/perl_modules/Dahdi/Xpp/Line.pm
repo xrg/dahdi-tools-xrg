@@ -1,4 +1,4 @@
-package Zaptel::Xpp::Line;
+package Dahdi::Xpp::Line;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2008, Xorcom
@@ -8,7 +8,7 @@ package Zaptel::Xpp::Line;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
+use Dahdi::Utils;
 
 my $proc_base = "/proc/xpp";
 
@@ -63,7 +63,7 @@ sub create_all($$) {
 	local $/ = "\n";
 	my @lines;
 	for(my $i = 0; $i < $xpd->{CHANNELS}; $i++) {
-		my $line = Zaptel::Xpp::Line->new($xpd, $i);
+		my $line = Dahdi::Xpp::Line->new($xpd, $i);
 		push(@lines, $line);
 	}
 	$xpd->{LINES} = \@lines;

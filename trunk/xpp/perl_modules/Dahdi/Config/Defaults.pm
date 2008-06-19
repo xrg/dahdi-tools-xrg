@@ -1,4 +1,4 @@
-package Zaptel::Config::Defaults;
+package Dahdi::Config::Defaults;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -32,10 +32,11 @@ sub source_vars {
 	my %system_files = (
 			"/etc/default/zaptel"	=> 'Debian and friends',
 			"/etc/sysconfig/zaptel"	=> 'Red Hat and friends',
+			"/etc/dahdi/defaults"	=> 'Dahdi generic',
 		);
 
-	if(defined $ENV{ZAPTEL_DEFAULTS}) {
-		$default_file = $ENV{ZAPTEL_DEFAULTS};
+	if(defined $ENV{DAHDI_DEFAULTS}) {
+		$default_file = $ENV{DAHDI_DEFAULTS};
 	} else {
 		foreach my $f (keys %system_files) {
 			if(-r $f) {
@@ -49,7 +50,7 @@ sub source_vars {
 	if (! $default_file) {
 		return ("", ());
 	}
-	my %vars = Zaptel::Config::Defaults::do_source($default_file, @vars);
+	my %vars = Dahdi::Config::Defaults::do_source($default_file, @vars);
 	return ($default_file, %vars);
 }
 

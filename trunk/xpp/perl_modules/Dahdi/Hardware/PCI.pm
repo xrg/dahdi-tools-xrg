@@ -1,4 +1,4 @@
-package Zaptel::Hardware::PCI;
+package Dahdi::Hardware::PCI;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,16 +8,16 @@ package Zaptel::Hardware::PCI;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
-use Zaptel::Hardware;
+use Dahdi::Utils;
+use Dahdi::Hardware;
 
-our @ISA = qw(Zaptel::Hardware);
+our @ISA = qw(Dahdi::Hardware);
 
 # Lookup algorithm:
 # 	First match 'vendor:product/subvendor:subproduct' key
 #	Else match 'vendor:product/subvendor' key
 #	Else match 'vendor:product' key
-#	Else not a zaptel hardware.
+#	Else not a dahdi hardware.
 my %pci_ids = (
 	# from wct4xxp
 	'10ee:0314'		=> { DRIVER => 'wct4xxp', DESCRIPTION => 'Wildcard TE410P/TE405P (1st Gen)' },
@@ -130,7 +130,7 @@ sub new($$) {
 	my $pack = shift or die "Wasn't called as a class method\n";
 	my $self = { @_ };
 	bless $self, $pack;
-	Zaptel::Hardware::device_detected($self,
+	Dahdi::Hardware::device_detected($self,
 		sprintf("pci:%s", $self->{PRIV_DEVICE_NAME}));
 	return $self;
 }
@@ -188,7 +188,7 @@ sub scan_devices($) {
 		$key = "$dev->{VENDOR}:$dev->{PRODUCT}" if !defined($pci_ids{$key});
 		next unless defined $pci_ids{$key};
 
-		my $d = Zaptel::Hardware::PCI->new(
+		my $d = Dahdi::Hardware::PCI->new(
 			BUS_TYPE		=> 'PCI',
 			PRIV_DEVICE_NAME	=> $dev->{PRIV_DEVICE_NAME},
 			VENDOR			=> $dev->{VENDOR},

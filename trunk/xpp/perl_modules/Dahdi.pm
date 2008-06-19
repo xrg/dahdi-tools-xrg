@@ -1,4 +1,4 @@
-package Zaptel;
+package Dahdi;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,21 +8,21 @@ package Zaptel;
 # $Id$
 #
 use strict;
-use Zaptel::Span;
+use Dahdi::Span;
 
 =head1 NAME
 
-Zaptel - Perl interface to Zaptel information
+Dahdi - Perl interface to Dahdi information
 
-This package allows access from Perl to information about Zaptel
-hardware and loaded Zaptel devices.
+This package allows access from Perl to information about Dahdi
+hardware and loaded Dahdi devices.
 
 =head1 SYNOPSIS
 
   # Listing channels in analog spans:
-  use Zaptel;
+  use Dahdi;
   # scans system:
-  my @xbuses = Zaptel::spans();
+  my @xbuses = Dahdi::spans();
   for my $span (@spans) {
     next if ($span->is_digital);
      $span->num. " - [". $span->type ."] ". $span->name. "\n";
@@ -46,7 +46,7 @@ sub spans() {
 	-d $proc_base or return ();
 	foreach my $zfile (glob "$proc_base/*") {
 		$zfile =~ s:$proc_base/::;
-		my $span = Zaptel::Span->new($zfile);
+		my $span = Dahdi::Span->new($zfile);
 		push(@spans, $span);
 	}
 	@spans = sort { $a->num <=> $b->num } @spans;
@@ -55,13 +55,13 @@ sub spans() {
 
 =head1 SEE ALSO
 
-Span objects: L<Zaptel::Span>.
+Span objects: L<Dahdi::Span>.
 
-Zaptel channels objects: L<Zaptel::Chan>.
+Dahdi channels objects: L<Dahdi::Chan>.
 
-Zaptel hardware devices information: L<Zaptel::Hardware>.
+Dahdi hardware devices information: L<Dahdi::Hardware>.
 
-Xorcom Astribank -specific information: L<Zaptel::Xpp>.
+Xorcom Astribank -specific information: L<Dahdi::Xpp>.
 
 =cut
 

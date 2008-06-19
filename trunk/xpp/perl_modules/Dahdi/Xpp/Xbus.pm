@@ -1,4 +1,4 @@
-package Zaptel::Xpp::Xbus;
+package Dahdi::Xpp::Xbus;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,8 +8,8 @@ package Zaptel::Xpp::Xbus;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
-use Zaptel::Xpp::Xpd;
+use Dahdi::Utils;
+use Dahdi::Xpp::Xpd;
 
 my $proc_base = "/proc/xpp";
 
@@ -21,7 +21,7 @@ sub xpds($) {
 sub by_number($) {
 	my $busnumber = shift;
 	die "Missing xbus number parameter" unless defined $busnumber;
-	my @xbuses = Zaptel::Xpp::xbuses();
+	my @xbuses = Dahdi::Xpp::xbuses();
 
 	my ($xbus) = grep { $_->num == $busnumber } @xbuses;
 	return $xbus;
@@ -30,7 +30,7 @@ sub by_number($) {
 sub by_label($) {
 	my $label = shift;
 	die "Missing xbus label parameter" unless defined $label;
-	my @xbuses = Zaptel::Xpp::xbuses();
+	my @xbuses = Dahdi::Xpp::xbuses();
 
 	my ($xbus) = grep { $_->label eq $label } @xbuses;
 	return $xbus;
@@ -79,7 +79,7 @@ sub new($$) {
 	}
 	@{$self->{XPDS}} = ();
 	foreach my $dir (glob "$prefix/XPD-??") {
-		my $xpd = Zaptel::Xpp::Xpd->new($self, $dir);
+		my $xpd = Dahdi::Xpp::Xpd->new($self, $dir);
 		push(@{$self->{XPDS}}, $xpd);
 	}
 	@{$self->{XPDS}} = sort { $a->id <=> $b->id } @{$self->{XPDS}};

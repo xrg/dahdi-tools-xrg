@@ -1,4 +1,4 @@
-package Zaptel::Utils;
+package Dahdi::Utils;
 
 # Accessors (miniperl does not have Class:Accessor)
 our $AUTOLOAD;
@@ -43,7 +43,7 @@ sub import {
 	#
 	# Export symbols, but not by accident of inheritance.
 	#
-	die "Sombody inherited Zaptel::Utils" if $pkg ne 'Zaptel::Utils';
+	die "Sombody inherited Dahdi::Utils" if $pkg ne 'Dahdi::Utils';
 	no strict 'refs';
 	*{ $callpkg . '::AUTOLOAD' } = \&AUTOLOAD;
 	*{ $callpkg . '::xpp_dump' } = \&xpp_dump;

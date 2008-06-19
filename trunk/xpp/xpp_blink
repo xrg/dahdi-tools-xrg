@@ -9,12 +9,12 @@
 #
 use strict;
 use File::Basename;
-BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/zconf"); }
+BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
-use Zaptel;
-use Zaptel::Span;
-use Zaptel::Xpp;
-use Zaptel::Xpp::Xbus;
+use Dahdi;
+use Dahdi::Span;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Xbus;
 
 sub usage {
 	die "Usage: $0 {on|off|bzzt} {span <number> | chan <number> | xpd <bus num> [<xpd num>] | label <label>}\n";
@@ -32,9 +32,9 @@ my @channels;
 if($selector =~ /^span$/i) {
 	my $number = shift;
 	usage unless defined($number) and $number =~ /^\d+/;
-	my $span = Zaptel::Span::by_number($number);
+	my $span = Dahdi::Span::by_number($number);
 	die "Unkown Span $number\n" unless $span;
-	$xpd = Zaptel::Xpp::xpd_of_span($span);
+	$xpd = Dahdi::Xpp::xpd_of_span($span);
 	die "Span $number is not an XPD\n" unless defined $xpd;
 	my $xpdname = $xpd->fqn;
 	my $connector = $xpd->xbus->connector;
@@ -46,7 +46,7 @@ if($selector =~ /^span$/i) {
 } elsif($selector =~ /^chan$/i) {
 	my $channo = shift;
 	usage unless defined($channo) and $channo =~ /^\d+/;
-	my @spans = Zaptel::spans();
+	my @spans = Dahdi::spans();
 	my @chans = map { $_->chans() } @spans;
 	my ($chan) = grep { $_->num eq $channo } @chans;
 	die "Channel $channo was not found\n" unless defined $chan;
@@ -58,7 +58,7 @@ if($selector =~ /^span$/i) {
 	my $xpdnum = shift;
 	my $linenum = shift;
 	usage unless defined($busnum) and $busnum =~ /^\d+/;
-	my $xbus = Zaptel::Xpp::Xbus::by_number($busnum);
+	my $xbus = Dahdi::Xpp::Xbus::by_number($busnum);
 	die "Unkown XBUS number $busnum\n" unless defined $xbus;
 	if(defined $xpdnum) {
 		usage unless $xpdnum =~ /^\d+/;
@@ -80,7 +80,7 @@ if($selector =~ /^span$/i) {
 } elsif($selector =~ /^label$/i) {
 	my $label = shift;
 	usage unless defined($label);
-	my $xbus = Zaptel::Xpp::Xbus::by_label($label);
+	my $xbus = Dahdi::Xpp::Xbus::by_label($label);
 	die "Unkown XBUS label $label\n" unless defined $xbus;
 	@blinklist = $xbus->xpds;
 	die "XBUS label '$label' has no XPDS!\n" unless @blinklist;
@@ -134,14 +134,14 @@ Blink briefly for 1 second.
 
 =item span	
 
-Select by span number. This only work for XPD registered to zaptel.
+Select by span number. This only work for XPD registered to dahdi.
 		
-will also print the zaptel channels of the span and the xbus/xpd this 
+will also print the dahdi channels of the span and the xbus/xpd this 
 span represents.
 
 =item chan
 
-Select by channel number. This only work for XPD registered to zaptel.
+Select by channel number. This only work for XPD registered to dahdi.
 
 =item xpd
 

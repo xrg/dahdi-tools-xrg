@@ -9,18 +9,18 @@
 #
 use strict;
 use File::Basename;
-BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/zconf"); }
+BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
-use Zaptel;
-use Zaptel::Span;
-use Zaptel::Xpp;
-use Zaptel::Xpp::Xbus;
-use Zaptel::Xpp::Xpd;
+use Dahdi;
+use Dahdi::Span;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Xbus;
+use Dahdi::Xpp::Xpd;
 
-my @xbuses = Zaptel::Xpp::xbuses("SORT_CONNECTOR");
+my @xbuses = Dahdi::Xpp::xbuses("SORT_CONNECTOR");
 my @xpds = map { $_->xpds } @xbuses;
 
-foreach my $span (Zaptel::spans()) {
+foreach my $span (Dahdi::spans()) {
 	my $spanno = $span->num;
 	my $xpd = $span->xpd;
 	my @lines;
@@ -46,11 +46,11 @@ __END__
 
 =head1 NAME
 
-lszaptel - List all zaptel channels with their types and spans.
+lsdahdi - List all dahdi channels with their types and spans.
 
 =head1 SYNOPSIS
 
-lszaptel
+lsdahdi
 
 =head1 DESCRIPTION
 
@@ -103,6 +103,6 @@ and the second one is the signalling (if set).
 
 =head1 FILES
 
-lszaptel is a somewhat glorified 'cat /proc/zaptel/*' . Unlike that
+lsdahdi is a somewhat glorified 'cat /proc/dahdi/*' . Unlike that
 command, it sorts the spans with the proper order. It also formats the
 output slightly differently.

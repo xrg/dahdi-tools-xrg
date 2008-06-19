@@ -9,12 +9,12 @@
 #
 use strict;
 use File::Basename;
-BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/zconf"); }
+BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
-use Zaptel;
-use Zaptel::Span;
-use Zaptel::Xpp;
-use Zaptel::Xpp::Xbus;
+use Dahdi;
+use Dahdi::Span;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Xbus;
 
 sub usage {
 	die "Usage: $0 [on|off|1|0]\n";
@@ -40,9 +40,9 @@ sub myprintf {
 	printf @_ if $should_output;
 }
 
-my @spans = Zaptel::spans;
+my @spans = Dahdi::spans;
 
-foreach my $xbus (Zaptel::Xpp::xbuses('SORT_CONNECTOR')) {
+foreach my $xbus (Dahdi::Xpp::xbuses('SORT_CONNECTOR')) {
 	myprintf "%-10s\t%s\t%s\n", $xbus->name, $xbus->label, $xbus->connector;
 	next unless $xbus->status eq 'CONNECTED';
 	foreach my $xpd ($xbus->xpds()) {
@@ -66,7 +66,7 @@ __END__
 
 =head1 NAME
 
-dahdi_registration - Handle registration of Xorcom XPD modules in zaptel.
+dahdi_registration - Handle registration of Xorcom XPD modules in dahdi.
 
 =head1 SYNOPSIS
 
@@ -75,20 +75,20 @@ dahdi_registration [on|off]
 =head1 DESCRIPTION
 
 Without parameters, show all connected XPDs sorted by physical connector order.
-Each one is show to be unregistered (off), or registered to a specific zaptel
+Each one is show to be unregistered (off), or registered to a specific dahdi
 span (the span number is shown).
 
 All registerations/deregisterations are sorted by physical connector string.
 
 Span registration should generally always succeed. Span unregistration may 
 fail if channels from the span are in use by e.g. asterisk. In such a case
-you'll also see those channels as '(In use)' in the output of lszaptel(8).
+you'll also see those channels as '(In use)' in the output of lsdahdi(8).
 
 =head2 Parameters
 
-off -- deregisters all XPD's from zaptel.
+off -- deregisters all XPD's from dahdi.
 
-on -- registers all XPD's to zaptel.
+on -- registers all XPD's to dahdi.
 
 =head2 Sample Output
 

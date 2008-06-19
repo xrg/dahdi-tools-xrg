@@ -1,4 +1,4 @@
-package Zaptel::Hardware;
+package Dahdi::Hardware;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,19 +8,19 @@ package Zaptel::Hardware;
 # $Id$
 #
 use strict;
-use Zaptel::Hardware::USB;
-use Zaptel::Hardware::PCI;
+use Dahdi::Hardware::USB;
+use Dahdi::Hardware::PCI;
 
 =head1 NAME
 
-Zaptel::Hardware - Perl interface to a Zaptel devices listing
+Dahdi::Hardware - Perl interface to a Dahdi devices listing
 
 
-  use Zaptel::Hardware;
+  use Dahdi::Hardware;
   
-  my $hardware = Zaptel::Hardware->scan; 
+  my $hardware = Dahdi::Hardware->scan; 
   
-  # mini zaptel_hardware:
+  # mini dahdi_hardware:
   foreach my $device ($hardware->device_list) {
     print "Vendor: device->{VENDOR}, Product: $device->{PRODUCT}\n"
   }
@@ -39,7 +39,7 @@ Zaptel::Hardware - Perl interface to a Zaptel devices listing
   }
 
 
-This module provides information about available Zaptel devices on the
+This module provides information about available Dahdi devices on the
 system. It identifies devices by (USB/PCI) bus IDs.
 
 
@@ -59,7 +59,7 @@ A one-line description of the device.
 
 =head2 driver
 
-Name of a Zaptel device driver that should handle this device. This is
+Name of a Dahdi device driver that should handle this device. This is
 based on a pre-made list.
 
 
@@ -104,7 +104,7 @@ sub device_detected($$) {
 sub device_removed($) {
 	my $dev = shift || die;
 	my $name = $dev->hardware_name;
-	die "Missing zaptel device hardware name" unless $name;
+	die "Missing dahdi device hardware name" unless $name;
 }
 
 
@@ -150,7 +150,7 @@ sub drivers($) {
 
 =head1 scan()
 
-Scan the system for Zaptel devices (PCI and USB). Returns nothing but
+Scan the system for Dahdi devices (PCI and USB). Returns nothing but
 must be run to initialize the module.
 
 =cut
@@ -160,8 +160,8 @@ sub scan($) {
 	my $self = {};
 	bless $self, $pack;
 
-	$self->{USB} = [ Zaptel::Hardware::USB->devices ];
-	$self->{PCI} = [ Zaptel::Hardware::PCI->scan_devices ];
+	$self->{USB} = [ Dahdi::Hardware::USB->devices ];
+	$self->{PCI} = [ Dahdi::Hardware::PCI->scan_devices ];
 	return $self;
 }
 
