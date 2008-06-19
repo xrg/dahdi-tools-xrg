@@ -10,13 +10,13 @@
 use strict;
 use File::Basename;
 use Getopt::Std;
-BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/zconf"); }
+BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
-use Zaptel;
-use Zaptel::Span;
-use Zaptel::Xpp;
-use Zaptel::Xpp::Xbus;
-use Zaptel::Hardware;
+use Dahdi;
+use Dahdi::Span;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Xbus;
+use Dahdi::Hardware;
 
 sub usage {
 	die "Usage: $0 [-v][-x]\n";
@@ -26,8 +26,8 @@ our ($opt_v, $opt_x);
 getopts('vx') || usage;
 @ARGV == 0 or usage;
 
-my $hardware = Zaptel::Hardware->scan;
-my @spans = Zaptel::spans;
+my $hardware = Dahdi::Hardware->scan;
+my @spans = Dahdi::spans;
 
 sub show_xbus($) {
 	my $xbus = shift or die;
@@ -47,7 +47,7 @@ sub show_xbus($) {
 		}
 		my $master = '';
 		#$master = "XPP-SYNC" if $xpd->is_sync_master;
-		$master .= " ZAPTEL-SYNC" if defined($span) && $span->is_zaptel_sync_master;
+		$master .= " DAHDI-SYNC" if defined($span) && $span->is_dahdi_sync_master;
 		printf "\t%-10s: %-8s %s %s\n", $xpd->fqn, $xpd->type, $spanstr, $master;
 	}
 }
@@ -59,7 +59,7 @@ sub show_disconnected(%) {
 	my %seen = @_;
 
 	my $notified_lost = 0;
-	foreach my $xbus (Zaptel::Xpp::xbuses('SORT_CONNECTOR')) {
+	foreach my $xbus (Dahdi::Xpp::xbuses('SORT_CONNECTOR')) {
 		if(!$seen{$xbus->name}) {
 			print "----------- XPP Spans with disconnected hardware -----------\n"
 				unless $notified_lost++;
@@ -95,11 +95,11 @@ __END__
 
 =head1 NAME
 
-zaptel_hardware - Shows Zaptel hardware devices. 
+dahdi_hardware - Shows Dahdi hardware devices. 
 
 =head1 SYNOPSIS
 
-zaptel_hardware [-v][-x]
+dahdi_hardware [-v][-x]
 
 =head1 OPTIONS
 
@@ -118,9 +118,9 @@ Show disconnected Astribank unit, if any.
 
 =head1 DESCRIPTION
 
-Show all zaptel hardware devices. Devices are recognized according to
-lists of PCI and USB IDs in Zaptel::Hardware::PCI.pm and 
-Zaptel::Hardware::USB.pm . For PCI it is possible to detect by
+Show all dahdi hardware devices. Devices are recognized according to
+lists of PCI and USB IDs in Dahdi::Hardware::PCI.pm and 
+Dahdi::Hardware::USB.pm . For PCI it is possible to detect by
 sub-vendor and sub-product ID as well.
 
 The first output column is the connector: a bus specific field that
@@ -130,7 +130,7 @@ The second field shows which driver should handle the device. a "-" sign
 marks that the device is not yet handled by this driver. A "+" sign
 means that the device is handled by the driver.
 
-For the Xorcom Astribank (and in the future: for other Zaptel devices)
+For the Xorcom Astribank (and in the future: for other Dahdi devices)
 some further information is provided from the driver. Those extra lines
 always begin with spaces.
 

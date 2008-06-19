@@ -5,7 +5,7 @@
 # This script can be run manually or from hotplug/udev.
 #
 # Firmware files should be located in $FIRMWARE_DIR which defaults:
-# 	1. /usr/share/zaptel
+# 	1. /usr/share/dahdi
 #	2. Can be overidden by setting $FIRMWARE_DIR in the environment
 #	3. Can be overidden by setting $FIRMWARE_DIR in /etc/default/zaptel
 #
@@ -77,7 +77,7 @@ USBFS_PREFIX=/proc/bus/usb
 DEVUSB_PREFIX=/dev/bus/usb
 USB_PREFIX=
 
-FIRMWARE_DIR="${FIRMWARE_DIR:-/usr/share/zaptel}"
+FIRMWARE_DIR="${FIRMWARE_DIR:-/usr/share/dahdi}"
 
 FIRM_FXS=$FIRMWARE_DIR/FPGA_FXS.hex
 

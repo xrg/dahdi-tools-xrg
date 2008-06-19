@@ -1,4 +1,4 @@
-package Zaptel::Hardware::USB;
+package Dahdi::Hardware::USB;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,12 +8,12 @@ package Zaptel::Hardware::USB;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
-use Zaptel::Hardware;
-use Zaptel::Xpp;
-use Zaptel::Xpp::Xbus;
+use Dahdi::Utils;
+use Dahdi::Hardware;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Xbus;
 
-our @ISA = qw(Zaptel::Hardware);
+our @ISA = qw(Dahdi::Hardware);
 
 my %usb_ids = (
 	# from wcusb
@@ -39,7 +39,7 @@ my %usb_ids = (
 
 $ENV{PATH} .= ":/usr/sbin:/sbin:/usr/bin:/bin";
 
-my @xbuses = Zaptel::Xpp::xbuses('SORT_CONNECTOR');
+my @xbuses = Dahdi::Xpp::xbuses('SORT_CONNECTOR');
 
 sub usb_sorter() {
 	return $a->hardware_name cmp $b->hardware_name;
@@ -68,7 +68,7 @@ sub new($$) {
 		$self->{XBUS} = undef;
 		$self->{LOADED} = undef;
 	}
-	Zaptel::Hardware::device_detected($self,
+	Dahdi::Hardware::device_detected($self,
 		sprintf("usb:%s", $self->{PRIV_DEVICE_NAME}));
 	return $self;
 }
@@ -97,7 +97,7 @@ sub devices($) {
 		}
 		my $model = $usb_ids{"$vendor:$product"};
 		next unless defined $model;
-		my $d = Zaptel::Hardware::USB->new(
+		my $d = Dahdi::Hardware::USB->new(
 			IS_ASTRIBANK		=> ($model->{DRIVER} eq 'xpp_usb')?1:0,
 			BUS_TYPE		=> 'USB',
 			PRIV_DEVICE_NAME	=> $devname,

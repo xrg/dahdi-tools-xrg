@@ -1,4 +1,4 @@
-package Zaptel::Chans;
+package Dahdi::Chans;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,14 +8,14 @@ package Zaptel::Chans;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
+use Dahdi::Utils;
 
 =head1 NAME
 
-Zaptel::Chans - Perl interface to a Zaptel channel information
+Dahdi::Chans - Perl interface to a Dahdi channel information
 
-This package allows access from perl to information about a Zaptel
-channel. It is part of the Zaptel Perl package.
+This package allows access from perl to information about a Dahdi
+channel. It is part of the Dahdi Perl package.
 
 =head1 battery()
 
@@ -36,12 +36,12 @@ Returns the number of this channel (in the span).
 
 =head1 num()
 
-Returns the number of this channel as a Zaptel channel.
+Returns the number of this channel as a Dahdi channel.
 
 =head signalling()
 
-Returns the signalling set for this channel through /etc/zaptel.conf .
-This is always empty before ztcfg was run. And shows the "other" type
+Returns the signalling set for this channel through /etc/dahdi.conf .
+This is always empty before dahdi_cfg was run. And shows the "other" type
 for FXS and for FXO.
 
 =head1 span()
@@ -126,17 +126,17 @@ sub new($$$$$$) {
 
 =head1 probe_type()
 
-In the case of some cards, the information in /proc/zaptel is not good
+In the case of some cards, the information in /proc/dahdi is not good
 enough to tell the type of each channel. In this case an extra explicit
 probe is needed.
 
-Currently this is implemented by using some invocations of ztcfg(8).
+Currently this is implemented by using some invocations of dahdi_cfg(8).
 
-It may later be replaced by ztscan(8).
+It may later be replaced by dahdi_scan(8).
 
 =cut
 
-my $ztcfg = $ENV{ZTCFG} || '/sbin/ztcfg';
+my $dahdi_cfg = $ENV{DAHDI_CFG} || '/sbin/dahdi_cfg';
 sub probe_type($) {
 	my $self = shift;
 	my $fqn = $self->fqn;
@@ -148,7 +148,7 @@ sub probe_type($) {
 
 		undef %maybe;
 		foreach my $sig (qw(fxo fxs)) {
-			my $cmd = "echo ${sig}ks=$num | $ztcfg -c /dev/fd/0";
+			my $cmd = "echo ${sig}ks=$num | $dahdi_cfg -c /dev/fd/0";
 
 			$maybe{$sig} = system("$cmd >/dev/null 2>&1") == 0;
 		}

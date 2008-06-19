@@ -1,4 +1,4 @@
-package Zaptel::Xpp;
+package Dahdi::Xpp;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,18 +8,18 @@ package Zaptel::Xpp;
 # $Id$
 #
 use strict;
-use Zaptel::Xpp::Xbus;
+use Dahdi::Xpp::Xbus;
 
 =head1 NAME
 
-Zaptel::Xpp - Perl interface to the Xorcom Astribank drivers.
+Dahdi::Xpp - Perl interface to the Xorcom Astribank drivers.
 
 =head1 SYNOPSIS
 
   # Listing all Astribanks:
-  use Zaptel::Xpp;
+  use Dahdi::Xpp;
   # scans hardware:
-  my @xbuses = Zaptel::Xpp::xbuses("SORT_CONNECTOR");
+  my @xbuses = Dahdi::Xpp::xbuses("SORT_CONNECTOR");
   for my $xbus (@xbuses) {
     print $xbus->name." (".$xbus->label .", ". $xbus->connector .")\n";
     for my $xpd ($xbus->xpds) {
@@ -97,7 +97,7 @@ sub xbuses {
 		$name =~ /XBUS-(\d\d)/ or die "Bad XBUS number: $name";
 		my $num = $1;
 		@attr = map { split(/=/); } @attr;
-		my $xbus = Zaptel::Xpp::Xbus->new(NAME => $name, NUM => $num, @attr);
+		my $xbus = Dahdi::Xpp::Xbus->new(NAME => $name, NUM => $num, @attr);
 		push(@xbuses, $xbus);
 	}
 	my $sorter;
@@ -119,7 +119,7 @@ sub xbuses {
 sub xpd_of_span($) {
 	my $span = shift or die "Missing span parameter";
 	return undef unless defined $span;
-	foreach my $xbus (Zaptel::Xpp::xbuses('SORT_CONNECTOR')) {
+	foreach my $xbus (Dahdi::Xpp::xbuses('SORT_CONNECTOR')) {
 		foreach my $xpd ($xbus->xpds()) {
 			return $xpd if $xpd->fqn eq $span->name;
 		}
@@ -161,7 +161,7 @@ sub sync {
 		$newsync =~ s/.*/\U$&/;
 		if($newsync =~ /^(\d+)$/) {
 			$newsync = ($newapi)? "SYNC=$1" : "$1 0";
-		} elsif($newsync ne 'ZAPTEL') {
+		} elsif($newsync ne 'DAHDI') {
 			die "Bad sync parameter '$newsync'";
 		}
 		open(F, ">$file") or die "Failed to open $file for writing: $!";
@@ -175,20 +175,20 @@ sub sync {
 
 =over
 
-=item L<Zaptel::Xpp::Xbus>
+=item L<Dahdi::Xpp::Xbus>
 
 Xbus (Astribank) object.
 
-=item L<Zaptel::Xpp::Xpd>
+=item L<Dahdi::Xpp::Xpd>
 
-XPD (the rough equivalent of a Zaptel span) object.
+XPD (the rough equivalent of a Dahdi span) object.
 
-=item L<Zaptel::Xpp::Line>
+=item L<Dahdi::Xpp::Line>
 
 Object for a line: an analog port or a time-slot in a adapter. 
-Equivalent of a channel in Zaptel.
+Equivalent of a channel in Dahdi.
 
-=item L<Zaptel>
+=item L<Dahdi>
 
 General documentation in the master package.
 

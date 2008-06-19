@@ -1,4 +1,4 @@
-package Zaptel::Span;
+package Dahdi::Span;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,26 +8,26 @@ package Zaptel::Span;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
-use Zaptel::Chans;
-use Zaptel::Xpp::Xpd;
+use Dahdi::Utils;
+use Dahdi::Chans;
+use Dahdi::Xpp::Xpd;
 
 =head1 NAME
 
-Zaptel::Spans - Perl interface to a Zaptel span information
+Dahdi::Spans - Perl interface to a Dahdi span information
 
-This package allows access from perl to information about a Zaptel
-channel. It is part of the Zaptel Perl package.
+This package allows access from perl to information about a Dahdi
+channel. It is part of the Dahdi Perl package.
 
-A span is a logical unit of Zaptel channels. Normally a port in a
+A span is a logical unit of Dahdi channels. Normally a port in a
 digital card or a whole analog card.
 
-See documentation of module L<Zaptel> for usage example. Specifically
-C<Zaptel::spans()> must be run initially.
+See documentation of module L<Dahdi> for usage example. Specifically
+C<Dahdi::spans()> must be run initially.
 
 =head1 by_number()
 
-Get a span by its Zaptel span number.
+Get a span by its Dahdi span number.
 
 =head1 Span Properties
 
@@ -37,7 +37,7 @@ The span number.
 
 =head2 name()
 
-The name field of a Zaptel span. E.g.:
+The name field of a Dahdi span. E.g.:
 
   TE2/0/1
 
@@ -49,7 +49,7 @@ The description field of the span. e.g:
 
 =head2 chans()
 
-The list of the channels (L<Zaptel::Chan> objects) of this span.
+The list of the channels (L<Dahdi::Chan> objects) of this span.
 In a scalar context returns the number of channels this span has.
 
 =head2 bchans()
@@ -58,7 +58,7 @@ Likewise a list of bchannels (or a count in a scalar context).
 
 =head2 is_sync_master()
 
-Is this span the source of timing for Zaptel?
+Is this span the source of timing for Dahdi?
 
 =head2 type()
 
@@ -95,15 +95,15 @@ Suggested sane framing type (e.g.: "ccs", "esf") for this type of span.
 =head2 yellow(), crc4()
 
 Likewise, suggestions ofr the respective fields in the span= line in
-zaptel.conf for this span.
+dahdi.conf for this span.
 
 =head2 signalling()
 
-Suggested zapata.conf signalling for channels of this span.
+Suggested chan_dahdi.conf signalling for channels of this span.
 
 =head2 switchtype()
 
-Suggested zapata.conf switchtype for channels of this span.
+Suggested chan_dahdi.conf switchtype for channels of this span.
 
 =head1 Note
 
@@ -123,7 +123,7 @@ sub chans($) {
 sub by_number($) {
 	my $span_number = shift;
 	die "Missing span number" unless defined $span_number;
-	my @spans = Zaptel::spans();
+	my @spans = Dahdi::spans();
 
 	my ($span) = grep { $_->num == $span_number } @spans;
 	return $span;
@@ -148,11 +148,11 @@ my @pri_strings = (
 		'T[24]XXP \(PCI\) Card ',          # wct4xxp
 		);
 
-our $ZAPBRI_NET = 'bri_net';
-our $ZAPBRI_CPE = 'bri_cpe';
+our $DAHDI_BRI_NET = 'bri_net';
+our $DAHDI_BRI_CPE = 'bri_cpe';
 
-our $ZAPPRI_NET = 'pri_net';
-our $ZAPPRI_CPE = 'pri_cpe';
+our $DAHDI_PRI_NET = 'pri_net';
+our $DAHDI_PRI_CPE = 'pri_cpe';
 
 sub init_proto($$) {
 	my $self = shift;
@@ -175,7 +175,7 @@ sub new($$) {
 	my $self = { NUM => $num };
 	bless $self, $pack;
 	$self->{TYPE} = "UNKNOWN";
-	my @xpds = Zaptel::Xpp::Xpd::xpds_by_spanno;
+	my @xpds = Dahdi::Xpp::Xpd::xpds_by_spanno;
 	my $xpd = $xpds[$num];
 	if(defined $xpd) {
 		die "Spanno mismatch: $xpd->spanno, $num" unless $xpd->spanno == $num;
@@ -219,7 +219,7 @@ sub new($$) {
 	die "$0: Unkown TERMTYPE [NT/TE]\n"
 		if $self->is_digital  and !defined $self->{TERMTYPE};
 	($self->{NAME}, $self->{DESCRIPTION}) = (split(/\s+/, $head, 4))[2, 3];
-	$self->{IS_ZAPTEL_SYNC_MASTER} =
+	$self->{IS_DAHDI_SYNC_MASTER} =
 		($self->{DESCRIPTION} =~ /\(MASTER\)/) ? 1 : 0;
 	$self->{CHANS} = [];
 	my @channels;
@@ -230,7 +230,7 @@ sub new($$) {
 		s/\s*$//;
 		next unless /\S/;
 		next unless /^\s*\d+/; # must be a real channel string.
-		my $c = Zaptel::Chans->new($self, $index, $_);
+		my $c = Dahdi::Chans->new($self, $index, $_);
 		push(@channels, $c);
 		$index++;
 	}
@@ -265,7 +265,7 @@ sub new($$) {
 		if($chan_fqn =~ m(ZTHFC.*/|ztqoz.*/|XPP_BRI_.*/)) {		# BRI
 			$self->{FRAMING} = 'ccs';
 			$self->{SWITCHTYPE} = 'euroisdn';
-			$self->{SIGNALLING} = ($self->{TERMTYPE} eq 'NT') ? $ZAPBRI_NET : $ZAPBRI_CPE ;
+			$self->{SIGNALLING} = ($self->{TERMTYPE} eq 'NT') ? $DAHDI_BRI_NET : $DAHDI_BRI_CPE ;
 		} elsif($chan_fqn =~ m(ztgsm.*/)) {				# Junghanns's GSM cards. 
 			$self->{FRAMING} = 'ccs';
 			$self->{SIGNALLING} = 'gsm';
@@ -286,7 +286,7 @@ sub new($$) {
 		} else {
 			die "'$self->{PROTO}' unsupported yet";
 		}
-		$self->{SIGNALLING} = ($self->{TERMTYPE} eq 'NT') ? $ZAPPRI_NET : $ZAPPRI_CPE ;
+		$self->{SIGNALLING} = ($self->{TERMTYPE} eq 'NT') ? $DAHDI_PRI_NET : $DAHDI_PRI_CPE ;
 	}
 	return $self;
 }

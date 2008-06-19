@@ -1,9 +1,9 @@
 #! /usr/bin/perl -w
 use strict;
 use File::Basename;
-BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/zconf"); }
+BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
-use Zaptel::Hardware;
+use Dahdi::Hardware;
 
-my $hardware = Zaptel::Hardware->scan;
+my $hardware = Dahdi::Hardware->scan;
 print join("\n", $hardware->drivers),"\n";

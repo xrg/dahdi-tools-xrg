@@ -1,4 +1,4 @@
-package Zaptel::Xpp::Xpd;
+package Dahdi::Xpp::Xpd;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -8,9 +8,9 @@ package Zaptel::Xpp::Xpd;
 # $Id$
 #
 use strict;
-use Zaptel::Utils;
-use Zaptel::Xpp;
-use Zaptel::Xpp::Line;
+use Dahdi::Utils;
+use Dahdi::Xpp;
+use Dahdi::Xpp::Line;
 
 my $proc_base = "/proc/xpp";
 
@@ -67,7 +67,7 @@ sub dahdi_registration($$) {
 }
 
 sub xpds_by_spanno() {
-	my @xbuses = Zaptel::Xpp::xbuses("SORT_CONNECTOR");
+	my @xbuses = Dahdi::Xpp::xbuses("SORT_CONNECTOR");
 	my @xpds = map { $_->xpds } @xbuses;
 	@xpds = grep { $_->spanno } @xpds;
 	@xpds = sort { $a->spanno <=> $b->spanno } @xpds;
@@ -116,7 +116,7 @@ sub new($$) {
 	$self->{IS_BRI} = ($type =~ /BRI_(NT|TE)/);
 	$self->{IS_PRI} = ($type =~ /[ETJ]1_(NT|TE)/);
 	$self->{IS_DIGITAL} = ( $self->{IS_BRI} || $self->{IS_PRI} );
-	Zaptel::Xpp::Line->create_all($self, $procdir);
+	Dahdi::Xpp::Line->create_all($self, $procdir);
 	return $self;
 }
 
