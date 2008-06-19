@@ -35,10 +35,6 @@ PERL_DIRS	:= $(shell cd perl_modules; find * -name '[A-Z]*' -type d| xargs)
 PERL_MODS_PAT	:= *.pm $(PERL_DIRS:%=%/*.pm)
 PERL_MODS	:= $(shell cd perl_modules; echo $(PERL_MODS_PAT))
 
-XPD_FIRMWARE	= $(wildcard ../firmwares/*.hex)
-XPD_INIT_DATA	= $(XPD_FIRMWARE)
-XPD_INIT	= $(wildcard ../init_card_?_*) xpp_fxloader
-
 # Variables that should be defined above, but need sane defaults:
 # FIXME: Are those values really sane?
 HOSTCC		?= $(CC)
@@ -79,8 +75,6 @@ install: all
 	$(INSTALL) -d $(DESTDIR)$(SBINDIR)
 	$(INSTALL) $(PROG_INSTALL) $(DESTDIR)$(SBINDIR)/
 	$(INSTALL) -d $(DESTDIR)$(DATADIR)
-	$(INSTALL_DATA) $(XPD_INIT_DATA) $(DESTDIR)$(DATADIR)/
-	$(INSTALL) $(XPD_INIT) $(DESTDIR)$(DATADIR)/
 	$(INSTALL) -d $(DESTDIR)$(MANDIR)
 	$(INSTALL_DATA) $(MAN_INSTALL) $(DESTDIR)$(MANDIR)/
 	$(INSTALL) -d $(DESTDIR)$(HOTPLUG_USB_DIR)
