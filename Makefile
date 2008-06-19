@@ -29,7 +29,7 @@ ifeq ($(strip $(foreach var,clean distclean dist-clean update,$(findstring $(var
 endif
 
 SUBDIRS_UTILS_ALL:= ppp
-SUBDIRS_UTILS :=
+SUBDIRS_UTILS := xpp
 
 OPTFLAGS=-O2
 CFLAGS+=-I. $(OPTFLAGS) -g -fPIC -Wall -DBUILDING_TONEZONE #-DTONEZONE_DRIVER
@@ -297,6 +297,9 @@ clean:
 	rm -f *.o dahdi_cfg tzdriver sethdlc
 	rm -f $(LTZ_SO) $(LTZ_A) *.lo
 	@for dir in $(SUBDIRS_UTILS_ALL); do \
+		$(MAKE) -C $$dir clean; \
+	done
+	@for dir in $(SUBDIRS_UTILS); do \
 		$(MAKE) -C $$dir clean; \
 	done
 	rm -f libtonezone*

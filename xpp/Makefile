@@ -13,7 +13,7 @@ INSTALL_DATA	= install -m 644
 DAHDI_TOOLSDIR	?= ..
 DAHDI_KERNELDIR	=
 
-include $(DAHDI_TOOLSDIR)/makeopts
+-include $(DAHDI_TOOLSDIR)/makeopts
 
 INSTALL_DATA	= $(INSTALL) -m 644
 
