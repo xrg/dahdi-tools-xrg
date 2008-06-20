@@ -79,6 +79,8 @@ static struct dahdi_lineconfig lc[DAHDI_MAX_SPANS];
 
 static struct dahdi_chanconfig cc[DAHDI_MAX_CHANNELS];
 
+static struct dahdi_attach_echocan ae[DAHDI_MAX_CHANNELS];
+
 static struct dahdi_dynamic_span zds[NUM_DYNAMIC];
 
 static const char *sig[DAHDI_MAX_CHANNELS];		/* Signalling */
@@ -629,6 +631,32 @@ static int setlaw(char *keyword, char *args)
 	return 0;
 }
 
+static int setechocan(char *keyword, char *args)
+{
+	int res;
+	int chans[DAHDI_MAX_CHANNELS] = { 0, };
+	char *echocan, *chanlist;
+	unsigned int x;
+
+	echocan = strtok(args, ",");
+
+	while ((chanlist = strtok(NULL, ","))) {
+		res = apply_channels(chans, chanlist);
+		if (res <= 0) {
+			return -1;
+		}
+	}
+
+	for (x = 0; x < DAHDI_MAX_CHANNELS; x++) {
+		if (chans[x]) {
+			ae[x].chan = x;
+			strcpy(ae[x].echocan, echocan);
+		}
+	}
+
+	return 0;
+}
+
 static int registerzone(char *keyword, char *args)
 {
 	if (numzones >= DAHDI_TONE_ZONE_MAX) {
@@ -1143,7 +1171,7 @@ static void printconfig(int fd)
 		error("Unable to read DAHDI version information.\n");
 
 	printf("\nDAHDI Version: %s\n"
-	       "Echo Canceller: %s\n"
+	       "Echo Canceller(s): %s\n"
 	       "Configuration\n"
 	       "======================\n\n", vi.version, vi.echo_canceller);
 	for (x=0;x<spans;x++) 
@@ -1169,6 +1197,9 @@ static void printconfig(int fd)
 					printf("Channel %02d %s to %02d", x, sig[x], cc[x].idlebits);
 				else {
 					printf("Channel %02d: %s (%s)", x, sig[x], laws[cc[x].deflaw]);
+					if (ae[x].echocan[0]) {
+						printf(" (Echo Canceler: %s)", ae[x].echocan);
+					}
 					for (y=1;y<DAHDI_MAX_CHANNELS;y++) 
 						if (cc[y].master == x)  {
 							printf("%s%02d", ps++ ? " " : " (Slaves: ", y);
@@ -1233,6 +1264,7 @@ static struct handler {
 	{ "preemp", pre_emp },
 	{ "channel", rad_chanconfig },
 	{ "channels", rad_chanconfig },
+	{ "echocanceler", setechocan },
 };
 
 static char *readline()
@@ -1456,6 +1488,15 @@ int main(int argc, char *argv[])
 						}
 						close(fd);
 						exit(1);
+					}
+
+					if (ae[x].chan) {
+						printf("Setting echocan for channel %d to %s\n", ae[x].chan, ae[x].echocan);
+						if (ioctl(fd, DAHDI_ATTACH_ECHOCAN, &ae[x])) {
+							fprintf(stderr, "DAHDI_ATTACH_ECHOCAN failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
+							close(fd);
+							exit(1);
+						}
 					}
 				}
 				for (x=0;x<numzones;x++) {
