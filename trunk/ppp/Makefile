@@ -2,7 +2,7 @@
 
 -include ../makeopts
 
-CFLAGS		+= $(COPTS) -I.. -fPIC
+CFLAGS		+= $(COPTS) -fPIC
 LDFLAGS		+= -shared
 
 INCLUDE_DIR	= $(includedir)/pppd
