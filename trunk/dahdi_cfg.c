@@ -42,7 +42,7 @@
 #include "tonezone.h"
 #include "version.h"
 
-#define CONFIG_FILENAME DAHDI_CONFIG
+#define CONFIG_FILENAME "/etc/dahdi/system.conf"
 #define MASTER_DEVICE   "/dev/dahdi/ctl"
 
 #define NUM_SPANS DAHDI_MAX_SPANS
