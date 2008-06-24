@@ -43,8 +43,6 @@ CFLAGS+=$(CFLAGS_PPC) $(CFLAGS_x86_64)
 
 ROOT_PREFIX=
 
-CONFIG_FILE=/etc/dahdi.conf
-CFLAGS+=-DDAHDI_CONFIG=\"$(CONFIG_FILE)\"
 CFLAGS+=$(DAHDI_INCLUDE)
 
 CHKCONFIG	:= $(wildcard /sbin/chkconfig)
