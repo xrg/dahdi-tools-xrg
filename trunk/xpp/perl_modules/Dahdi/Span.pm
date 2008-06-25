@@ -95,7 +95,7 @@ Suggested sane framing type (e.g.: "ccs", "esf") for this type of span.
 =head2 yellow(), crc4()
 
 Likewise, suggestions ofr the respective fields in the span= line in
-dahdi.conf for this span.
+/etc/dahdi/system.conf for this span.
 
 =head2 signalling()
 

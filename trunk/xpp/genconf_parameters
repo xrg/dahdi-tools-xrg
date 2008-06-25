@@ -1,0 +1,21 @@
+#
+# /etc/dahdi/genconf_parameters
+#
+# This file contains parameters that affect the
+# dahdi_genconf configurator generator.
+#
+base_exten=4000
+fxs_immediate=no
+fxs_default_start=ks
+lc_country=il
+
+#context_lines=
+#context_phones=
+#context_input=
+#context_output=
+
+#group_phones=
+#group_lines=
+
+#brint_overlap=
+bri_sig_style=bri_ptmp

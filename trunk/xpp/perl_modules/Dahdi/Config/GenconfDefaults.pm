@@ -1,4 +1,4 @@
-package Dahdi::Config::Defaults;
+package Dahdi::Config::GenconfDefaults;
 #
 # Written by Oron Peled <oron@actcom.co.il>
 # Copyright (C) 2007, Xorcom
@@ -28,29 +28,11 @@ sub do_source($@) {
 
 sub source_vars {
 	my @vars = @_;
-	my $default_file;
-	my %system_files = (
-			"/etc/default/zaptel"	=> 'Debian and friends',
-			"/etc/sysconfig/zaptel"	=> 'Red Hat and friends',
-			"/etc/dahdi/defaults"	=> 'Dahdi generic',
-		);
-
-	if(defined $ENV{DAHDI_DEFAULTS}) {
-		$default_file = $ENV{DAHDI_DEFAULTS};
-	} else {
-		foreach my $f (keys %system_files) {
-			if(-r $f) {
-				if(defined $default_file) {
-					die "An '$f' collides with '$default_file'";
-				}
-				$default_file = $f;
-			}
-		}
-	}
-	if (! $default_file) {
+	my $default_file = $ENV{GENCONF_PARAMETERS} || "/etc/dahdi/genconf_parameters";
+	if (! -r $default_file) {
 		return ("", ());
 	}
-	my %vars = Dahdi::Config::Defaults::do_source($default_file, @vars);
+	my %vars = do_source($default_file, @vars);
 	return ($default_file, %vars);
 }
 
