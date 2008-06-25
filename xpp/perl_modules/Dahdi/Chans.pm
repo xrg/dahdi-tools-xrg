@@ -40,7 +40,7 @@ Returns the number of this channel as a Dahdi channel.
 
 =head signalling()
 
-Returns the signalling set for this channel through /etc/dahdi.conf .
+Returns the signalling set for this channel through /etc/dahdi/system.conf .
 This is always empty before dahdi_cfg was run. And shows the "other" type
 for FXS and for FXO.
 

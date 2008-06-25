@@ -13,7 +13,7 @@ BEGIN { my $dir = dirname($0); unshift(@INC, "$dir", "$dir/perl_modules"); }
 
 use Dahdi;
 use Dahdi::Xpp;
-use Dahdi::Config::Defaults;
+use Dahdi::Config::GenconfDefaults;
 
 my %default_context = (
 	FXO	=> 'from-pstn',
@@ -531,13 +531,13 @@ sub gen_chan_dahdi_conf($) {
 sub set_defaults {
 	# Source default files
 	my ($default_file, %source_defaults) =
-		Dahdi::Config::Defaults::source_vars(keys(%dahdi_default_vars));
+		Dahdi::Config::GenconfDefaults::source_vars(keys(%dahdi_default_vars));
 	map_dahdi_defaults(%source_defaults);
 	# Fixups
 	foreach my $val (values %default_dahdi_signalling, values %default_chan_dahdi_signalling) {
 		$val =~ s/{fxs_default_start}/$fxs_default_start/g;
 	}
-	$dahdiconf_file = $ENV{DAHDI_CONF_FILE} || "/etc/dahdi.conf";
+	$dahdiconf_file = $ENV{DAHDI_CONF_FILE} || "/etc/dahdi/system.conf";
 	$chan_dahdi_channels_file = $ENV{CHAN_DAHDI_CHANNELS_FILE} || "/etc/asterisk/dahdi-channels.conf";
 	$users_file = $ENV{USERS_FILE} || "/etc/asterisk/users.conf";
 	$chan_dahdi_conf_file = $ENV{CHAN_DAHDI_CONF_FILE} || "/etc/asterisk/chan_dahdi.conf";
@@ -579,7 +579,7 @@ Without arguments, it generates only dahdi and chan_dahdi.
 
 =over 4
 
-=item dahdi - /etc/dahdi.conf
+=item dahdi - /etc/dahdi/system.conf
 
 Configuration for ztcfg(1). It's location may be overriden by the
 environment variable DAHDI_CONF_FILE.
