@@ -20,7 +20,7 @@
 .B genzaptelconf 
 is a script to detect dahdi devices (currently mostly TDM cards are 
 supported). It generates both 
-.I /etc/dahdi.conf
+.I /etc/dahdi/system.conf
 and 
 .I /etc/asterisk/zapata-channels.conf
 
@@ -36,7 +36,7 @@ configiration is a default that I only hope is sane. Looking for feedback
 .RS
 A two-letter country code. Sets the country-code for the zonezone 
 entries in 
-.I dahdi.conf
+.I system.conf
 , The default is the value of
 .I lc_country
 from 
@@ -205,7 +205,7 @@ is the same for both.
 
 .I ZAPCONF_FILE
 .RS
-ztcfg's configuration file. The sane default is /etc/dahdi.conf .
+ztcfg's configuration file. The sane default is /etc/dahdi/system.conf .
 .RE
 
 .I ZAPATA_FILE
@@ -246,14 +246,14 @@ as a last resort.
 .RE
 
 .SH FILES
-.I /etc/dahdi.conf
+.I /etc/dahdi/system.conf
 .RS
 The configuration file used by 
 .I ztcfg
 to configure dahdi devices. re-written by 
 .I genzaptelconf
  . A backup copy is saved to
-.I /etc/dahdi.conf.bak
+.I /etc/dahdi/system.conf.bak
  .
 .RE
 

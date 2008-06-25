@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
 	struct dahdi_confinfo zc;
 
 	if ((argc < 2) || (atoi(argv[1]) < 1)) {
-		fprintf(stderr, "Usage: ztmonitor <channel num> [-v[v]] [-m] [-o] [-p] [-l limit] [-f FILE | -s FILE | -r FILE1 -t FILE2] [-F FILE | -S FILE | -R FILE1 -T FILE2]\n");
+		fprintf(stderr, "Usage: dahdi_monitor <channel num> [-v[v]] [-m] [-o] [-p] [-l limit] [-f FILE | -s FILE | -r FILE1 -t FILE2] [-F FILE | -S FILE | -R FILE1 -T FILE2]\n");
 		fprintf(stderr, "Options:\n");
 		fprintf(stderr, "        -v: Visual mode.  Implies -m.\n");
 		fprintf(stderr, "        -vv: Visual/Verbose mode.  Implies -m.\n");
@@ -302,15 +302,15 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "        -S FILE: Save pre-echocanceled stereo rx/tx stream to FILE.  Implies -p.\n");
 		fprintf(stderr, "Examples:\n");
 		fprintf(stderr, "Save a stream to a file\n");
-		fprintf(stderr, "        ztmonitor 1 -f stream.raw\n");
+		fprintf(stderr, "        dahdi_monitor 1 -f stream.raw\n");
 		fprintf(stderr, "Visualize an rx/tx stream and save them to separate files.\n");
-		fprintf(stderr, "        ztmonitor 1 -v -r streamrx.raw -t streamtx.raw\n");
+		fprintf(stderr, "        dahdi_monitor 1 -v -r streamrx.raw -t streamtx.raw\n");
 		fprintf(stderr, "Play a combined rx/tx stream via OSS and save it to a file\n");
-		fprintf(stderr, "        ztmonitor 1 -o -f stream.raw\n");
+		fprintf(stderr, "        dahdi_monitor 1 -o -f stream.raw\n");
 		fprintf(stderr, "Save a combined normal rx/tx stream and a combined 'preecho' rx/tx stream to files\n");
-		fprintf(stderr, "        ztmonitor 1 -p -f stream.raw -F streampreecho.raw\n");
+		fprintf(stderr, "        dahdi_monitor 1 -p -f stream.raw -F streampreecho.raw\n");
 		fprintf(stderr, "Save a normal rx/tx stream and a 'preecho' rx/tx stream to separate files\n");
-		fprintf(stderr, "        ztmonitor 1 -m -p -r streamrx.raw -t streamtx.raw -R streampreechorx.raw -T streampreechotx.raw\n");
+		fprintf(stderr, "        dahdi_monitor 1 -m -p -r streamrx.raw -t streamtx.raw -R streampreechorx.raw -T streampreechotx.raw\n");
 		exit(1);
 	}
     
@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
 	if (visual) {
 		printf("\nVisual Audio Levels.\n");
 		printf("--------------------\n");
-		printf(" Use dahdi.conf file to adjust the gains if needed.\n\n");
+		printf(" Use /etc/dahdi/system.conf file to adjust the gains if needed.\n\n");
 		printf("( # = Audio Level  * = Max Audio Hit )\n");
 		draw_barheader();
 	}
