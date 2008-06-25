@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # genzaptelconf: generate as smartly as you can:
-#		/etc/dahdi.conf
+#		/etc/dahdi/system.conf
 #		/etc/asterisk/zapata-channels.conf (to be #include-d into zapata.conf)
 #	update:
 #		With '-M' /etc/modules (list of modules to load)
@@ -56,7 +56,7 @@ group_lines=0  # group for lines
 # Set fxs_immediate to 'yes' to make all FXS lines answer immediately.
 fxs_immediate=no
 
-ZAPCONF_FILE=${ZAPCONF_FILE:-/etc/dahdi.conf}
+ZAPCONF_FILE=${ZAPCONF_FILE:-/etc/dahdi/system.conf}
 ZAPCONF_FILE_SYSTEM=$ZAPCONF_FILE
 ZAPATA_FILE=${ZAPATA_FILE:-/etc/asterisk/zapata-channels.conf}
 ZAPSCAN_FILE=${ZAPSCAN_FILE:-/etc/asterisk/zapscan.conf}
@@ -68,10 +68,10 @@ exten_base_dir=/etc/asterisk/extensions-phones.d
 exten_defs_file=/etc/asterisk/extensions-defs.conf
 # perl utilities:
 xpp_sync=/usr/sbin/xpp_sync
-zt_registration=/usr/sbin/zt_registration
+dahdi_registration=/usr/sbin/dahdi_registration
 # how long to wait for /dev/zap/ctl to appear? (seconds)
 DEVZAP_TIMEOUT=${DEVZAP_TIMEOUT:-20}
-ZTCFG=${ZTCFG:-/sbin/ztcfg}
+DAHDI_CFG=${DAHDI_CFG:-/sbin/dahdi_cfg}
 # BRI/PRI spans will be in an additional per-span group whose number
 # is SPAN_GROUP_BASE + span-number
 SPAN_GROUP_BASE=10
@@ -115,13 +115,13 @@ ZAPCONF_ASTERISK_CMD=$ZAPCONF_ASTERISK_SCRIPT
 if [ -r $ZAPTEL_BOOT_DEBIAN ]; then . $ZAPTEL_BOOT_DEBIAN; fi
 if [ -r $ZAPTEL_BOOT_FEDORA ]; then . $ZAPTEL_BOOT_FEDORA; fi
 
-if [ ! -x "$ZTCFG" ]; then
-	# Work around a bug in the rpm package: ztcfg should be in 
+if [ ! -x "$DAHDI_CFG" ]; then
+	# Work around a bug in the rpm package: dahdi_cfg should be in 
 	# /sbin as it may be required for starting a network interface
-	if [ -x /usr/sbin/ztcfg ]; then
-		ZTCFG=/usr/sbin/ztcfg
+	if [ -x /usr/sbin/dahdi_cfg ]; then
+		DAHDI_CFG=/usr/sbin/dahdi_cfg
 	else
-		echo >&2 "ztcfg is not on found, do you have dahdi properly installed?"
+		echo >&2 "dahdi_cfg is not on found, do you have dahdi properly installed?"
 		exit_cleanup 1
 	fi
 fi
@@ -129,7 +129,7 @@ fi
 XPP_SYNC=auto # sync mode. can be set to '0' or '1' or HOST explicitly.
 
 # it is safe to use -c twice: the last one will be used.
-ztcfg_cmd="$ZTCFG -c $ZAPCONF_FILE"
+dahdi_cfg_cmd="$DAHDI_CFG -c $ZAPCONF_FILE"
 
 # work around a bug (that was already fixed) in the installer:
 if [ "$lc_country" = '' ]; then lc_country=us; fi
@@ -194,17 +194,17 @@ wait_for_zapctl() {
 	done
 	if [ "$devzap_found" != 1 ]; then
 		say "Still no /dev/zap/ctl after $devzap_timeout seconds."
-		echo >&2 "No /dev/zap/ctl: cannot run ztcfg. Aborting."
+		echo >&2 "No /dev/zap/ctl: cannot run dahdi_cfg. Aborting."
 	fi
 }
 
-run_ztcfg() {
-	# Run ztcfg itself
+run_dahdi_cfg() {
+	# Run dahdi_cfg itself
 	if [ "$verbose" = no ]; then
-		$ztcfg_cmd "$@"
+		$dahdi_cfg_cmd "$@"
 	else
 		say "Reconfiguring identified channels"
-		$ztcfg_cmd -vv "$@"
+		$dahdi_cfg_cmd -vv "$@"
 	fi
 }
 
@@ -258,7 +258,7 @@ zap_reg_xpp() {
 	# this will be the case if you set the parameter zap_autoreg=0 to
 	# the module xpp
 	# Append /dev/null to provide a valid file name in case of an empty pattern.
-	xbusses_pattern=`echo $xbusses| sed -e 's|XBUS-[0-9]*|/proc/xpp/&/XPD-*/zt_registration|g'`' /dev/null'
+	xbusses_pattern=`echo $xbusses| sed -e 's|XBUS-[0-9]*|/proc/xpp/&/XPD-*/dahdi_registration|g'`' /dev/null'
 	xpds_to_register=`grep -l 0 $xbusses_pattern`
 	for file in $xpds_to_register; do
 		echo 1 >$file
@@ -278,9 +278,9 @@ xpp_startup() {
 	# overriding locales for the above two, as perl can be noisy
 	# when locales are missing.
 	# No register all the devices if they didn't auto-register:
-	LC_ALL=C $zt_registration on
+	LC_ALL=C $dahdi_registration on
 
-	# this one could actually be run after ztcfg:
+	# this one could actually be run after dahdi_cfg:
 	LC_ALL=C $xpp_sync "$XPP_SYNC"
 }
 
@@ -289,7 +289,7 @@ xpp_startup() {
 usage() {
 	program=`basename $0`
 
-	echo >&2 "$program: generate dahdi.conf and zapata.conf"
+	echo >&2 "$program: generate dahdi system.conf and zapata.conf"
 	echo >&2 "(version $VERSION, $rcsid)"
 	echo >&2 "usage:"
 	echo >&2 " $program [-sRdv] [-m k|l|g] [-c <country_code>] [-e <base_exten>] [-F]"
@@ -301,7 +301,7 @@ usage() {
 	echo >&2 "  -c CODE: set the country code (default: $lc_country)"
 	echo >&2 "  -e NUM: set the base extension number (default: $base_exten)"
 	echo >&2 "  -F: Don't print FXSs in zapata.conf"
-	echo >&2 "  -l: output a list of detected channels instead of dahdi.conf"
+	echo >&2 "  -l: output a list of detected channels instead of dahdi system.conf"
 	echo >&2 "  -d: Perform hardware detection"
 	echo >&2 "  -u: Unload dahdi modules (will not restart Asterisk)."
 	echo >&2 "  -v: verbose"
@@ -374,7 +374,7 @@ print_pattern() {
 			then echo "# astbanktype: $astbank_type" >>$dahdi_file; 
 		fi
 		echo "${sig}$method=$chan" >>$dahdi_file
-		# zap2amp will rewrite those from dahdi.conf and hints there
+		# zap2amp will rewrite those from dahdi system.conf and hints there
 		if [ "$fxsdisable" = 'yes' ] && [ "$sig" = 'fxo' ]; then return; fi
 			
 		echo "signalling=${sig}_$method" >>$zapata_file
@@ -575,10 +575,10 @@ detect() {
 }
 
 # The module configuration generated by dahdi includes a totally useless 
-# automatic run of ztcfg after modules loading. As a workaround for that, 
-# we provide an empty dahdi.conf temporarily.
+# automatic run of dahdi_cfg after modules loading. As a workaround for that, 
+# we provide an empty dahdi system.conf temporarily.
 # 
-# At hardware detection time we shouldn't really touch dahdi.conf . So we 
+# At hardware detection time we shouldn't really touch dahdi system.conf . So we 
 # must keep a copy of it somewhere.
 #
 # I use ZAPCONF_FILE_SYSTEM rather than ZAPCONF_FILE, as the bogus modprobe 
@@ -590,15 +590,15 @@ ZAPCONF_FILE_TMP=
 temporary_zapconf() {
   case "$1" in
 	save)
-	  say "Temporarily moving dahdi.conf aside to work around broken modprobe.conf"
-		ZAPCONF_FILE_TMP=`mktemp /tmp/genzaptelconf-dahdi.conf-XXXXXX` || die "Error creating temporary dahdi.conf"
+	  say "Temporarily moving dahdi system.conf aside to work around broken modprobe.conf"
+		ZAPCONF_FILE_TMP=`mktemp /tmp/genzaptelconf-dahdi-system.conf-XXXXXX` || die "Error creating temporary dahdi system.conf"
 		if [ -f $ZAPCONF_FILE_SYSTEM ];  then
 			cp -a $ZAPCONF_FILE_SYSTEM $ZAPCONF_FILE_TMP
 		fi
 		echo -n >$ZAPCONF_FILE_SYSTEM
 		;;
 	restore)
-		# restore original dahdi.conf:
+		# restore original dahdi system.conf:
 		if [ "$ZAPCONF_FILE_TMP" = '' ]; then return; fi
 		mv $ZAPCONF_FILE_TMP $ZAPCONF_FILE_SYSTEM
 		ZAPCONF_FILE_TMP=''
@@ -787,7 +787,7 @@ write_digital_config() {
 	case "$mode" in
 	files)
 		echo span=$span_num,$span_timing,$span_lbo,$span_framing,$span_coding$span_yellow >> $dahdi_file
-		# leave a comment in dahdi.conf that allows to tell if
+		# leave a comment in dahdi system.conf that allows to tell if
 		# this span is TE or NT:
 		if [ "$span_termtype" != '' ]
 		then echo "# termtype: $span_termtype" >>$dahdi_file
@@ -885,7 +885,7 @@ EOF
 # Autogenerated by $0 -- do not hand edit
 # Dahdi Configuration File
 #
-# This file is parsed by the Dahdi Configurator, ztcfg
+# This file is parsed by the Dahdi Configurator, dahdi_cfg
 #
 
 # It must be in the module loading order
@@ -904,7 +904,7 @@ EOF
 
 	# For each line in the spanlist: see if it represents a channel.
 	# if it does, test that the channel is usable.
-	# we do that by configuring it (using ztcfg with a 1-line config file)
+	# we do that by configuring it (using dahdi_cfg with a 1-line config file)
 	# and then trying to read 1 byte from the device file.
 	#
 	# The '<(command)' syntax creates a temporary file whose content is is the
@@ -913,7 +913,7 @@ EOF
 	# Another problem with such an approach is how to include an existing 
 	# configuration file. For instance: how to include some default settings.
 	#
-	# Maybe an 'include' directive should be added to dahdi.conf ?
+	# Maybe an 'include' directive should be added to dahdi system.conf ?
 	#cat $spanlist | 
 	for procfile in $spanlist
 	do
@@ -965,8 +965,8 @@ EOF
 				# this can be either FXS or FXO
 				maybe_fxs=0
 				maybe_fxo=0
-				$ztcfg_cmd -c <(echo fxoks=$chan_num) &>/dev/null && maybe_fxs=1
-				$ztcfg_cmd -c <(echo fxsks=$chan_num) &>/dev/null && maybe_fxo=1
+				$dahdi_cfg_cmd -c <(echo fxoks=$chan_num) &>/dev/null && maybe_fxs=1
+				$dahdi_cfg_cmd -c <(echo fxsks=$chan_num) &>/dev/null && maybe_fxo=1
 				if [ $maybe_fxs = 1 ] && [ $maybe_fxo = 1 ]
 				then 
 				  # An installed module won't accept both FXS and FXO signalling types:
@@ -1164,7 +1164,7 @@ else
 	wait_for_zapctl
 	say "Generating '${ZAPCONF_FILE} and ${ZAPATA_FILE}'"
 	genconf files
-	run_ztcfg
+	run_dahdi_cfg
 fi
 
 if [ "$tmp_dir" != '' ]

@@ -1,7 +1,7 @@
 .TH "DAHDI_CFG" "8" "16 Jun 2008" "" ""
 
 .SH NAME
-dahdi_cfg \- configures dahdi kernel modules from dahdi.conf
+dahdi_cfg \- configures dahdi kernel modules from /etc/dahdi/system.conf
 .SH SYNOPSIS
 
 .B dahdi_cfg [-c \fICFG_FILE\fB] [-s] [-f] [-t] [-v [-v ... ] ]
@@ -23,7 +23,7 @@ the DAHDI init script.
 .B -c \fICFG_FILE
 .RS
 Use an alternative configuration file instead of
-.I /etc/dahdi.conf
+.I /etc/dahdi/system.conf
 .RE
 
 .B -s
@@ -53,7 +53,7 @@ Display a brief help message.
 
 .SH FILES
 
-.I /etc/dahdi.conf
+.I /etc/dahdi/system.conf
 .RS
 The default location for the configuration file.
 .RE
