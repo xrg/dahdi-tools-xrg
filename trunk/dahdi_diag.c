@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	int fd;
 	int chan;
 	if ((argc < 2) || (sscanf(argv[1], "%d", &chan) != 1)) {
-		fprintf(stderr, "Usage: ztdiag <channel>\n");
+		fprintf(stderr, "Usage: dahdi_diag <channel>\n");
 		exit(1);
 	}
 	fd = open("/dev/dahdi/ctl", O_RDWR);
