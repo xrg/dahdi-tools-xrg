@@ -279,8 +279,10 @@ int main(int argc, char *argv[])
 	int stereo_output = 0;
 	int limit = 0;
 	int readcount = 0;
-	int x, i, chan;
+	int x = MON_BRX, chan;
 	struct dahdi_confinfo zc;
+	char opt, *output_file;
+	extern char *optarg;
 
 	if ((argc < 2) || (atoi(argv[1]) < 1)) {
 		fprintf(stderr, "Usage: dahdi_monitor <channel num> [-v[v]] [-m] [-o] [-p] [-l limit] [-f FILE | -s FILE | -r FILE1 -t FILE2] [-F FILE | -S FILE | -R FILE1 -T FILE2]\n");
@@ -315,81 +317,79 @@ int main(int argc, char *argv[])
     
 	chan = atoi(argv[1]);
     
-	for (i = 2; i < argc; ++i) {
-		if (!strcmp(argv[i], "-v")) {
+	while ((opt = getopt(argc, argv, ":vl:f:r:t:F:R:T:mop"))) {
+		switch (opt) {
+		case 'v':
 			if (visual)
 				verbose = 1;
-		        visual = 1;
-			multichannel = 1;
-		} else if (!strcmp(argv[i], "-vv")) {
 			visual = 1;
-			verbose = 1;
 			multichannel = 1;
-		} else if ((!strcmp(argv[i], "-f") || !strcmp(argv[i], "-r") || !strcmp(argv[i], "-t")
-				|| !strcmp(argv[i], "-F") || !strcmp(argv[i], "-R") || !strcmp(argv[i], "-T")
-				|| !strcmp(argv[i], "-s") || !strcmp(argv[i], "-S"))
-				&& (i+1) < argc) {
-			char *output_file;
+			break;
 
-			/* Set which file descriptor to use */
-			if (!strcmp(argv[i], "-f")) {
-				savefile = 1;
+		case 'm':
+			multichannel = 1;
+			break;
+
+		case 'o':
+			ossoutput = 1;
+			break;
+
+		case 'p':
+			preecho = 1;
+			break;
+		case 'l':
+			if (sscanf(optarg, "%d", &limit) != 1 || limit < 0)
+				limit = 0;
+			printf("limit: %d\n", limit);
+			break;
+		default:
+			if (!strchr("frstFRST", opt))
+				break;
+
+			savefile = 1;
+
+			if (opt == 'f') {
 				x = MON_BRX;
-			} else if (!strcmp(argv[i], "-r")) {
-				savefile = 1;
+			} else if (opt == 'r') {
 				multichannel = 1;
 				x = MON_BRX;
-			} else if (!strcmp(argv[i], "-t")) {
-				savefile = 1;
-				multichannel = 1;
-				x = MON_TX;
-			} else if (!strcmp(argv[i], "-s")) {
-				savefile = 1;
-				stereo_output = 1;
+			} else if (opt == 's') {
 				multichannel = 1;
 				x = MON_STEREO;
-			} else if (!strcmp(argv[i], "-F")) {
-				savefile = 1;
+			} else if (opt == 't') {
+				multichannel = 1;
+				x = MON_TX;
+			} else if (opt == 'F') {
 				preecho = 1;
 				x = MON_PRE_BRX;
-			} else if (!strcmp(argv[i], "-R")) {
-				savefile = 1;
+			} else if (opt == 'R') {
 				multichannel = 1;
 				preecho = 1;
 				x = MON_PRE_BRX;
-			} else if (!strcmp(argv[i], "-T")) {
-				savefile = 1;
-				multichannel = 1;
-				preecho = 1;
-				x = MON_PRE_TX;
-			} else if (!strcmp(argv[i], "-S")) {
-				savefile = 1;
+			} else if (opt == 'S') {
 				preecho = 1;
 				stereo_output = 1;
 				multichannel = 1;
 				x = MON_PRE_STEREO;
-			} else
-				x = MON_BRX;
-
-			++i; /* we care about the file name */
-			output_file = argv[i];
-			fprintf(stderr, "Output to %s\n", output_file);
-			if ((ofh[x] = fopen(output_file, "w"))<0) {
-				fprintf(stderr, "Could not open %s for writing: %s\n", 
-						output_file, strerror(errno));
-				exit(1);
+			} else if (opt == 'T') {
+				multichannel = 1;
+				preecho = 1;
+				x = MON_PRE_TX;
 			}
+
+			output_file = optarg;
+
+			fprintf(stderr, "Output to %s\n", output_file);
+
+			if ((ofh[x] = fopen(output_file, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", 
+					output_file, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+
 			fprintf(stderr, "Run e.g., 'sox -r 8000 -s -w -c 1 %s %s.wav' to convert.\n", 
 					output_file, output_file);
-		} else if (!strcmp(argv[i], "-m")) {
-			multichannel = 1;
-		} else if (!strcmp(argv[i], "-o")) {
-			ossoutput = 1;
-		} else if (!strcmp(argv[i], "-p")) {
-			preecho = 1;
-		} else if (!strcmp(argv[i], "-l") && isdigit(argv[i+1][0])) {
-			limit = atoi(argv[i+1]);
-			i++;
+			break;
 		}
 	}
 
@@ -482,7 +482,7 @@ int main(int argc, char *argv[])
 	if (visual) {
 		printf("\nVisual Audio Levels.\n");
 		printf("--------------------\n");
-		printf(" Use /etc/dahdi/system.conf file to adjust the gains if needed.\n\n");
+		printf(" Use chan_dahdi.conf file to adjust the gains if needed.\n\n");
 		printf("( # = Audio Level  * = Max Audio Hit )\n");
 		draw_barheader();
 	}
