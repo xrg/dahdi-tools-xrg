@@ -44,7 +44,6 @@
 #include <newt.h>
 
 #include <dahdi/user.h>
-#include "tonezone.h"
 #include "version.h"
 
 static int ctl = -1;
