@@ -36,7 +36,7 @@ sub show_xbus($) {
 	my $connector = ($xbus->status eq 'CONNECTED') ? $xbus->connector : "MISSING";
 	printf " LABEL=%-20s CONNECTOR=%-20s\n", $label, $connector;
 	foreach my $xpd (@xpds) {
-		my $reg = $xpd->zt_registration;
+		my $reg = $xpd->dahdi_registration;
 		my $span;
 		my $spanstr;
 		if($reg && @spans) {

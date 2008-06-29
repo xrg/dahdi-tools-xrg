@@ -15,6 +15,8 @@ use Dahdi;
 use Dahdi::Xpp;
 use Dahdi::Config::GenconfDefaults;
 
+my $genconf_defaults;
+
 my %default_context = (
 	FXO	=> 'from-pstn',
 	FXS	=> 'from-internal',
@@ -61,6 +63,7 @@ my %default_chan_dahdi_signalling = (
 	OUT	=> "fxo_{fxs_default_start}",
 	);
 
+my $file = '';
 my $base_exten = 4000;
 my $fxs_immediate = 'no';
 my $lc_country = 'us';
@@ -68,8 +71,10 @@ my $loadzone = $lc_country;
 my $defaultzone = $lc_country;
 my $bri_sig_style = 'bri_ptmp';
 my $brint_overlap = 'no';
+my $pri_termtype = 'SPAN/* TE';
 
 my %dahdi_default_vars = (
+		GENCONF_FILE		=> \$file,
 		base_exten		=> \$base_exten,
 		fxs_immediate		=> \$fxs_immediate,
 		fxs_default_start	=> \$fxs_default_start,
@@ -87,8 +92,9 @@ my %dahdi_default_vars = (
 						\$default_group{OUT},
 					],
 		group_lines		=> \$default_group{FXO},
-		DAHDI_BRI_SIGNALLING	=> \$bri_sig_style,
+		bri_sig_style		=> \$bri_sig_style,
 		brint_overlap		=> \$brint_overlap,
+		pri_termtype		=> \$pri_termtype,
 		);
 
 sub map_dahdi_defaults {
@@ -110,6 +116,7 @@ sub map_dahdi_defaults {
 		}
 		foreach my $v (@vars) {
 			$$v = $val;
+			#printf STDERR "%-20s %s\n", $v, $val;
 		}
 	}
 }
@@ -217,7 +224,7 @@ sub gen_dahdiconf($) {
 	print <<"HEAD";
 # Dahdi Configuration File
 #
-# This file is parsed by the Dahdi Configurator, ztcfg
+# This file is parsed by the Dahdi Configurator, dahdi_cfg
 #
 HEAD
 	foreach my $span (@spans) {
@@ -530,9 +537,15 @@ sub gen_chan_dahdi_conf($) {
 
 sub set_defaults {
 	# Source default files
-	my ($default_file, %source_defaults) =
-		Dahdi::Config::GenconfDefaults::source_vars(keys(%dahdi_default_vars));
-	map_dahdi_defaults(%source_defaults);
+	my $default_file = $ENV{GENCONF_PARAMETERS} || "/etc/dahdi/genconf_parameters";
+	$genconf_defaults = Dahdi::Config::GenconfDefaults->new($default_file);
+	#$genconf_defaults->dump;
+	map_dahdi_defaults(%$genconf_defaults);
+	foreach my $span (@spans) {
+		if($span->is_pri) {
+			$span->pri_set_fromconfig($genconf_defaults);
+		}
+	}
 	# Fixups
 	foreach my $val (values %default_dahdi_signalling, values %default_chan_dahdi_signalling) {
 		$val =~ s/{fxs_default_start}/$fxs_default_start/g;
@@ -581,7 +594,7 @@ Without arguments, it generates only dahdi and chan_dahdi.
 
 =item dahdi - /etc/dahdi/system.conf
 
-Configuration for ztcfg(1). It's location may be overriden by the
+Configuration for dahdi_cfg(1). It's location may be overriden by the
 environment variable DAHDI_CONF_FILE.
 
 =item chan_dahdi - /etc/asterisk/dahdi-channels.conf
