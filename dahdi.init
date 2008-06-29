@@ -1,20 +1,19 @@
 #!/bin/sh
 #
-# zaptel        This shell script takes care of loading and unloading \
-#               Zapata Telephony interfaces
+# dahdi         This shell script takes care of loading and unloading \
+#               Dahdi Telephony interfaces
 # chkconfig: 2345 9 92
 # description: The zapata telephony drivers allow you to use your linux \
 # computer to accept incoming data and voice interfaces
 #
-# config: /etc/sysconfig/zaptel
+# config: /etc/dahdi/init.conf
 
 initdir=/etc/init.d
 
-# Don't edit the following values. Edit /etc/sysconfig/zaptel or
-# /etc/defualt/zaptel (depending on your system) instead.
+# Don't edit the following values. Edit /etc/dahdi/init.conf instead.
 
 DAHDI_CFG=/sbin/dahdi_cfg
-DAHDI_CFG_CMD="$DAHDI_CFG" # e.g: for a custom zaptel.conf location
+DAHDI_CFG_CMD="$DAHDI_CFG" # e.g: for a custom system.conf location
 
 FXOTUNE=/sbin/fxotune
 
@@ -43,8 +42,7 @@ fi
 [ -f /etc/dahdi/init.conf ] && . /etc/dahdi/init.conf
 
 if [ $system = redhat ]; then
-    [ -f /etc/sysconfig/zaptel ] && . /etc/sysconfig/zaptel
-	LOCKFILE=/var/lock/subsys/zaptel
+	LOCKFILE=/var/lock/subsys/dahdi
 fi
 
 # recursively unload a module and its dependencies, if possible.
@@ -142,8 +140,8 @@ if [ ! -x "$DAHDI_CFG" ]; then
        exit 0
 fi
 
-if [ ! -f /etc/zaptel.conf ]; then
-	echo "/etc/zaptel.conf not found. Nothing to do."
+if [ ! -f /etc/dahdi/system.conf ]; then
+	echo "/etc/dahdi/system.conf not found. Nothing to do."
        exit 0
 fi
 
@@ -153,7 +151,7 @@ RETVAL=0
 case "$1" in
   start)
 	# Load drivers
-	echo -n "Loading zaptel hardware modules:"
+	echo -n "Loading Dahdi hardware modules:"
 	for x in $MODULES; do 
 		eval localARGS="\$${x}_ARGS"
 		if modprobe ${x} ${localARGS} 2> /dev/null; then
@@ -171,12 +169,11 @@ case "$1" in
 		fi
 	done
 	sleep 3 # TODO: remove it
-	
-	# If you have zaptel-perl, the three below can be replaced with:
+
 	xpp_startup
-	
-	if [ ! -e /proc/zaptel/1 ]; then
-		echo "No hardware timing source found in /proc/zaptel, loading dahdi_dummy"
+
+	if [ ! -e /proc/dahdi/1 ]; then
+		echo "No hardware timing source found in /proc/dahdi, loading dahdi_dummy"
 		modprobe dahdi_dahdi_dummy 2> /dev/null
 	fi
 
@@ -201,17 +198,15 @@ case "$1" in
   stop)
 	# Unload drivers
 	#shutdown_dynamic # FIXME: needs test from someone with dynamic spans
-	echo -n "Unloading zaptel hardware drivers:"
-  	unload_module zaptel
+	echo -n "Unloading Dahdi hardware drivers:"
+  	unload_module dahdi
 	RETVAL=$?
 	echo "."
 
 	[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
 	;;
   unload)
-	# We don't have zaptel helper, so let's not replicate too much code:
-	# allow others to use the unload command.
-	unload_module zaptel
+	unload_module dahdi
 	;;
   restart|force-reload)
 	$0 stop
@@ -228,7 +223,7 @@ case "$1" in
 	RETVAL=$?
 	;;
   *)
-	echo "Usage: zaptel {start|stop|restart|reload|unload}"
+	echo "Usage: dahdi {start|stop|restart|reload|unload}"
 	exit 1
 esac
 

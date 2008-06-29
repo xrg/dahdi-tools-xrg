@@ -1,0 +1,9 @@
+# Dahdi
+SUBSYSTEM=="dahdi",		OWNER="asterisk", GROUP="asterisk", MODE="0660"
+KERNEL=="dahdictl",		NAME="dahdi/ctl"
+KERNEL=="dahditimer",		NAME="dahdi/timer"
+KERNEL=="dahdichannel",		NAME="dahdi/channel"
+KERNEL=="dahdipseudo",		NAME="dahdi/pseudo"
+KERNEL=="dahdi[0-9]*",		NAME="dahdi/%n"
+
+
