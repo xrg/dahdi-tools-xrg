@@ -114,7 +114,7 @@ sub new($$) {
 	}
 	$self->{TYPE} = $type;
 	$self->{IS_BRI} = ($type =~ /BRI_(NT|TE)/);
-	$self->{IS_PRI} = ($type =~ /[ETJ]1_(NT|TE)/);
+	$self->{IS_PRI} = ($type =~ /[ETJ]1/);
 	$self->{IS_DIGITAL} = ( $self->{IS_BRI} || $self->{IS_PRI} );
 	Dahdi::Xpp::Line->create_all($self, $procdir);
 	return $self;

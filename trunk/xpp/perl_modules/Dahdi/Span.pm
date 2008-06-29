@@ -137,7 +137,7 @@ my @bri_strings = (
 		);
 
 my @pri_strings = (
-		'(E1|T1|J1)_(NT|TE)',
+		'(E1|T1|J1)',
 		'Tormenta 2 .*Quad (E1|T1)',       # tor2.
 		'Digium Wildcard .100P (T1|E1)/', # wct1xxp
 		'ISA Tormenta Span 1',	           # torisa
@@ -166,7 +166,6 @@ sub init_proto($$) {
 		$self->{DCHAN_IDX} = 23;
 		$self->{BCHAN_LIST} = [ 0 .. 22 ];
 	}
-	$self->{TYPE} = "${proto}_$self->{TERMTYPE}";
 }
 
 sub new($$) {
@@ -207,7 +206,7 @@ sub new($$) {
 			my ($proto) = grep(/(E1|T1|J1)/, @info);
 			$proto = 'UNKNOWN' unless defined $proto;
 			my ($termtype) = grep(/(NT|TE)/, @info);
-			$termtype = 'TE' unless defined $termtype;
+			$termtype = 'UNKNOWN' unless defined $termtype;
 
 			$self->{IS_DIGITAL} = 1;
 			$self->{IS_PRI} = 1;
@@ -216,8 +215,6 @@ sub new($$) {
 			last;
 		}
 	}
-	die "$0: Unkown TERMTYPE [NT/TE]\n"
-		if $self->is_digital  and !defined $self->{TERMTYPE};
 	($self->{NAME}, $self->{DESCRIPTION}) = (split(/\s+/, $head, 4))[2, 3];
 	$self->{IS_DAHDI_SYNC_MASTER} =
 		($self->{DESCRIPTION} =~ /\(MASTER\)/) ? 1 : 0;
@@ -286,7 +283,6 @@ sub new($$) {
 		} else {
 			die "'$self->{PROTO}' unsupported yet";
 		}
-		$self->{SIGNALLING} = ($self->{TERMTYPE} eq 'NT') ? $DAHDI_PRI_NET : $DAHDI_PRI_CPE ;
 	}
 	return $self;
 }
@@ -296,5 +292,58 @@ sub bchans($) {
 
 	return @{$self->{BCHANS}};
 }
+
+sub set_termtype($$) {
+	my $span = shift || die;
+	my $termtype = shift || die;
+	$span->{TERMTYPE} = $termtype;
+	$span->{SIGNALLING} = ($termtype eq 'NT') ? $DAHDI_PRI_NET : $DAHDI_PRI_CPE ;
+	$span->{TYPE} = $span->proto . "_$termtype";
+}
+
+sub pri_set_fromconfig($$) {
+	my $span = shift || die;
+	my $genconf = shift || die;
+	my $name = $span->name;
+#	if(defined $termtype) {
+#		die "Termtype for $name already defined as $termtype\n";
+#	}
+	my $pri_termtype = $genconf->{pri_termtype};
+	my @pri_specs;
+	if(defined $pri_termtype) {
+		@pri_specs = @{$pri_termtype};
+	}
+	push(@pri_specs , 'SPAN/* TE');		# Default
+	my @patlist = ( "SPAN/" . $span->num );
+	my ($xbus_name, $xpd_name) = ($name =~ m|(XBUS-\d+)/(XPD-\d+)|);
+	if(defined $xbus_name) {
+		push(@patlist, "NUM/$xbus_name/$xpd_name");
+#		push(@patlist, "CONNECTOR/$ENV{XBUS_CONNECTOR}/$xpd_name");
+	}
+	#print STDERR "PATLIST=@patlist\n";
+	my $match_termtype;
+SPEC:
+	for(my $i = 0; $i < @pri_specs; $i++) {
+		my $spec = $pri_specs[$i];
+		#print STDERR "spec: $spec\n";
+		my ($match, $termtype) = split(/\s+/, $spec);
+		next unless defined $match and defined $termtype;
+		# Convert "globs" to regex
+		$match =~ s/\*/.*/g;
+		$match =~ s/\?/./g;
+		#print STDERR "match: $match\n";
+		foreach my $pattern (@patlist) {
+			#print STDERR "testmatch: $pattern =~ $match\n";
+			if($pattern =~ $match) {
+				#print STDERR "$xpd_name: MATCH '$pattern' ~ '$match' termtype=$termtype\n";
+				$match_termtype = $termtype;
+				last SPEC;
+			}
+		}
+	}
+	die "Unknown pri_termtype" unless defined $match_termtype;
+	$span->set_termtype($match_termtype);
+}
+
 
 1;

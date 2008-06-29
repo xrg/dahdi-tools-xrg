@@ -4,18 +4,38 @@
 # This file contains parameters that affect the
 # dahdi_genconf configurator generator.
 #
-base_exten=4000
-fxs_immediate=no
-fxs_default_start=ks
-lc_country=il
+# Syntax:
+# 	* A comment from '#' to end of line
+# 	* Blank lines ignored
+# 	* Whitespace at end of line trimmed
+# 	* Single valued items:
+# 	     key <whitespaces...> value
+# 	* List valued items:
+# 	     key
+# 	     <whitespaces...>value1
+# 	     <whitespaces...>value2
+# 	     ...
+#
 
-#context_lines=
-#context_phones=
-#context_input=
-#context_output=
+#base_exten		4000
+#fxs_immediate		no
+#fxs_default_start	ks
+#lc_country		il
 
-#group_phones=
-#group_lines=
+#context_lines		from-pstn
+#context_phones		from-internal
+#context_input		astbank-input
+#context_output		astbank-output
 
-#brint_overlap=
-bri_sig_style=bri_ptmp
+#group_phones		0
+#group_lines		5
+
+#brint_overlap
+#bri_sig_style		bri_ptmp
+
+# pri_types contains a list of settings:
+# Currently the only setting is for TE or NT (the default is TE)
+#
+#pri_termtype
+#	SPAN/2		NT
+#	SPAN/4		NT

@@ -207,11 +207,10 @@ In this example we see that the recommended xpp sync master is XBUS-02 -
 it is the first on the list. It is also the actual syncer, as we can see
 from the '+' beside it.
 
-xpp_sync is normally called from both the dahdi init.d script and the 
-the Astribank udev script. The parameter it is called with defaults to 
+xpp_sync is normally called from the dahdi init.d script.
+The parameter it is called with defaults to 
 I<auto>, but it is possible to override that parameter (e.g: set it to
-I<dahdi>) through the value of XPP_SYNC in either /etc/defualt/zaptel
-or /etc/sysconfig/zaptel .
+I<dahdi>) through the value of XPP_SYNC in /etc/dahdi/init.conf .
 
 =head1 FILES
 
