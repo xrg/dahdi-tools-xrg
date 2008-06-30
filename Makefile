@@ -255,7 +255,7 @@ config:
 ifneq (,$(COPY_INITD))
 	$(COPY_INITD)
 endif
-ifeq (,$(wildcard $(DESTDIR)$(RCCONF_FILE))
+ifeq (,$(wildcard $(DESTDIR)$(RCCONF_FILE)))
 	$(INSTALL) -D -m 644 init.conf $(DESTDIR)$(RCCONF_FILE)
 endif
 ifneq (,$(COPY_NETSCR))
