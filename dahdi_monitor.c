@@ -296,10 +296,10 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "        -r FILE: Save rx stream to FILE. Implies -m.\n");
 		fprintf(stderr, "        -t FILE: Save tx stream to FILE. Implies -m.\n");
 		fprintf(stderr, "        -s FILE: Save stereo rx/tx stream to FILE. Implies -m.\n");
-		fprintf(stderr, "        -F FILE: Save combined pre-echocanceled rx/tx stream to FILE. Cannot be used with -m. Implies -p.\n");
-		fprintf(stderr, "        -R FILE: Save pre-echocanceled rx stream to FILE. Implies -m and -p.\n");
-		fprintf(stderr, "        -T FILE: Save pre-echocanceled tx stream to FILE. Implies -m and -p.\n");
-		fprintf(stderr, "        -S FILE: Save pre-echocanceled stereo rx/tx stream to FILE. Implies -m and -p.\n");
+		fprintf(stderr, "        -F FILE: Save combined pre-echocanceled rx/tx stream to FILE. Cannot be used with -m.\n");
+		fprintf(stderr, "        -R FILE: Save pre-echocanceled rx stream to FILE. Implies -m.\n");
+		fprintf(stderr, "        -T FILE: Save pre-echocanceled tx stream to FILE. Implies -m.\n");
+		fprintf(stderr, "        -S FILE: Save pre-echocanceled stereo rx/tx stream to FILE. Implies -m.\n");
 		fprintf(stderr, "Examples:\n");
 		fprintf(stderr, "Save a stream to a file\n");
 		fprintf(stderr, "        dahdi_monitor 1 -f stream.raw\n");
