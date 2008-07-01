@@ -65,10 +65,10 @@
  * the main loop in case we ever add a signal
  * handler.
  */
-static FILE*  ofh[6] = {0, 0, 0, 0, 0, 0};
+static FILE *ofh[6];
 
-static int stereo = 0;
-static int verbose = 0;
+static int stereo;
+static int verbose;
 
 int audio_open(void)
 {
@@ -279,9 +279,9 @@ int main(int argc, char *argv[])
 	int stereo_output = 0;
 	int limit = 0;
 	int readcount = 0;
-	int x = MON_BRX, chan;
+	int x, chan;
 	struct dahdi_confinfo zc;
-	char opt, *output_file;
+	char opt;
 	extern char *optarg;
 
 	if ((argc < 2) || (atoi(argv[1]) < 1)) {
@@ -292,15 +292,14 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "        -l LIMIT: Stop after reading LIMIT bytes\n");
 		fprintf(stderr, "        -m: Separate rx/tx streams.\n");
 		fprintf(stderr, "        -o: Output audio via OSS.  Note: Only 'normal' combined rx/tx streams are output via OSS.\n");
-		fprintf(stderr, "        -p: Get a pre-echocanceled stream.\n");
-		fprintf(stderr, "        -f FILE: Save combined rx/tx stream to FILE.  Cannot be used with -m.\n");
-		fprintf(stderr, "        -r FILE: Save rx stream to FILE.  Implies -m.\n");
-		fprintf(stderr, "        -t FILE: Save tx stream to FILE.  Implies -m.\n");
-		fprintf(stderr, "        -s FILE: Save stereo rx/tx stream to FILE.\n");
-		fprintf(stderr, "        -F FILE: Save combined pre-echocanceled rx/tx stream to FILE.  Cannot be used with -m.  Implies -p.\n");
-		fprintf(stderr, "        -R FILE: Save pre-echocanceled rx stream to FILE.  Implies -m and -p.\n");
-		fprintf(stderr, "        -T FILE: Save pre-echocanceled tx stream to FILE.  Implies -m and -p.\n");
-		fprintf(stderr, "        -S FILE: Save pre-echocanceled stereo rx/tx stream to FILE.  Implies -p.\n");
+		fprintf(stderr, "        -f FILE: Save combined rx/tx stream to FILE. Cannot be used with -m.\n");
+		fprintf(stderr, "        -r FILE: Save rx stream to FILE. Implies -m.\n");
+		fprintf(stderr, "        -t FILE: Save tx stream to FILE. Implies -m.\n");
+		fprintf(stderr, "        -s FILE: Save stereo rx/tx stream to FILE. Implies -m.\n");
+		fprintf(stderr, "        -F FILE: Save combined pre-echocanceled rx/tx stream to FILE. Cannot be used with -m. Implies -p.\n");
+		fprintf(stderr, "        -R FILE: Save pre-echocanceled rx stream to FILE. Implies -m and -p.\n");
+		fprintf(stderr, "        -T FILE: Save pre-echocanceled tx stream to FILE. Implies -m and -p.\n");
+		fprintf(stderr, "        -S FILE: Save pre-echocanceled stereo rx/tx stream to FILE. Implies -m and -p.\n");
 		fprintf(stderr, "Examples:\n");
 		fprintf(stderr, "Save a stream to a file\n");
 		fprintf(stderr, "        dahdi_monitor 1 -f stream.raw\n");
@@ -317,78 +316,163 @@ int main(int argc, char *argv[])
     
 	chan = atoi(argv[1]);
     
-	while ((opt = getopt(argc, argv, ":vl:f:r:t:F:R:T:mop"))) {
+	while ((opt = getopt(argc, argv, "vmol:f:r:t:s:F:R:T:S:")) != -1) {
 		switch (opt) {
+		case '?':
+			exit(EXIT_FAILURE);
 		case 'v':
 			if (visual)
 				verbose = 1;
 			visual = 1;
 			multichannel = 1;
 			break;
-
 		case 'm':
 			multichannel = 1;
 			break;
-
 		case 'o':
 			ossoutput = 1;
-			break;
-
-		case 'p':
-			preecho = 1;
 			break;
 		case 'l':
 			if (sscanf(optarg, "%d", &limit) != 1 || limit < 0)
 				limit = 0;
-			printf("limit: %d\n", limit);
+			fprintf(stderr, "Will stop reading after %d bytes\n", limit);
 			break;
-		default:
-			if (!strchr("frstFRST", opt))
-				break;
-
-			savefile = 1;
-
-			if (opt == 'f') {
-				x = MON_BRX;
-			} else if (opt == 'r') {
-				multichannel = 1;
-				x = MON_BRX;
-			} else if (opt == 's') {
-				multichannel = 1;
-				x = MON_STEREO;
-			} else if (opt == 't') {
-				multichannel = 1;
-				x = MON_TX;
-			} else if (opt == 'F') {
-				preecho = 1;
-				x = MON_PRE_BRX;
-			} else if (opt == 'R') {
-				multichannel = 1;
-				preecho = 1;
-				x = MON_PRE_BRX;
-			} else if (opt == 'S') {
-				preecho = 1;
-				stereo_output = 1;
-				multichannel = 1;
-				x = MON_PRE_STEREO;
-			} else if (opt == 'T') {
-				multichannel = 1;
-				preecho = 1;
-				x = MON_PRE_TX;
-			}
-
-			output_file = optarg;
-
-			fprintf(stderr, "Output to %s\n", output_file);
-
-			if ((ofh[x] = fopen(output_file, "w")) < 0) {
-				fprintf(stderr, "Could not open %s for writing: %s\n", 
-					output_file, strerror(errno));
+		case 'f':
+			if (multichannel) {
+				fprintf(stderr, "'%c' mode cannot be used when multichannel mode is enabled.\n", opt);
 				exit(EXIT_FAILURE);
 			}
-
-			fprintf(stderr, "Run e.g., 'sox -r 8000 -s -w -c 1 %s %s.wav' to convert.\n", 
-					output_file, output_file);
+			if (ofh[MON_BRX]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_BRX] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing combined stream to %s\n", optarg);
+			break;
+		case 'F':
+			if (multichannel) {
+				fprintf(stderr, "'%c' mode cannot be used when multichannel mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_PRE_BRX]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_PRE_BRX] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing pre-echo combined stream to %s\n", optarg);
+			preecho = 1;
+			savefile = 1;
+			break;
+		case 'r':
+			if (!multichannel && ofh[MON_BRX]) {
+				fprintf(stderr, "'%c' mode cannot be used when combined mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_BRX]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_BRX] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing receive stream to %s\n", optarg);
+			multichannel = 1;
+			savefile = 1;
+			break;
+		case 'R':
+			if (!multichannel && ofh[MON_PRE_BRX]) {
+				fprintf(stderr, "'%c' mode cannot be used when combined mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_PRE_BRX]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_PRE_BRX] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing pre-echo receive stream to %s\n", optarg);
+			preecho = 1;
+			multichannel = 1;
+			savefile = 1;
+			break;
+		case 't':
+			if (!multichannel && ofh[MON_BRX]) {
+				fprintf(stderr, "'%c' mode cannot be used when combined mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_TX]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_TX] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing transmit stream to %s\n", optarg);
+			multichannel = 1;
+			savefile = 1;
+			break;
+		case 'T':
+			if (!multichannel && ofh[MON_PRE_BRX]) {
+				fprintf(stderr, "'%c' mode cannot be used when combined mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_PRE_TX]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_PRE_TX] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing pre-echo transmit stream to %s\n", optarg);
+			preecho = 1;
+			multichannel = 1;
+			savefile = 1;
+			break;
+		case 's':
+			if (!multichannel && ofh[MON_BRX]) {
+				fprintf(stderr, "'%c' mode cannot be used when combined mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_STEREO]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_STEREO] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing stereo stream to %s\n", optarg);
+			multichannel = 1;
+			savefile = 1;
+			break;
+		case 'S':
+			if (!multichannel && ofh[MON_PRE_BRX]) {
+				fprintf(stderr, "'%c' mode cannot be used when combined mode is enabled.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if (ofh[MON_PRE_STEREO]) {
+				fprintf(stderr, "Cannot specify option '%c' more than once.\n", opt);
+				exit(EXIT_FAILURE);
+			}
+			if ((ofh[MON_PRE_STEREO] = fopen(optarg, "w")) < 0) {
+				fprintf(stderr, "Could not open %s for writing: %s\n", optarg, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			fprintf(stderr, "Writing pre-echo stereo stream to %s\n", optarg);
+			preecho = 1;
+			multichannel = 1;
+			savefile = 1;
 			break;
 		}
 	}
@@ -539,14 +623,6 @@ int main(int argc, char *argv[])
 					}
 					fwrite(stereobuf, 1, res_brx*2, ofh[MON_PRE_STEREO]);
 				}
-
-				/* XXX How are we going to visualize the preecho set of streams?
-				if (visual) {
-					if (res == res2)
-						visualize((short *)buf, (short *)buf2, res/2);
-					else
-						printf("Huh?  res = %d, res2 = %d?\n", res, res2);
-				} */
 			}
 		}
 
