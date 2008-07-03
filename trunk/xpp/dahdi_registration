@@ -15,9 +15,24 @@ use Dahdi;
 use Dahdi::Span;
 use Dahdi::Xpp;
 use Dahdi::Xpp::Xbus;
+use Getopt::Std;
 
 sub usage {
 	die "Usage: $0 [on|off|1|0]\n";
+}
+
+my %opts;
+getopts('s:', \%opts);
+
+my $sort_order = $opts{s} || $ENV{XBUS_SORT} || 'SORT_CONNECTOR';
+my $sorter = Dahdi::Xpp::sorters($sort_order);
+
+if(!defined $sorter) {
+	my @sorter_names = Dahdi::Xpp::sorters;
+	print STDERR "Unknown sort order $sort_order. Select from:\n\t";
+	print STDERR join("\n\t", @sorter_names);
+	print STDERR "\n";
+	exit 1;
 }
 
 @ARGV == 0 or @ARGV == 1 or usage;
@@ -42,7 +57,7 @@ sub myprintf {
 
 my @spans = Dahdi::spans;
 
-foreach my $xbus (Dahdi::Xpp::xbuses('SORT_CONNECTOR')) {
+foreach my $xbus (Dahdi::Xpp::xbuses($sorter)) {
 	myprintf "%-10s\t%s\t%s\n", $xbus->name, $xbus->label, $xbus->connector;
 	next unless $xbus->status eq 'CONNECTED';
 	foreach my $xpd ($xbus->xpds()) {
@@ -61,6 +76,7 @@ foreach my $xbus (Dahdi::Xpp::xbuses('SORT_CONNECTOR')) {
 		myprintf "%3s ==> %3s\n", state2str($prev), state2str($on);
 	}
 }
+myprintf "# Sorted: $sort_order\n";
 
 __END__
 
@@ -70,7 +86,7 @@ dahdi_registration - Handle registration of Xorcom XPD modules in dahdi.
 
 =head1 SYNOPSIS
 
-dahdi_registration [on|off]
+dahdi_registration [-s sortorder] [on|off]
 
 =head1 DESCRIPTION
 
@@ -90,25 +106,46 @@ off -- deregisters all XPD's from dahdi.
 
 on -- registers all XPD's to dahdi.
 
+=head2 Options
+
+=over
+
+=item -s I<sort_order>
+
+The sort order to use. 
+
+=back
+
+If the option is not used, the sort order is taken from the environment 
+variable XBUS_SORT and failing that: the hard-coded default of 
+SORT_CONNECTOR.
+
+The available sorting orders are documented in Dahdi::Xpp manual.
+
+
+
 =head2 Sample Output
 
 An example of the output of dahdi_registration for some registered
 Astribanks:
 
-  $ dahdi_registration
-  XBUS-02         []      usb-0000:00:1d.7-4
-          XBUS-00/XPD-00: on Span 1
-          XBUS-00/XPD-10: on Span 2
-  XBUS-00         [usb:00000126]  usb-0000:00:1d.7-2
-          XBUS-02/XPD-00: on Span 3
-          XBUS-02/XPD-10: on Span 4
-          XBUS-02/XPD-20: on Span 5
-          XBUS-02/XPD-30: on Span 6
-  XBUS-01         [usb:00000128]  usb-0000:00:1d.7-1
-          XBUS-01/XPD-00: on Span 7
-          XBUS-01/XPD-10: on Span 8
-          XBUS-01/XPD-20: on Span 9
-          XBUS-01/XPD-30: on Span 10
+  $ dahdi_registration -s type
+  XBUS-01         usb:0000153     usb-0000:00:10.4-2
+	  XBUS-01/XPD-00: on Span 1
+	  XBUS-01/XPD-01: on Span 2
+  XBUS-00         usb:0000157     usb-0000:00:10.4-4
+	  XBUS-00/XPD-00: on Span 3
+	  XBUS-00/XPD-01: on Span 4
+	  XBUS-00/XPD-02: on Span 5
+	  XBUS-00/XPD-03: on Span 6
+	  XBUS-00/XPD-04: on Span 7
+	  XBUS-00/XPD-05: on Span 8
+	  XBUS-00/XPD-06: on Span 9
+	  XBUS-00/XPD-07: on Span 10
+  XBUS-02                 usb-0000:00:10.4-1
+	  XBUS-02/XPD-00: on Span 11
+	  XBUS-02/XPD-10: on Span 12
+  # Sorted: type
 
 =head1 FILES
 

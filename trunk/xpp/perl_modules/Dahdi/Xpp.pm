@@ -26,6 +26,7 @@ Dahdi::Xpp - Perl interface to the Xorcom Astribank drivers.
       print " - ".$xpd->fqn,"\n";
     }
   }
+
 =cut
 
 
@@ -46,11 +47,45 @@ sub by_label {
 	return $a->connector cmp $b->connector;
 }
 
+sub score_type {
+	my $score;
+
+	return 1 if grep(/\b[ETJ]1/, @_);
+	return 2 if grep(/\bBRI/, @_);
+	return 3 if grep(/\bFXO/, @_);
+	return 4;	# FXS
+}
+
+sub by_type {
+	my @a_types = map { $_->type } $a->xpds();
+	my @b_types = map { $_->type } $b->xpds();
+	my $res;
+
+	my $a_score = score_type(@a_types);
+	my $b_score = score_type(@b_types);
+	#printf STDERR "DEBUG-a: %s %s %s\n", $a->name, $a_score, join(',',@a_types);
+	#printf STDERR "DEBUG-b: %s %s %s\n", $b->name, $b_score, join(',',@b_types);
+	$res = $a_score <=> $b_score;
+	$res = $a->connector cmp $b->connector if $res == 0;
+	return $res;
+}
+
+
 =head1 xbuses([sort_order])
 
 Scans system (/proc and /sys) and returns a list of Astribank (Xbus) 
 objects. The optional parameter sort_order is the order in which 
 the Astribanks will be returns:
+
+
+=head1 sorters([sort_order])
+
+With no parameters, returns the names of built in sorters.
+With a single parameter, returns a reference to the requested built in sorter.
+Also, for convenience, a reference to a custom sorter function may be passed
+and returned as is.
+
+The built in sorters are:
 
 =over
 
@@ -63,12 +98,19 @@ the device through controllers, hubs etc.
 
 Sorts by the label of the Astribank. The label field is unique to the
 Astribank. It can also be viewed through 'lsusb -v' without the drivers
-loaded (the iSerial field in the Device Descriptor). 
+loaded (the iSerial field in the Device Descriptor). This is normally
+relieble, but some older Astribanks have an empty label.
 
 =item SORT_NAME
 
 Sort by the "name". e.g: "XBUS-00". The order of Astribank names depends
 on the load order, and hence may change between different runs.
+
+=item SORT_TYPE
+
+Sort by XPD types. First Astribanks with E1/T1/J1 XPDs, then with BRI,
+then with FXO, then ones with only FXS ports. Within each type they
+are sorted by the connector field (as in SORT_CONNECTOR above).
 
 =item custom function
 
@@ -78,6 +120,23 @@ function. See the example sorters in the code of this module.
 =back
 
 =cut
+
+sub sorters {
+	my %sorter_table = (
+		SORT_CONNECTOR	=> \&by_connector,
+		SORT_NAME	=> \&by_name,
+		SORT_LABEL	=> \&by_label,
+		SORT_TYPE	=> \&by_type,
+		# Aliases
+		connector	=> \&by_connector,
+		name		=> \&by_name,
+		label		=> \&by_label,
+		type		=> \&by_type,
+	);
+	my $which_sorter = shift || return sort keys %sorter_table;
+	return $which_sorter if ref($which_sorter) eq 'CODE';
+	return $sorter_table{$which_sorter};
+}
 
 sub xbuses {
 	my $optsort = shift || 'SORT_CONNECTOR';
@@ -100,18 +159,8 @@ sub xbuses {
 		my $xbus = Dahdi::Xpp::Xbus->new(NAME => $name, NUM => $num, @attr);
 		push(@xbuses, $xbus);
 	}
-	my $sorter;
-	if($optsort eq "SORT_CONNECTOR") {
-		$sorter = \&by_connector;
-	} elsif($optsort eq "SORT_NAME") {
-		$sorter = \&by_name;
-	} elsif($optsort eq "SORT_LABEL") {
-		$sorter = \&by_label;
-	} elsif(ref($optsort) eq 'CODE') {
-		$sorter = $optsort;
-	} else {
-		die "Unknown optional sorter '$optsort'";
-	}
+	my $sorter = sorters($optsort);
+	die "Unknown optional sorter '$optsort'" unless defined $sorter;
 	@xbuses = sort $sorter @xbuses;
 	return @xbuses;
 }
