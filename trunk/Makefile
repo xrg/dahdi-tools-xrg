@@ -85,8 +85,8 @@ LTZ_SO_OBJS:=zonedata.lo tonezone.lo
 LTZ_SO_MAJOR_VER:=1
 LTZ_SO_MINOR_VER:=0
 
-# libdir, includedir and mandir are defined in makeopts (from
-# configure).
+# sbindir, libdir, includedir and mandir are defined in makeopts
+# (from configure).
 BIN_DIR:=$(sbindir)
 LIB_DIR:=$(libdir)
 INC_DIR:=$(includedir)/dahdi
