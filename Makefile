@@ -87,9 +87,7 @@ LTZ_SO_MINOR_VER:=0
 
 # libdir, includedir and mandir are defined in makeopts (from
 # configure).
-# we use /sbin, rather than configure's $(sbindir) because we use /sbin
-# for historical reasons.
-BIN_DIR:=/sbin
+BIN_DIR:=$(sbindir)
 LIB_DIR:=$(libdir)
 INC_DIR:=$(includedir)/dahdi
 MAN_DIR:=$(mandir)/man8
