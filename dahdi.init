@@ -1,9 +1,9 @@
 #!/bin/sh
 #
 # dahdi         This shell script takes care of loading and unloading \
-#               Dahdi Telephony interfaces
+#               DAHDI Telephony interfaces
 # chkconfig: 2345 9 92
-# description: The zapata telephony drivers allow you to use your linux \
+# description: The DAHDI drivers allow you to use your linux \
 # computer to accept incoming data and voice interfaces
 #
 # config: /etc/dahdi/init.conf
@@ -12,7 +12,7 @@ initdir=/etc/init.d
 
 # Don't edit the following values. Edit /etc/dahdi/init.conf instead.
 
-DAHDI_CFG=/sbin/dahdi_cfg
+DAHDI_CFG=/usr/sbin/dahdi_cfg
 DAHDI_CFG_CMD="$DAHDI_CFG" # e.g: for a custom system.conf location
 
 FXOTUNE=/sbin/fxotune
@@ -39,7 +39,7 @@ if [ $system = redhat ]; then
     . $initdir/functions || exit 0
 fi
 
-[ -f /etc/dahdi/init.conf ] && . /etc/dahdi/init.conf
+[ -r /etc/dahdi/init.conf ] && . /etc/dahdi/init.conf
 
 if [ $system = redhat ]; then
 	LOCKFILE=/var/lock/subsys/dahdi
@@ -70,8 +70,6 @@ unload_module() {
 }
 
 # Initialize the Xorcom Astribank (xpp/) using perl utiliites:
-# intended to replace all the the three functions below if user has 
-# installed the zaptel-perl utilities.
 xpp_startup() {
 	# do nothing if there are no astribank devices:
 	if ! grep -q connected /proc/xpp/xbuses 2>/dev/null; then return 0; fi
@@ -160,11 +158,11 @@ case "$1" in
 		fi
 	done
 	TMOUT=$DAHDI_DEV_TIMEOUT # max secs to wait
-	while [ ! -d /dev/zap ] ; do
+	while [ ! -d /dev/dahdi ] ; do
  		sleep 1
 		TMOUT=`expr $TMOUT - 1`
 		if [ $TMOUT -eq 0 ] ; then
-			echo "Error: missing /dev/zap!"
+			echo "Error: missing /dev/dahdi!"
 			exit 1
 		fi
 	done
@@ -174,7 +172,7 @@ case "$1" in
 
 	if [ ! -e /proc/dahdi/1 ]; then
 		echo "No hardware timing source found in /proc/dahdi, loading dahdi_dummy"
-		modprobe dahdi_dahdi_dummy 2> /dev/null
+		modprobe dahdi_dummy 2> /dev/null
 	fi
 
 	if [ $system = debian ]; then
@@ -186,7 +184,9 @@ case "$1" in
 	fi
 	RETVAL=$?
 
-	[ $RETVAL -eq 0 ] && touch $LOCKFILE
+	if [ "$LOCKFILE" != '' ]; then
+		[ $RETVAL -eq 0 ] && touch $LOCKFILE
+	fi
 
 	if [ -x "$FXOTUNE" ] && [ -r /etc/fxotune.conf ]; then
 		# Allowed to fail if e.g. Asterisk already uses channels:
@@ -203,7 +203,9 @@ case "$1" in
 	RETVAL=$?
 	echo "."
 
-	[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+	if [ "$LOCKFILE" != '' ]; then
+		[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+	fi
 	;;
   unload)
 	unload_module dahdi
