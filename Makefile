@@ -91,6 +91,8 @@ BIN_DIR:=$(sbindir)
 LIB_DIR:=$(libdir)
 INC_DIR:=$(includedir)/dahdi
 MAN_DIR:=$(mandir)/man8
+CONFIG_DIR:=$(sysconfdir)/dahdi
+CONFIG_FILE:=$(CONFIG_DIR)/system.conf
 
 # Utilities we build with a standard build procedure:
 UTILS		= dahdi_tool dahdi_test dahdi_monitor dahdi_speed sethdlc dahdi_cfg \
@@ -178,7 +180,7 @@ tonezones.txt: zonedata.c
 		print (($$1 eq "country")? "* $$2\t":"$$2\n");' $<  \
 	>$@
 
-system.conf.asciidoc: system.conf.sample
+system.conf.asciidoc: doc/system.conf
 	perl -n -e \
 		'if (/^#($$|\s)(.*)/){ if (!$$in_doc){print "\n"}; $$in_doc=1; print "$$2\n" } else { if ($$in_doc){print "\n"}; $$in_doc=0; print "  $$_" }' \
 		$< >$@
@@ -217,11 +219,11 @@ install-utils: utils install-utils-subdirs
 ifneq (,$(BINS))
 	install -d $(DESTDIR)$(BIN_DIR)
 	install  $(BINS) $(DESTDIR)$(BIN_DIR)/
-#	install -d $(DESTDIR)$(MAN_DIR)
-#	install -m 644 $(MAN_PAGES) $(DESTDIR)$(MAN_DIR)/
+	install -d $(DESTDIR)$(MAN_DIR)
+	install -m 644 $(MAN_PAGES) $(DESTDIR)$(MAN_DIR)/
 endif
 ifeq (,$(wildcard $(DESTDIR)$(CONFIG_FILE)))
-#	$(INSTALL) -D -m 644 system.conf.sample $(DESTDIR)$(CONFIG_FILE)
+	$(INSTALL) -D -m 644 doc/system.conf $(DESTDIR)$(CONFIG_FILE)
 endif
 
 install-libs: libs
