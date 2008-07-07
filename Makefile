@@ -267,8 +267,8 @@ endif
 	@echo "DAHDI has been configured."
 	@echo ""
 	@echo "If you have any DAHDI hardware it is now recommended to "
-	@echo "edit /etc/default/dahdi or /etc/sysconfig/dahdi and set there an "
-	@echo "optimal value for the variable MODULES ."
+	@echo "edit /etc/dahdi/init.conf and set there an optimal value "
+	@echo "for the variable MODULES ."
 	@echo ""
 	@echo "I think that the DAHDI hardware you have on your system is:"
 	@kernel/xpp/utils/dahdi_hardware || true
