@@ -149,6 +149,12 @@ RETVAL=0
 case "$1" in
   start)
 	# Load drivers
+	if [ -z $MODULES ]; then
+		echo "There aren't any DAHDI hardware modules specified to "
+		echo "load.  Please update /etc/dahdi/init.conf in order to "
+		echo "specify the modules to load."
+		exit 1
+	fi
 	echo -n "Loading DAHDI hardware modules:"
 	for x in $MODULES; do 
 		eval localARGS="\$${x}_ARGS"
