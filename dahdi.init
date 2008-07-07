@@ -149,7 +149,7 @@ RETVAL=0
 case "$1" in
   start)
 	# Load drivers
-	echo -n "Loading Dahdi hardware modules:"
+	echo -n "Loading DAHDI hardware modules:"
 	for x in $MODULES; do 
 		eval localARGS="\$${x}_ARGS"
 		if modprobe ${x} ${localARGS} 2> /dev/null; then
@@ -198,7 +198,7 @@ case "$1" in
   stop)
 	# Unload drivers
 	#shutdown_dynamic # FIXME: needs test from someone with dynamic spans
-	echo -n "Unloading Dahdi hardware drivers:"
+	echo -n "Unloading DAHDI hardware drivers:"
   	unload_module dahdi
 	RETVAL=$?
 	echo "."
