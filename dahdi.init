@@ -154,11 +154,15 @@ case "$1" in
 		echo -ne $"Loading DAHDI hardware modules:\n"
 		while read line; do
 			foundone=true
-			echo -ne $"   ${line}..."
-			if ! modprobe $line 2> /dev/null; then
-				echo -ne $"ERROR\n"
-			else
-				echo -ne $"DONE\n"
+			if [ $system = debian ]; then
+					echo -n "   ${line}: " 
+					if modprobe $line 2> /dev/null; then
+					echo -n "done"
+				else
+					echo -n "error"
+				fi
+			elif [ $system = redhat ]; then
+				action "  ${line}: " modprobe $line 
 			fi
 		done
 		echo -ne $"\n"
@@ -210,10 +214,16 @@ case "$1" in
   stop)
 	# Unload drivers
 	#shutdown_dynamic # FIXME: needs test from someone with dynamic spans
-	echo -ne $"Unloading DAHDI hardware drivers:"
-  	unload_module dahdi
-	RETVAL=$?
-	echo -ne $" DONE\n"
+	if [ $system = debian ]; then
+		echo -ne $"Unloading DAHDI hardware modules: " 
+		if unload_module dahdi; then
+			echo -n "done"
+		else
+			echo -n "error"
+		fi
+	elif [ $system = redhat ]; then
+		action "Unloading DAHDI hardware modules: " unload_module dahdi 
+	fi
 	if [ "$LOCKFILE" != '' ]; then
 		[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
 	fi
