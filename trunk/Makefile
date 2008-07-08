@@ -66,6 +66,7 @@ endif
 RCCONF_FILE	= /etc/dahdi/init.conf
 MODULES_FILE	= /etc/dahdi/modules
 MODPROBE_FILE	= /etc/modprobe.d/dahdi
+BLACKLIST_FILE	= /etc/modprobe.d/dahdi.blacklist
 
 NETSCR_DIR	:= $(firstword $(wildcard /etc/sysconfig/network-scripts ))
 ifneq (,$(NETSCR_DIR))
@@ -266,6 +267,9 @@ ifeq (,$(wildcard $(DESTDIR)$(MODULES_FILE)))
 endif
 ifeq (,$(wildcard $(DESTDIR)$(MODPROBE_FILE)))
 	$(INSTALL) -D -m 644 modprobe.conf.sample $(DESTDIR)$(MODPROBE_FILE)
+endif
+ifeq (,$(wildcard $(DESTDIR)$(BLACKLIST_FILE)))
+	$(INSTALL) -D -m 644 blacklist.sample $(DESTDIR)$(BLACKLIST_FILE)
 endif
 ifneq (,$(COPY_NETSCR))
 	$(COPY_NETSCR)
