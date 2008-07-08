@@ -63,6 +63,7 @@ ifneq (,$(INITRD_DIR))
   COPY_INITD	:= install -D dahdi.init $(INIT_TARGET)
 endif
 RCCONF_FILE	= /etc/dahdi/init.conf
+MODULES_FILE	= /etc/dahdi/modules
 
 NETSCR_DIR	:= $(firstword $(wildcard /etc/sysconfig/network-scripts ))
 ifneq (,$(NETSCR_DIR))
@@ -256,7 +257,10 @@ ifneq (,$(COPY_INITD))
 	$(COPY_INITD)
 endif
 ifeq (,$(wildcard $(DESTDIR)$(RCCONF_FILE)))
-	$(INSTALL) -D -m 644 init.conf $(DESTDIR)$(RCCONF_FILE)
+	$(INSTALL) -D -m 644 init.conf.sample $(DESTDIR)$(RCCONF_FILE)
+endif
+ifeq (,$(wildcard $(DESTDIR)$(MODULES_FILE)))
+	$(INSTALL) -D -m 644 modules.sample $(DESTDIR)$(MODULES_FILE)
 endif
 ifneq (,$(COPY_NETSCR))
 	$(COPY_NETSCR)

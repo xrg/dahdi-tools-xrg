@@ -1,0 +1,37 @@
+# Contains the list of modules to be loaded / unloaded by /etc/init.d/dahdi.
+#
+# NOTE:  Please add/edit /etc/modprobe.d/dahdi or /etc/modprobe.conf if you 
+#        would like to add any module parameters.
+#
+
+# TE405P - Quad Span T1/E1 Card (5v version)
+# TE410P - Quad Span T1/E1 Card (3.3v version)
+wct4xxp
+
+# TE120P - Single Span T1/E1 Card
+wcte12xp
+
+# T100P - Single Span T1 Card
+# E100P - Single Span E1 Card
+wct1xxp
+
+# TE110P - Single Span T1/E1 Card
+wcte11xp
+
+# TDM2400P - Modular FXS/FXO interface (1-24 ports)
+# TDM410P  - Modular FXS/FXO interface (4 ports)
+# TDM800P  - Modular FXS/FXO interface (8 ports)
+wctdm24xxp
+
+# X100P - Single port FXO interface
+# X101P - Single port FXO interface 
+wcfxo
+
+# TDM400P - Modular FXS/FXO interface (1-4 ports)
+wctdm
+
+# DAHDI timing only interface
+dahdi_dummy
+
+# Xorcom Astribank Device
+xpp_usb
