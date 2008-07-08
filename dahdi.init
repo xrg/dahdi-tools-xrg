@@ -148,21 +148,27 @@ RETVAL=0
 # See how we were called.
 case "$1" in
   start)
-	# Load drivers
-	if [ -z $MODULES ]; then
-		echo "There aren't any DAHDI hardware modules specified to "
-		echo "load.  Please update /etc/dahdi/init.conf in order to "
-		echo "specify the modules to load."
-		exit 1
-	fi
-	echo -n "Loading DAHDI hardware modules:"
-	for x in $MODULES; do 
-		eval localARGS="\$${x}_ARGS"
-		if modprobe ${x} ${localARGS} 2> /dev/null; then
-			echo -n " $x"
-			echo "."
+	MODULES=""
+	cat "/etc/dahdi/modules" | grep "^[^\#]" | {
+		foundone=false
+		echo -ne $"Loading DAHDI hardware modules:\n"
+		while read line; do
+			foundone=true
+			echo -ne $"   ${line}..."
+			if ! modprobe $line 2> /dev/null; then
+				echo -ne $"ERROR\n"
+			else
+				echo -ne $"DONE\n"
+			fi
+		done
+		echo -ne $"\n"
+		if ! $foundone; then
+			echo "There aren't any DAHDI hardware modules specified to "
+			echo "load.  Please update /etc/dahdi/modules in order to "
+			echo "specify the modules to load."
+			exit 1
 		fi
-	done
+	}
 	TMOUT=$DAHDI_DEV_TIMEOUT # max secs to wait
 	while [ ! -d /dev/dahdi ] ; do
  		sleep 1
@@ -204,11 +210,10 @@ case "$1" in
   stop)
 	# Unload drivers
 	#shutdown_dynamic # FIXME: needs test from someone with dynamic spans
-	echo -n "Unloading DAHDI hardware drivers:"
+	echo -ne $"Unloading DAHDI hardware drivers:"
   	unload_module dahdi
 	RETVAL=$?
-	echo "."
-
+	echo -ne $" DONE\n"
 	if [ "$LOCKFILE" != '' ]; then
 		[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
 	fi
