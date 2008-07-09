@@ -322,7 +322,7 @@ distclean: dist-clean
 
 dist-clean: clean
 	@$(MAKE) -C menuselect dist-clean
-	rm -f makeopts menuselect.makeopts menuselect-tree
+	rm -f makeopts menuselect.makeopts menuselect-tree build_tools/menuselect-deps
 	rm -f config.log config.status
 
 config.status: configure
