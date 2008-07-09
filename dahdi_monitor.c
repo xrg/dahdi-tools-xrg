@@ -351,6 +351,7 @@ int main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			fprintf(stderr, "Writing combined stream to %s\n", optarg);
+			savefile = 1;
 			break;
 		case 'F':
 			if (multichannel) {
