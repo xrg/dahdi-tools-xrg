@@ -12,6 +12,9 @@
 #XPP_FIRMWARE_DIR=/usr/share/dahdi
 #XPP_HOTPLUG_DISABLED=yes
 
+# Modules configuration was in this file in Zaptel. In DAHDI it was
+# moved to /etc/dahdi/modules . Refer to Refer to modules.sample .
+
 # By default, DAHDI will not load any modules.  Please uncomment the 
 # as per your requirements; modules to load/unload
 #Module Name			  Hardware
