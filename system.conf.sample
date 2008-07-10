@@ -286,8 +286,8 @@ defaultzone=us
 #mulaw=1-10
 #deflaw=5
 #
-# Configuring modular echo cancellers
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Echo Cancellers
+# ~~~~~~~~~~~~~~~
 # DAHDI uses modular echocancellers that are configured per channel.  The echo
 # cancellers are compiled and configured as part of the dahdi-linux package.
 # You can specify in this file the default echo canceller to use for a given
@@ -302,8 +302,8 @@ defaultzone=us
 #
 # Example:
 # Configure channels 1 through 8 to use the mg2 echocanceller
-# echocanceller=mg2,1-8 
+#echocanceller=mg2,1-8 
 #
 # And change channel 2 to use the kb1 echocanceller.
-# echocanceller=kb1,2
+#echocanceller=kb1,2
 #
