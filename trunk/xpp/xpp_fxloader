@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # xpp_fxloader: load Xorcom Astribank (XPP) firmware
 #
@@ -54,7 +54,6 @@ export PATH
 
 me=`basename $0`
 DEFAULTS="/etc/dahdi/init.conf"
-status_fd=3
 
 if [ -t 2 ]; then
 	LOGGER="logger -i -t '$me' -s"
@@ -67,8 +66,6 @@ DEVUSB_PREFIX=/dev/bus/usb
 USB_PREFIX=
 
 XPP_FIRMWARE_DIR="${XPP_FIRMWARE_DIR:-/usr/share/dahdi}"
-
-FIRM_FXS=$XPP_FIRMWARE_DIR/FPGA_FXS.hex
 
 FPGA_LOAD=${FPGA_LOAD:-/usr/sbin/fpga_load}
 USB_FW="${USB_FW:-USB_FW.hex}"
@@ -134,11 +131,8 @@ load_fpga() {
 
 	$LOGGER "FPGA Firmware into $dev"
 	sleep_if_race
-	(
-		$FPGA_LOAD -D "$dev" -I "$XPP_FIRMWARE_DIR/$fw" -i
-		echo $? >$status_fd
-	) | $LOGGER
-	status=`cat <$status_fd`
+	$FPGA_LOAD -D "$dev" -I "$XPP_FIRMWARE_DIR/$fw" -i | $LOGGER
+	status=$PIPESTATUS
 	if [ "$status" != 0 ]; then
 		echo "fpga_load failed with status $status" | $LOGGER
 		exit 77
