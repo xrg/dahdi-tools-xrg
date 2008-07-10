@@ -1264,7 +1264,7 @@ static struct handler {
 	{ "preemp", pre_emp },
 	{ "channel", rad_chanconfig },
 	{ "channels", rad_chanconfig },
-	{ "echocanceler", setechocan },
+	{ "echocanceller", setechocan },
 };
 
 static char *readline()
