@@ -184,12 +184,13 @@ tonezones.txt: zonedata.c
 		print (($$1 eq "country")? "* $$2\t":"$$2\n");' $<  \
 	>$@
 
-system.conf.asciidoc: doc/system.conf
+%.asciidoc: %.sample
 	perl -n -e \
 		'if (/^#($$|\s)(.*)/){ if (!$$in_doc){print "\n"}; $$in_doc=1; print "$$2\n" } else { if ($$in_doc){print "\n"}; $$in_doc=0; print "  $$_" }' \
-		$< >$@
+		$< \
+	| perl -p -e 'if (/^  #?(\w+)=/ && ! exists $$cfgs{$$1}){my $$cfg = $$1; $$cfgs{$$cfg} = 1; s/^/\n[[cfg_$$cfg]]\n/}'  >$@
 
-README.html: README system.conf.asciidoc tonezones.txt
+README.html: README system.conf.asciidoc init.conf.asciidoc tonezones.txt
 	$(ASCIIDOC) -n -a toc -a toclevels=3 $<
 
 kernel/xpp/README.Astribank.html: kernel/xpp/README.Astribank
@@ -227,7 +228,7 @@ ifneq (,$(BINS))
 	install -m 644 $(MAN_PAGES) $(DESTDIR)$(MAN_DIR)/
 endif
 ifeq (,$(wildcard $(DESTDIR)$(CONFIG_FILE)))
-	$(INSTALL) -D -m 644 doc/system.conf $(DESTDIR)$(CONFIG_FILE)
+	$(INSTALL) -D -m 644 system.conf.sample $(DESTDIR)$(CONFIG_FILE)
 endif
 
 install-libs: libs
@@ -316,7 +317,7 @@ clean:
 	rm -f core
 	rm -f dahdi_cfg-shared fxstest
 	rm -rf $(GROFF_HTML)
-	rm -rf README.html xpp/README.Astribank.html system.conf.asciidoc
+	rm -rf README.html xpp/README.Astribank.html *.asciidoc tonezones.txt
 
 distclean: dist-clean
 
