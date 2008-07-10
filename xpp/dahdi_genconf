@@ -72,6 +72,7 @@ my $defaultzone = $lc_country;
 my $bri_sig_style = 'bri_ptmp';
 my $brint_overlap = 'no';
 my $pri_termtype = 'SPAN/* TE';
+my $echo_can = 'mg2';
 
 my %dahdi_default_vars = (
 		GENCONF_FILE		=> \$file,
@@ -95,6 +96,7 @@ my %dahdi_default_vars = (
 		bri_sig_style		=> \$bri_sig_style,
 		brint_overlap		=> \$brint_overlap,
 		pri_termtype		=> \$pri_termtype,
+		echo_can		=> \$echo_can,
 		);
 
 sub map_dahdi_defaults {
@@ -180,6 +182,14 @@ sub gen_dahdi_signalling($) {
 		printf "# astbanktype: output\n";
 	}
 	printf "$sig=$num\n";
+	print_echo_can($num);
+}
+
+sub print_echo_can($) {
+	my $chans = shift; # channel or range of channels.
+	return if ($echo_can eq 'none');
+
+	print "echocanceller=$echo_can,$chans\n";
 }
 
 my $bri_te_last_timing = 1;
@@ -211,6 +221,7 @@ sub gen_dahdi_digital($) {
 	printf "bchan=%s\n", bchan_range($span);
 	my $dchan = $span->dchan();
 	printf "dchan=%d\n", $dchan->num();
+	print_echo_can(bchan_range($span));
 }
 
 sub gen_dahdiconf($) {
