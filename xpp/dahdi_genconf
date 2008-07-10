@@ -73,6 +73,7 @@ my $bri_sig_style = 'bri_ptmp';
 my $brint_overlap = 'no';
 my $pri_termtype = 'SPAN/* TE';
 my $echo_can = 'mg2';
+my $bri_hardhdlc= 'no';
 
 my %dahdi_default_vars = (
 		GENCONF_FILE		=> \$file,
@@ -97,6 +98,7 @@ my %dahdi_default_vars = (
 		brint_overlap		=> \$brint_overlap,
 		pri_termtype		=> \$pri_termtype,
 		echo_can		=> \$echo_can,
+		bri_hardhdlc		=> \$bri_hardhdlc,
 		);
 
 sub map_dahdi_defaults {
@@ -208,6 +210,11 @@ sub gen_dahdi_digital($) {
 	my $span_yellow = $span->yellow();
 	$span_yellow = (defined $span_yellow) ? ",$span_yellow" : '';
 
+	my $dchan_type = 'dchan';
+	if ($span->is_bri() && ($bri_hardhdlc eq 'yes')) {
+		$dchan_type = 'hardhdlc';
+	}
+
 	$timing = ($termtype eq 'NT') ? 0 : $bri_te_last_timing++;
 	printf "span=%d,%d,%d,%s,%s%s%s\n",
 			$num,
@@ -220,7 +227,7 @@ sub gen_dahdi_digital($) {
 	printf "# termtype: %s\n", lc($termtype);
 	printf "bchan=%s\n", bchan_range($span);
 	my $dchan = $span->dchan();
-	printf "dchan=%d\n", $dchan->num();
+	printf "$dchan_type=%d\n", $dchan->num();
 	print_echo_can(bchan_range($span));
 }
 
