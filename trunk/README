@@ -166,6 +166,7 @@ TODO: building with a local copy of DAHDI?
 Configuration
 -------------
 Configuration for DAHDI resides under /etc/dahdi . 
+
 /etc/dahdi/system.conf
 ~~~~~~~~~~~~~~~~~~~~~~
 The main method to configure DAHDI devices is using the utility
@@ -279,7 +280,7 @@ include::system.conf.asciidoc[]
 
 
 Sample init.conf
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 include::init.conf.asciidoc[]
 
 
@@ -301,29 +302,25 @@ In xpp/utils there are several utilities that use those modules:
 - General: lsdahdi, dahdi_genconf, dahdi_hardware
 
 The DAHDI perl modules will currently only be automatically installed if you
-happen to install the xpp module. This should be the default, but you can also
-initiate it manually by running:
+happen to install the xpp module. Those utilities require the perl modules 
+to be installed, however they will also look for them in the directory 
+perl_modules, and thus can be run directly from the DAHDI source tree. For 
+example:
 
-  make -C xpp/utils install
-
-Those utilities require the perl modules to be installed, however they
-will also look for them in the directory zconf, and thus can be run
-directly from the DAHDI source tree. For example:
-
-  ./xpp/utils/dahdi_hardware
+  ./xpp/dahdi_hardware -v
 
 To get usage information on a program, you can also use perldoc
 (sometimes provided in a package separate from perl itself). For
 instance:
 
-  perldoc ./xpp/utils/lsdahdi
+  perldoc ./xpp/lsdahdi
 
 Some of them are specific for the Xorcom Astribank and described in its
 docuemntation. the others are:
 
 lsdahdi:: 
   A somewhat glorified `cat /proc/dahdi/*`.
-zapconf:: 
+dahdi_genconf:: 
   An currently experimental and intended to eventually replace
   genzaptelconf by a more maintainable code.
 dahdi_drivers::
@@ -536,8 +533,8 @@ that is included in the ppp/ subdirectory. To install it:
    CONFIG_HDLC .
 
 
-What is the license for the DAHDI drivers?
-------------------------------------------
+License
+-------
 libpri is distributed under the terms of the GNU General Public License, 
 which permit its use and linking with other GPL'd software only.  
 The GNU GPL is included in the file LICENSE in this directory.
@@ -547,15 +544,10 @@ not appropriate (e.g. a proprietary embedded system), licenses under more
 flexible terms can be readily obtained through Digium, Inc.at reasonable cost.
 
 
-How do I report bugs or contribute?
------------------------------------
+Reporting Bugs
+--------------
 Please report bug and patches to the Asterisk.org bug tracker at
 http://bugs.digium.com in the "DAHDI" category.
-
-
-Does anything use this library so far?
---------------------------------------
-Yes, the Asterisk Open Source PBX does. http://www.asterisk.org
 
 
 Links
@@ -563,6 +555,5 @@ Links
 - http://asterisk.org/[] - The Asterisk PBX
 - http://voip-info.org/[]
 - http://voip-info.org/wiki/view/Asterisk+Zaptel+Installation[]
-- http://www.zapatatelephony.org/[] - A historical site.
-- http://rapid.tzafrir.org.il/docs/README.html[Up-to-date HTML version
+- http://docs.tzafrir.org.il/dahdi/README.html[Up-to-date HTML version
   of this file]

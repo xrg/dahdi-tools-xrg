@@ -113,7 +113,7 @@ BINS:=$(filter-out $(MENUSELECT_UTILS),$(BINS))
 MAN_PAGES:=$(wildcard $(BINS:%=doc/%.8))
 
 # All the man pages. Not just installed ones:
-GROFF_PAGES	:= $(wildcard doc/*.8 kernel/xpp/utils/*.8)
+GROFF_PAGES	:= $(wildcard doc/*.8 xpp/*.8)
 GROFF_HTML	:= $(GROFF_PAGES:%=%.html)
 
 all: menuselect.makeopts 
