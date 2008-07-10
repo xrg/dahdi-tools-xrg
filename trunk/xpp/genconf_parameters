@@ -44,6 +44,12 @@
 #echo_can		oslec
 #echo_can		none  # to aboid echo cancellers altogether
 
+# bri_hardhdlc: If this parameter is set to 'yes', in the entries for
+# BRI cards 'hardhdlc' will be used instead of 'dchan' (an alias for
+# 'fcshdlc').
+#
+#bri_hardhdlc		yes
+
 # pri_types contains a list of settings:
 # Currently the only setting is for TE or NT (the default is TE)
 #
