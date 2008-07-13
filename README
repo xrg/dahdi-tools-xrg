@@ -294,15 +294,15 @@ include::tonezones.txt[]
 
 DAHDI PERL modules
 -------------------
-The directory xpp/utils has, in addition to helper utilities for the
+The directory xpp has, in addition to helper utilities for the
 Xorcom Astribank, a collection of perl modules to provide information
-related to DAHDI. The perl modules themselves are under xpp/utils/zconf .
-In xpp/utils there are several utilities that use those modules:
+related to DAHDI. The perl modules themselves are under xpp/perl_modules .
+In xpp there are several utilities that use those modules:
 - xpp-specific:dahdi_registration, xpp_sync, xpp_blink .
 - General: lsdahdi, dahdi_genconf, dahdi_hardware
 
 The DAHDI perl modules will currently only be automatically installed if you
-happen to install the xpp module. Those utilities require the perl modules 
+happen to install the xpp directory. Those utilities require the perl modules 
 to be installed, however they will also look for them in the directory 
 perl_modules, and thus can be run directly from the DAHDI source tree. For 
 example:
@@ -320,9 +320,9 @@ docuemntation. the others are:
 
 lsdahdi:: 
   A somewhat glorified `cat /proc/dahdi/*`.
-dahdi_genconf:: 
-  An currently experimental and intended to eventually replace
-  genzaptelconf by a more maintainable code.
+dahdi_genconf::
+  Generates configuration based on the existing Zaptel channels and on
+  /etc/dahdi/genconf_parameters (replaces genzaptelconf as well).
 dahdi_drivers::
   A two-liner script (not installed by default) that simply returns the
   modules that should be modprobed on this system.
