@@ -148,7 +148,6 @@ RETVAL=0
 # See how we were called.
 case "$1" in
   start)
-	MODULES=""
 	cat "/etc/dahdi/modules" | grep "^[^\#]" | {
 		foundone=false
 		echo -ne $"Loading DAHDI hardware modules:\n"

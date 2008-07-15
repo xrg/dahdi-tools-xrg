@@ -296,10 +296,10 @@ DAHDI PERL modules
 -------------------
 The directory xpp has, in addition to helper utilities for the
 Xorcom Astribank, a collection of perl modules to provide information
-related to DAHDI. The perl modules themselves are under xpp/perl_modules .
-In xpp there are several utilities that use those modules:
-- xpp-specific:dahdi_registration, xpp_sync, xpp_blink .
-- General: lsdahdi, dahdi_genconf, dahdi_hardware
+related to DAHDI. The perl modules themselves are under xpp/perl_modules/ .
+In xpp/ there are several utilities that use those modules:
+- xpp-specific: dahdi_registration, xpp_sync, xpp_blink .
+- General: lsdahdi, dahdi_genconf, dahdi_hardware, dahdi_drivers
 
 The DAHDI perl modules will currently only be automatically installed if you
 happen to install the xpp directory. Those utilities require the perl modules 
