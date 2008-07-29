@@ -170,12 +170,12 @@ static const char *sigtype_to_str(const int sig)
 
 int ind_ioctl(int channo, int fd, int op, void *data)
 {
-DAHDI_INDIRECT_DATA ind;
+	struct dahdi_indirect_data ind;
 
 	ind.chan = channo;
 	ind.op = op;
 	ind.data = data;
-	return ioctl(fd,DAHDI_INDIRECT,&ind);
+	return ioctl(fd, DAHDI_INDIRECT, &ind);
 }
 
 static void clear_fields()

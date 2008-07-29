@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	int fd;
 	int res, x;
 	int i;
-	DAHDI_PARAMS tp;
+	struct dahdi_params tp;
 	int bs = BLOCK_SIZE;
 	int skipcount = 10;
 	unsigned char c=0,c1=0;

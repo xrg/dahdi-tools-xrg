@@ -1,11 +1,12 @@
-#define FAST_HDLC_NEED_TABLES
-#include "kernel/fasthdlc.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+#define FAST_HDLC_NEED_TABLES
+#include <dahdi/fasthdlc.h>
 
 #include "version.h"
 

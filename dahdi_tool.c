@@ -49,7 +49,7 @@
 static int ctl = -1;
 static int span_max_chan_pos;
 
-static DAHDI_SPANINFO s[DAHDI_MAX_SPANS];
+static struct dahdi_spaninfo s[DAHDI_MAX_SPANS];
 
 static char *dahdi_txlevelnames[] = {
 "0 db (CSU)/0-133 feet (DSX-1)",
@@ -176,7 +176,7 @@ static void sel_callback(newtComponent c, void *cbdata)
 static void show_bits(int span, newtComponent bitbox, newtComponent inuse, newtComponent levels, newtComponent bpvcount,
 						newtComponent alarms, newtComponent syncsrc, newtComponent irqmisses)
 {
-	DAHDI_PARAMS zp;
+	struct dahdi_params zp;
 	int x;
 	int res;
 	char c;
@@ -367,7 +367,7 @@ static void show_span(int span)
 
 	span_max_chan_pos = s[span].totalchans;
 	for (x=0;x<DAHDI_MAX_CHANNELS;x++) {
-		DAHDI_PARAMS zp;
+		struct dahdi_params zp;
 		int res;
 		memset(&zp, 0, sizeof(zp));
 		zp.channo = x;

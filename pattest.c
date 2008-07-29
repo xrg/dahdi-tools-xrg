@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 {
 	int fd;
 	int res, x;
-	DAHDI_PARAMS tp;
+	struct dahdi_params tp;
 	int bs = BLOCK_SIZE;
 	unsigned char c=0;
 	unsigned char outbuf[BLOCK_SIZE];
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 		res = read(fd, outbuf, res);
 		if (res < bs) {
 			int e;
-			DAHDI_SPANINFO zi;
+			struct dahdi_spaninfo zi;
 			res = ioctl(fd,DAHDI_GETEVENT,&e);
 			if (res == -1)
 			{

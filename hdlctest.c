@@ -9,9 +9,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <dahdi/user.h>
-#include "bittest.h"
+
 #define FAST_HDLC_NEED_TABLES
-#include "kernel/fasthdlc.h"
+#include <dahdi/fasthdlc.h>
+
+#include "bittest.h"
 
 #include "version.h"
 
@@ -133,8 +135,8 @@ int main(int argc, char *argv[])
 {
 	int fd;
 	int res, x;
-	DAHDI_PARAMS tp;
-	DAHDI_BUFFERINFO bi;
+	struct dahdi_params tp;
+	struct dahdi_bufferinfo bi;
 	int bs = BLOCK_SIZE;
 	int pos = 0;
 	unsigned char inbuf[BLOCK_SIZE];
