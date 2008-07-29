@@ -43,7 +43,10 @@ CFLAGS+=$(CFLAGS_PPC) $(CFLAGS_x86_64)
 
 ROOT_PREFIX=
 
-CFLAGS+=$(DAHDI_INCLUDE)
+# extra cflags to build dependencies. Recursively expanded.
+MAKE_DEPS= -MD -MT $@ -MF .$(subst /,_,$@).d -MP
+
+CFLAGS+=$(DAHDI_INCLUDE) $(MAKE_DEPS)
 
 CHKCONFIG	:= $(wildcard /sbin/chkconfig)
 UPDATE_RCD	:= $(wildcard /usr/sbin/update-rc.d)
@@ -350,3 +353,7 @@ menuselect-tree: dahdi.xml
 	@build_tools/make_tree > $@
 
 .PHONY: menuselect distclean dist-clean clean version.h all _all install programs tests devel data config update install-programs install-libs install-utils-subdirs utils-subdirs
+
+ifneq ($(wildcard .*.d),)
+   include .*.d
+endif
