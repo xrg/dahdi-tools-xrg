@@ -5,8 +5,6 @@
 #
 #
 
-CFLAGS+=-DBUILDING_TONEZONE
-
 # If the file .dahdi.makeopts is present in your home directory, you can
 # include all of your favorite menuselect options so that every time you download
 # a new version of Asterisk, you don't have to run menuselect to set them.
@@ -34,19 +32,18 @@ SUBDIRS_UTILS := xpp
 OPTFLAGS=-O2
 CFLAGS+=-I. $(OPTFLAGS) -g -fPIC -Wall -DBUILDING_TONEZONE #-DTONEZONE_DRIVER
 ifneq (,$(findstring ppc,$(UNAME_M)))
-CFLAGS_PPC:=-fsigned-char
+CFLAGS+=-fsigned-char
 endif
 ifneq (,$(findstring x86_64,$(UNAME_M)))
-CFLAGS_x86_64:=-m64
+CFLAGS+=-m64
 endif
-CFLAGS+=$(CFLAGS_PPC) $(CFLAGS_x86_64)
 
 ROOT_PREFIX=
 
 # extra cflags to build dependencies. Recursively expanded.
 MAKE_DEPS= -MD -MT $@ -MF .$(subst /,_,$@).d -MP
 
-CFLAGS+=$(DAHDI_INCLUDE) $(MAKE_DEPS)
+CFLAGS+=$(DAHDI_INCLUDE)
 
 CHKCONFIG	:= $(wildcard /sbin/chkconfig)
 UPDATE_RCD	:= $(wildcard /usr/sbin/update-rc.d)
@@ -109,8 +106,6 @@ UTILS		= dahdi_tool dahdi_test dahdi_monitor dahdi_speed sethdlc dahdi_cfg \
 UTILS		+= patgen pattest patlooptest hdlcstress hdlctest hdlcgen \
 		   hdlcverify timertest
 
-UTILSO		= $(UTILS:%=%.o)
-
 BINS:=fxotune fxstest sethdlc dahdi_cfg dahdi_diag dahdi_monitor dahdi_speed dahdi_test dahdi_scan dahdi_tool
 BINS:=$(filter-out $(MENUSELECT_UTILS),$(BINS))
 MAN_PAGES:=$(wildcard $(BINS:%=doc/%.8))
@@ -144,20 +139,21 @@ version.h:
 
 tests: patgen pattest patlooptest hdlcstress hdlctest hdlcgen hdlcverify timertest
 
-zonedata.o: tonezone.h
+$(UTILS): %: %.o
 
-zonedata.lo: zonedata.c tonezone.h
-	$(CC) -c $(CFLAGS) -o $@ $<
+%.o: %.c
+	$(CC) $(CFLAGS) $(MAKE_DEPS) -c -o $@ $<
 
-tonezone.o: tonezone.h
+%.lo: %.c
+	$(CC) $(CFLAGS) $(MAKE_DEPS) -c -o $@ $<
 
-tonezone.lo: tonezone.c tonezone.h
-	$(CC) -c $(CFLAGS) -o $@ $<
+%: %.o
+	$(CC) $(LDFLAGS) -o $@ $^
 
 prereq: config.status version.h
 
-dahdi_tool.o: CFLAGS+=$(NEWT_INCLUDE)
-dahdi_tool: LDLIBS+=$(NEWT_LIB)
+dahdi_tool: CFLAGS+=$(NEWT_INCLUDE)
+dahdi_tool: LDFLAGS+=$(NEWT_LIB)
 
 dahdi_speed: CFLAGS+=-O0
 
@@ -166,21 +162,14 @@ $(LTZ_A): $(LTZ_A_OBJS)
 	ranlib $@
 
 $(LTZ_SO): $(LTZ_SO_OBJS)
-	$(CC) $(CFLAGS) -shared -Wl,-soname,$(LTZ_SO).$(LTZ_SO_MAJOR_VER).$(LTZ_SO_MINOR_VER) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lm
+	$(CC) $(CFLAGS) -shared -Wl,-soname,$(LTZ_SO).$(LTZ_SO_MAJOR_VER).$(LTZ_SO_MINOR_VER) -o $@ $^ -lm
 
-dahdi_cfg: dahdi_cfg.o $(LTZ_A)
-dahdi_cfg: LDLIBS+=-lm
-
-dahdi_cfg-shared: dahdi_cfg.o $(LTZ_SO)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lm
-
-# FIXME: we assume CC can build the C++ modules:
-complex.o mknotch.o: %.o: %.cc
-	$(CC) $(CFLAGS) -o $@ -c $<
+dahdi_cfg: $(LTZ_A)
+dahdi_cfg: LDFLAGS+=-lm
 
 fxstest: $(LTZ_SO)
-fxstest: LDLIBS+=-lm
-fxotune: LDLIBS+=-lm
+fxstest: LDFLAGS+=-lm
+fxotune: LDFLAGS+=-lm
 
 tonezones.txt: zonedata.c
 	perl -ne 'next unless (/\.(country|description) = *"([^"]*)/); \
@@ -204,12 +193,6 @@ kernel/xpp/README.Astribank.html: kernel/xpp/README.Astribank
 	man -Thtml $^ >$@
 
 htmlman: $(GROFF_HTML)
-
-$(UTILS): %: %.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-
-$(UTILSO): %.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
 
 install: all install-programs
 	@echo "###################################################"
@@ -328,6 +311,7 @@ dist-clean: clean
 	@$(MAKE) -C menuselect dist-clean
 	rm -f makeopts menuselect.makeopts menuselect-tree build_tools/menuselect-deps
 	rm -f config.log config.status
+	rm -f .*.d
 
 config.status: configure
 	@CFLAGS="" ./configure
@@ -352,7 +336,7 @@ menuselect-tree: dahdi.xml
 	@echo "Generating input for menuselect ..."
 	@build_tools/make_tree > $@
 
-.PHONY: menuselect distclean dist-clean clean version.h all _all install programs tests devel data config update install-programs install-libs install-utils-subdirs utils-subdirs
+.PHONY: menuselect distclean dist-clean clean all _all install programs tests devel data config update install-programs install-libs install-utils-subdirs utils-subdirs prereq
 
 ifneq ($(wildcard .*.d),)
    include .*.d
