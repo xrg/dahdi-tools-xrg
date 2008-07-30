@@ -130,7 +130,7 @@ programs: libs utils
 
 utils: $(BINS) utils-subdirs
 
-version.h:
+version.h: FORCE
 	@TOOLSVERSION="${TOOLSVERSION}" build_tools/make_version_h > $@.tmp
 	@if cmp -s $@.tmp $@ ; then :; else \
 		mv $@.tmp $@ ; \
@@ -337,6 +337,8 @@ menuselect-tree: dahdi.xml
 	@build_tools/make_tree > $@
 
 .PHONY: menuselect distclean dist-clean clean all _all install programs tests devel data config update install-programs install-libs install-utils-subdirs utils-subdirs prereq
+
+FORCE:
 
 ifneq ($(wildcard .*.d),)
    include .*.d
