@@ -19,4 +19,4 @@
  *
  */
 
-extern const char *dahdi_tools_version;
+extern const char dahdi_tools_version[];
