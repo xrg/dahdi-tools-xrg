@@ -1338,7 +1338,7 @@ static void usage(char *argv0, int exitcode)
 		c = argv0;
 	else
 		c++;
-	fprintf(stderr, "%s\n", tools_version);
+	fprintf(stderr, "%s\n", dahdi_tools_version);
 	fprintf(stderr, 
 		"Usage: %s [options]\n"
 		"    Valid options are:\n"
@@ -1393,7 +1393,7 @@ int main(int argc, char *argv[])
 	}
 	
 	if (verbose) {
-		fprintf(stderr, "%s\n", tools_version);
+		fprintf(stderr, "%s\n", dahdi_tools_version);
 	}
 
 	if (fd == -1) fd = open(MASTER_DEVICE, O_RDWR);

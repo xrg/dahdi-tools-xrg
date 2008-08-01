@@ -83,9 +83,9 @@ endif
 endif
 
 LTZ_A:=libtonezone.a
-LTZ_A_OBJS:=zonedata.o tonezone.o
+LTZ_A_OBJS:=zonedata.o tonezone.o version.o
 LTZ_SO:=libtonezone.so
-LTZ_SO_OBJS:=zonedata.lo tonezone.lo
+LTZ_SO_OBJS:=zonedata.lo tonezone.lo version.o
 LTZ_SO_MAJOR_VER:=1
 LTZ_SO_MINOR_VER:=0
 
@@ -130,7 +130,7 @@ programs: libs utils
 
 utils: $(BINS) utils-subdirs
 
-version.h: FORCE
+version.c: FORCE
 	@TOOLSVERSION="${TOOLSVERSION}" build_tools/make_version_h > $@.tmp
 	@if cmp -s $@.tmp $@ ; then :; else \
 		mv $@.tmp $@ ; \
@@ -141,6 +141,8 @@ tests: patgen pattest patlooptest hdlcstress hdlctest hdlcgen hdlcverify timerte
 
 $(UTILS): %: %.o
 
+$(UTILS): version.o
+
 %.o: %.c
 	$(CC) $(CFLAGS) $(MAKE_DEPS) -c -o $@ $<
 
@@ -150,7 +152,7 @@ $(UTILS): %: %.o
 %: %.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-prereq: config.status version.h
+prereq: config.status
 
 dahdi_tool: CFLAGS+=$(NEWT_INCLUDE)
 dahdi_tool: LDFLAGS+=$(NEWT_LIB)
