@@ -131,7 +131,7 @@ programs: libs utils
 utils: $(BINS) utils-subdirs
 
 version.c: FORCE
-	@TOOLSVERSION="${TOOLSVERSION}" build_tools/make_version_h > $@.tmp
+	@TOOLSVERSION="${TOOLSVERSION}" build_tools/make_version_c > $@.tmp
 	@if cmp -s $@.tmp $@ ; then :; else \
 		mv $@.tmp $@ ; \
 	fi
