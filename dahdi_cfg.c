@@ -211,11 +211,21 @@ static int error(char *fmt, ...)
 	return res;
 }
 
-static void trim(char *buf)
+static char *trim(char *buf)
 {
-	/* Trim off trailing spaces, tabs, etc */
-	while(strlen(buf) && (buf[strlen(buf) -1] < 33))
-		buf[strlen(buf) -1] = '\0';
+	size_t len;
+
+	while (*buf && (*buf < 33)) {
+		buf++;
+	}
+
+	len = strlen(buf);
+
+	while (len && buf[len-1] < 33) {
+		buf[--len] = '\0';
+	}
+
+	return buf;
 }
 
 static int parseargs(char *input, char *output[], int maxargs, char sep)
@@ -255,12 +265,14 @@ int dspanconfig(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 4, ',');
 	if (res != 4) {
 		error("Incorrect number of arguments to 'dynamic' (should be <driver>,<address>,<num channels>, <timing>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[2], "%d", &chans);
 	if ((res == 1) && (chans < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid number of channels '%s', should be a number > 0.\n", realargs[2]);
+		return -1;
 	}
 
 	res = sscanf(realargs[3], "%d", &timing);
@@ -268,6 +280,7 @@ int dspanconfig(char *keyword, char *args)
 		res = -1;
 	if (res != 1) {
 		error("Invalid timing '%s', should be a number > 0.\n", realargs[3]);
+		return -1;
 	}
 
 
@@ -290,6 +303,7 @@ int spanconfig(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 7, ',');
 	if ((res < 5) || (res > 7)) {
 		error("Incorrect number of arguments to 'span' (should be <spanno>,<timing>,<lbo>,<framing>,<coding>[, crc4 | yellow [, yellow]])\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%i", &span);
 	if (res != 1) {
@@ -375,8 +389,10 @@ int apply_channels(int chans[], char *argstr)
 	int start, finish;
 	char argcopy[256];
 	res = parseargs(argstr, args, DAHDI_MAX_CHANNELS, ',');
-	if (res < 0)
+	if (res < 0) {
 		error("Too many arguments...  Max is %d\n", DAHDI_MAX_CHANNELS);
+		return -1;
+	}
 	for (x=0;x<res;x++) {
 		if (strchr(args[x], '-')) {
 			/* It's a range */
@@ -650,7 +666,7 @@ static int setechocan(char *keyword, char *args)
 	for (x = 0; x < DAHDI_MAX_CHANNELS; x++) {
 		if (chans[x]) {
 			ae[x].chan = x;
-			strcpy(ae[x].echocan, echocan);
+			dahdi_copy_string(ae[x].echocan, echocan, sizeof(ae[0].echocan));
 		}
 	}
 
@@ -701,18 +717,21 @@ int ctcss(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 3, ',');
 	if (res != 3) {
 		error("Incorrect number of arguments to 'ctcss' (should be <rxtone>,<rxtag>,<txtone>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &rxtone);
 	if ((res == 1) && (rxtone < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid rxtone '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 	res = sscanf(realargs[1], "%i", &rxtag);
 	if ((res == 1) && (rxtag < 0))
 		res = -1;
 	if (res != 1) {
 		error("Invalid rxtag '%s', should be a number > 0.\n", realargs[1]);
+		return -1;
 	}
 	if ((*realargs[2] == 'D') || (*realargs[2] == 'd'))
 	{
@@ -724,11 +743,13 @@ int ctcss(char *keyword, char *args)
 		res = -1;
 	if (res != 1) {
 		error("Invalid txtone '%s', should be a number > 0.\n", realargs[2]);
+		return -1;
 	}
 
 	if (toneindex >= NUM_TONES)
 	{
 		error("Cannot specify more then %d CTCSS tones\n",NUM_TONES);
+		return -1;
 	}
 	rxtones[toneindex] = rxtone;
 	rxtags[toneindex] = rxtag;
@@ -746,12 +767,14 @@ int dcsrx(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'dcsrx' (should be <rxtone>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &rxtone);
 	if ((res == 1) && (rxtone < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid rxtone '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	rxtones[0] = rxtone;
@@ -768,6 +791,7 @@ int tx(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'tx' (should be <txtone>)\n");
+		return -1;
 	}
 	if ((*realargs[0] == 'D') || (*realargs[0] == 'd'))
 	{
@@ -779,6 +803,7 @@ int tx(char *keyword, char *args)
 		res = -1;
 	if (res != 1) {
 		error("Invalid tx (tone) '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	txtones[0] = txtone | isdcs;
@@ -794,12 +819,14 @@ int debounce_time(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'debouncetime' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if ((res == 1) && (val < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	debouncetime = val;
@@ -815,12 +842,14 @@ int burst_time(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'bursttime' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if ((res == 1) && (val < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	bursttime = val;
@@ -836,10 +865,12 @@ int tx_gain(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'txgain' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	txgain = val;
@@ -855,10 +886,12 @@ int rx_gain(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'rxgain' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	rxgain = val;
@@ -874,12 +907,14 @@ int de_emp(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'de-emp' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if ((res == 1) && (val < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	deemp = val;
@@ -895,12 +930,14 @@ int pre_emp(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'pre_emp' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if ((res == 1) && (val < 1))
 		res = -1;
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 
 	preemp = val;
@@ -916,6 +953,7 @@ int invert_cor(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'invertcor' (should be <value>)\n");
+		return -1;
 	}
 	if ((*realargs[0] == 'y') || (*realargs[0] == 'Y')) val = 1;
 	else if ((*realargs[0] == 'n') || (*realargs[0] == 'N')) val = 0;
@@ -926,6 +964,7 @@ int invert_cor(char *keyword, char *args)
 			res = -1;
 		if (res != 1) {
 			error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+			return -1;
 		}
 	}
 	invertcor = (val > 0);
@@ -941,6 +980,7 @@ int ext_tone(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'exttone' (should be <value>)\n");
+		return -1;
 	}
 	if ((*realargs[0] == 'y') || (*realargs[0] == 'Y')) val = 1;
 	else if ((*realargs[0] == 'n') || (*realargs[0] == 'N')) val = 0;
@@ -953,6 +993,7 @@ int ext_tone(char *keyword, char *args)
 		if (val > 2) res = -1;
 		if (res != 1) {
 			error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+			return -1;
 		}
 	}
 	exttone = val;
@@ -969,6 +1010,7 @@ int cor_thresh(char *keyword, char *args)
 	argc = res = parseargs(args, realargs, 1, ',');
 	if (res != 1) {
 		error("Incorrect number of arguments to 'corthresh' (should be <value>)\n");
+		return -1;
 	}
 	res = sscanf(realargs[0], "%d", &val);
 	if ((res == 1) && (val < 1))
@@ -980,6 +1022,7 @@ int cor_thresh(char *keyword, char *args)
 	if (!corthreshes[x]) res = -1;
 	if (res != 1) {
 		error("Invalid value '%s', should be a number > 0.\n", realargs[0]);
+		return -1;
 	}
 	corthresh = x + 1;
 	return 0;
@@ -994,8 +1037,10 @@ int rad_apply_channels(int chans[], char *argstr)
 	int start, finish;
 	char argcopy[256];
 	res = parseargs(argstr, args, DAHDI_MAX_CHANNELS, ',');
-	if (res < 0)
+	if (res < 0) {
 		error("Too many arguments...  Max is %d\n", DAHDI_MAX_CHANNELS);
+		return -1;
+	}
 	for (x=0;x<res;x++) {
 		if (strchr(args[x], '-')) {
 			/* It's a range */
@@ -1063,8 +1108,9 @@ static int rad_chanconfig(char *keyword, char *args)
 			if (n)
 			{
 				p.radpar = DAHDI_RADPAR_INITTONE;
-				if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1)
+				if (ind_ioctl(x,fd,DAHDI_RADIO_SETPARAM,&p) == -1) {
 					error("Cannot init tones for channel %d\n",x);
+				}
 				if (!rxtones[0]) for(i = 1; i <= n; i++)
 				{
 					if (rxtones[i])
@@ -1351,44 +1397,50 @@ int main(int argc, char *argv[])
 	}
 
 	if (fd == -1) fd = open(MASTER_DEVICE, O_RDWR);
-	if (fd < 0) 
+	if (fd < 0) {
 		error("Unable to open master device '%s'\n", MASTER_DEVICE);
+		goto finish;
+	}
 	cf = fopen(filename, "r");
 	if (cf) {
 		while((buf = readline())) {
 			if (debug & DEBUG_READER) 
 				fprintf(stderr, "Line %d: %s\n", lineno, buf);
-			key = value = buf;
-			while(value && *value && (*value != '=')) value++;
-			if (value)
-				*value='\0';
-			if (value)
-				value++;
-			while(value && *value && (*value < 33)) value++;
-			if (*value) {
-				trim(key);
-				if (debug & DEBUG_PARSER)
-					fprintf(stderr, "Keyword: [%s], Value: [%s]\n", key, value);
-			} else
-				error("Syntax error.  Should be <keyword>=<value>\n");
-			found=0;
-			for (x=0;x<sizeof(handlers) / sizeof(handlers[0]);x++) {
+
+			if ((value = strchr(buf, '='))) {
+				*value++ = '\0';
+				value = trim(value);
+				key = trim(buf);
+			}
+
+			if (!value || !*value || !*key) {
+				error("Syntax error. Should be <keyword>=<value>\n");
+				continue;
+			}
+
+			if (debug & DEBUG_PARSER)
+				fprintf(stderr, "Keyword: [%s], Value: [%s]\n", key, value);
+
+			found = 0;
+			for (x = 0; x < sizeof(handlers) / sizeof(handlers[0]); x++) {
 				if (!strcasecmp(key, handlers[x].keyword)) {
 					found++;
 					handlers[x].func(key, value);
 					break;
 				}
 			}
+
 			if (!found) 
 				error("Unknown keyword '%s'\n", key);
 		}
 		if (debug & DEBUG_READER)
 			fprintf(stderr, "<End of File>\n");
-		fclose(cf);
+		/* fclose(cf); // causes seg fault (double free) */
 	} else {
 		error("Unable to open configuration file '%s'\n", filename);
 	}
 
+finish:
 	if (!errcnt) {
 		if (verbose) {
 			printconfig(fd);
