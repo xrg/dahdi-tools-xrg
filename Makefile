@@ -273,7 +273,7 @@ endif
 	@echo "for the variable MODULES ."
 	@echo ""
 	@echo "I think that the DAHDI hardware you have on your system is:"
-	@kernel/xpp/utils/dahdi_hardware || true
+	@xpp/dahdi_hardware || true
 
 update:
 	@if [ -d .svn ]; then \
