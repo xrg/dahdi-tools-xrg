@@ -1404,6 +1404,9 @@ int main(int argc, char *argv[])
 	cf = fopen(filename, "r");
 	if (cf) {
 		while((buf = readline())) {
+			if (*buf == 10) /* skip new line */
+				continue;
+
 			if (debug & DEBUG_READER) 
 				fprintf(stderr, "Line %d: %s\n", lineno, buf);
 
