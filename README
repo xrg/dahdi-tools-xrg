@@ -321,7 +321,7 @@ docuemntation. the others are:
 lsdahdi:: 
   A somewhat glorified `cat /proc/dahdi/*`.
 dahdi_genconf::
-  Generates configuration based on the existing Zaptel channels and on
+  Generates configuration based on the existing DAHDI channels and on
   /etc/dahdi/genconf_parameters (replaces genzaptelconf as well).
 dahdi_drivers::
   A two-liner script (not installed by default) that simply returns the
