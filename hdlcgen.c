@@ -8,7 +8,7 @@
 #define FAST_HDLC_NEED_TABLES
 #include <dahdi/fasthdlc.h>
 
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 #define RANDOM "/dev/urandom"			/* Not genuinely random */
 /* #define RANDOM "/dev/random" */		/* Quite genuinely random */

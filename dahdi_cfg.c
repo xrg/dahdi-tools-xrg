@@ -40,7 +40,7 @@
 
 #include <dahdi/user.h>
 #include "tonezone.h"
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 #define CONFIG_FILENAME "/etc/dahdi/system.conf"
 #define MASTER_DEVICE   "/dev/dahdi/ctl"

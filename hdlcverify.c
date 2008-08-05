@@ -8,7 +8,7 @@
 #define FAST_HDLC_NEED_TABLES
 #include <dahdi/fasthdlc.h>
 
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 int myread(int fd, char *buf, int len)
 {

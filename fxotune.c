@@ -26,7 +26,7 @@
 #include <dahdi/user.h>
 #include <dahdi/wctdm_user.h>
 
-#include "version.h"
+#include "dahdi_tools_version.h"
 #include "fxotune.h"
 
 #define TEST_DURATION 2000

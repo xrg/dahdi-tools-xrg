@@ -41,7 +41,7 @@
 #include <ctype.h>
 
 #include <dahdi/user.h>
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 #include <linux/soundcard.h>
 

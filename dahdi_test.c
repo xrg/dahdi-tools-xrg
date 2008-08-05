@@ -9,7 +9,7 @@
 #include <math.h>
 #include <getopt.h>
 
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 #define SIZE 8000
 

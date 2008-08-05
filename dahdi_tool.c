@@ -44,7 +44,7 @@
 #include <newt.h>
 
 #include <dahdi/user.h>
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 static int ctl = -1;
 static int span_max_chan_pos;

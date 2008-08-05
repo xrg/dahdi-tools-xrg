@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 static long count=0;
 

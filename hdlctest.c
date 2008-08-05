@@ -15,7 +15,7 @@
 
 #include "bittest.h"
 
-#include "version.h"
+#include "dahdi_tools_version.h"
 
 #define BLOCK_SIZE 2039
 
