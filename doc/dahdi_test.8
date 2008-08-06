@@ -1,6 +1,6 @@
 .TH dahdi_test 8 "2005-06-25" 
 .SH "NAME" 
-dahdi_test \(em Test if the dahdi timer provides timely response
+dahdi_test \(em Test if the DAHDI timer provides timely response
 .SH "SYNOPSIS" 
 .B dahdi_test 
 .I [ -v ]
@@ -10,7 +10,7 @@ dahdi_test \(em Test if the dahdi timer provides timely response
 dahdi_test runs a timing test in a loop and prints the result of each loop.
 The test is as follows:
 
-It reads 8192 bytes from the dahdi timer device (\fI/dev/dahdi/pseudo\fR). 
+It reads 8192 bytes from the DAHDI timer device (\fI/dev/dahdi/pseudo\fR). 
 This should take exactly 8000 ms . It uses calls to
 .I gettimeofday(2) 
 before and after that read to check that indeed exactly 8000ms have passed.
@@ -37,7 +37,7 @@ times instead of running forever.
 .B /dev/dahdi/pseudo
 .RS
 .RE
-The device file used to access the dahdi timer.
+The device file used to access the DAHDI timer.
 
 .SH SEE ALSO 
 dahdi_tool(8), dahdi_cfg(8), asterisk(8). gettimeofday(2)

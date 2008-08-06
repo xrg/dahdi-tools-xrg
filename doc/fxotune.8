@@ -24,7 +24,7 @@ It writes settings to a configuration file (/etc/fxotune.conf)
 from which it can be loaded (e.g: at startup) using -s .
 
 .I Dump mode (-d):
-Runs detection on a single Zaptel channel, and just dumps waveforms to
+Runs detection on a single DAHDI channel, and just dumps waveforms to
 .B fxotune_dump.vals
 is generated in the current directory.
 
@@ -36,7 +36,7 @@ it and that are connected. Note that the tunning is affected by e.g.
 the physical parameters of the connection, and thus if it has been 
 radically changed, you may need to re-run fxotune.
 
-FXOTune only works for the Digium TDM400P/800P/2400P cards and
+This program only works for the Digium TDM400P/800P/2400P cards and
 compatible and the Xorcom Astribank devices. Other cards (notably X100P
 cards and clones) do not have the hardware to support such tuning.
 
@@ -117,7 +117,7 @@ and dialing the dial-string.
 .I detect-type
 .RS
 This option allows using the older detection method used by fxotune of
-zaptel 1.2. use 
+Zaptel 1.2. use 
 .B -t 1
 for that older method. whereas
 .B -t 2
@@ -173,7 +173,7 @@ destroy channel NNN): other channels will be used by Asterisk, and hence
 skipped. This can be useful if you have many FXO ports that are not connected.
 
 .B fxotune
-writes immedietly to 
+writes immediately to 
 .B /etc/fxotune.conf
 so if you stop it half-way, you may get a half-configured system. If you
 have already tuned your FXO channels and wish to test-run fxotune again, 

@@ -1,13 +1,13 @@
 .TH dahdi_diag 8 "2008-01-07" 
 .SH NAME 
-dahdi_diag \(em Dump Zaptel channel parameters
+dahdi_diag \(em Dump DAHDI channel parameters
 .SH SYNOPSIS 
 .B dahdi_diag 
 .I channel
 
 .SH DESCRIPTION 
 .B dahdi_diag
-asks the kernel to dump parameters for Zaptel channel no.
+asks the kernel to dump parameters for DAHDI channel no.
 .I channel
 to the kernel logs. You will be able to see them using, e.g. dmesg(1).
 
@@ -15,15 +15,15 @@ to the kernel logs. You will be able to see them using, e.g. dmesg(1).
 .SH OPTIONS
 .I channel
 .RS
-The number of the Zaptel channel whose parammeters should be dumped.
-May be any Zaptel channel (even if it is open).
+The number of the DAHDI channel whose parammeters should be dumped.
+May be any DAHDI channel (even if it is open).
 .RE
 
 .SH EXAMPLE
 
   # /tmp/dahdi_diag 5
   # dmesg | tail -n 15
-  Dump of Zaptel Channel 5 (XPP_BRI_TE/00/01/1,5,2):
+  Dump of DAHDI Channel 5 (XPP_BRI_TE/00/01/1,5,2):
 
   flags: 501 hex, writechunk: c5190948, readchunk: c5190954
   rxgain: ccad2e80, txgain: ccad2e80, gainalloc: 0
