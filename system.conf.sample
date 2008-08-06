@@ -288,22 +288,23 @@ defaultzone=us
 #
 # Echo Cancellers
 # ~~~~~~~~~~~~~~~
-# DAHDI uses modular echocancellers that are configured per channel.  The echo
-# cancellers are compiled and configured as part of the dahdi-linux package.
-# You can specify in this file the default echo canceller to use for a given
-# dahdi channel.  The default behavior is for there to be no default echo
-# cancellers.
+# DAHDI uses modular echo cancellers that are configured per channel. The echo
+# cancellers are compiled and installed as part of the dahdi-linux package.
+# You can specify in this file the echo canceller to be used for each
+# channel. The default behavior is for there to be NO echo canceller on any
+# channel, so it is very important that you specify one here if you do
+# not have hardware echo cancellers and need echo cancellation.
 #
-# Valid echo cancellers are: jpah, kb1, mg2, sec2, and sec.
+# Valid echo cancellers are: mg2, kb1, sec2, and sec.
 # If compiled, 'hpec' is also a valid echo canceller.
 # 
 # To configure the default echo cancellers, use the format:
 # echocanceller=<echocanceller name>,<channel(s)>
 #
 # Example:
-# Configure channels 1 through 8 to use the mg2 echocanceller
+# Configure channels 1 through 8 to use the mg2 echo canceller
 #echocanceller=mg2,1-8 
 #
-# And change channel 2 to use the kb1 echocanceller.
+# And change channel 2 to use the kb1 echo canceller.
 #echocanceller=kb1,2
 #
