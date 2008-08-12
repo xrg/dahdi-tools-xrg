@@ -118,6 +118,9 @@ my %pci_ids = (
 	'1923:0100'	=> { DRIVER => 'wanpipe', DESCRIPTION => 'Sangoma Technologies Corp. A104d QUAD T1/E1 AFT card' },
 	'1923:0300'	=> { DRIVER => 'wanpipe', DESCRIPTION => 'Sangoma Technologies Corp. A101 single-port T1/E1' },
 	'1923:0400'	=> { DRIVER => 'wanpipe', DESCRIPTION => 'Sangoma Technologies Corp. A104u Quad T1/E1 AFT' },
+
+	# Yeastar (from output of modinfo):
+	'e159:0001/2151' => { DRIVER => 'ystdm8xx', DESCRIPTION => 'Yeastar YSTDM8xx'},
 	);
 
 $ENV{PATH} .= ":/usr/sbin:/sbin:/usr/bin:/bin";

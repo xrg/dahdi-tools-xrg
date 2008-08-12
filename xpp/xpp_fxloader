@@ -113,7 +113,8 @@ load_fw() {
   devices=`find_dev $v_id $p_id`
   for dev in $devices
   do
-    $LOGGER "USB Firmware $XPP_FIRMWARE_DIR/$fw into $dev"
+    ver=$(awk '/\$Id:/ { print $4 }' $XPP_FIRMWARE_DIR/$fw)
+    $LOGGER "USB Firmware $XPP_FIRMWARE_DIR/$fw (Version=$ver) into $dev"
     do_fxload -D $dev -I $XPP_FIRMWARE_DIR/$fw || exit 1
   done
 }
