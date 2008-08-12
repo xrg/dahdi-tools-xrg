@@ -62,6 +62,30 @@ Returns the type of the channel: 'FXS', 'FXO', 'EMPTY', etc.
 
 my @alarm_types = qw(BLUE YELLOW RED LOOP RECOVERING NOTOPEN);
 
+# Taken from dahdi-base.c
+my @sigtypes = (
+	"FXSLS",
+	"FXSKS",
+	"FXSGS",
+	"FXOLS",
+	"FXOKS",
+	"FXOGS",
+	"E&M",
+	"E&M-E1",
+	"Clear",
+	"HDLCRAW",
+	"HDLCFCS",
+	"HDLCNET",
+	"Hardware-assisted HDLC",
+	"MTP2",
+	"Slave",
+	"CAS",
+	"DACS",
+	"DACS+RBS",
+	"SF (ToneOnly)",
+	"Unconfigured"
+	);
+
 sub new($$$$$$) {
 	my $pack = shift or die "Wasn't called as a class method\n";
 	my $span = shift or die "Missing a span parameter\n";
@@ -81,7 +105,7 @@ sub new($$$$$$) {
 	my $info = '';
 	if(defined $rest) {
 		# remarks in parenthesis (In use), (no pcm)
-		while($rest =~ s/(\([^)]+\))\s*//) {
+		while($rest =~ s/\s*(\([^)]+\))\s*//) {
 			$info .= " $1";
 		}
 		# Alarms
@@ -90,10 +114,13 @@ sub new($$$$$$) {
 				push(@alarms, $1);
 			}
 		}
-		if($rest =~ s/^\s*(\w+)\s*//) {
-			$signalling = $1;
+		foreach my $sig (@sigtypes) {
+			if($rest =~ s/^\Q$sig\E//) {
+				$signalling = $sig;
+				last;
+			}
 		}
-		die "Unrecognized garbage '$rest' in $fqn\n"
+		warn "Unrecognized garbage '$rest' in $fqn\n"
 			if length($rest);
 	}
 	$self->{NUM} = $num;
