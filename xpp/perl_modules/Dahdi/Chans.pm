@@ -17,6 +17,12 @@ Dahdi::Chans - Perl interface to a Dahdi channel information
 This package allows access from perl to information about a Dahdi
 channel. It is part of the Dahdi Perl package.
 
+=head1 alarms()
+
+In an array context returns a list of alarm strings (RED, BLUE, etc.)
+for this channel (an empty list == false if there are no alarms).
+In scalar context returns the number of alarms for a specific channel.
+
 =head1 battery()
 
 Returns 1 if channel reports to have battery (A remote PBX connected to
@@ -54,6 +60,32 @@ Returns the type of the channel: 'FXS', 'FXO', 'EMPTY', etc.
 
 =cut
 
+my @alarm_types = qw(BLUE YELLOW RED LOOP RECOVERING NOTOPEN);
+
+# Taken from dahdi-base.c
+my @sigtypes = (
+	"FXSLS",
+	"FXSKS",
+	"FXSGS",
+	"FXOLS",
+	"FXOKS",
+	"FXOGS",
+	"E&M",
+	"E&M-E1",
+	"Clear",
+	"HDLCRAW",
+	"HDLCFCS",
+	"HDLCNET",
+	"Hardware-assisted HDLC",
+	"MTP2",
+	"Slave",
+	"CAS",
+	"DACS",
+	"DACS+RBS",
+	"SF (ToneOnly)",
+	"Unconfigured"
+	);
+
 sub new($$$$$$) {
 	my $pack = shift or die "Wasn't called as a class method\n";
 	my $span = shift or die "Missing a span parameter\n";
@@ -69,18 +101,32 @@ sub new($$$$$$) {
 	$num or die "Missing a channel number parameter\n";
 	$fqn or die "Missing a channel fqn parameter\n";
 	my $signalling = '';
+	my @alarms = ();
 	my $info = '';
 	if(defined $rest) {
-		if($rest =~ s/^\s*(\w+)\s*//) {
-			$signalling = $1;
+		# remarks in parenthesis (In use), (no pcm)
+		while($rest =~ s/\s*(\([^)]+\))\s*//) {
+			$info .= " $1";
 		}
-		if($rest =~ s/(.*)//) {
-			$info = $1;
+		# Alarms
+		foreach my $alarm (@alarm_types) {
+			if($rest =~ s/\s*(\b${alarm}\b)\s*//) {
+				push(@alarms, $1);
+			}
 		}
+		foreach my $sig (@sigtypes) {
+			if($rest =~ s/^\Q$sig\E//) {
+				$signalling = $sig;
+				last;
+			}
+		}
+		warn "Unrecognized garbage '$rest' in $fqn\n"
+			if length($rest);
 	}
 	$self->{NUM} = $num;
 	$self->{FQN} = $fqn;
 	$self->{SIGNALLING} = $signalling;
+	$self->{ALARMS} = \@alarms;
 	$self->{INFO} = $info;
 	my $type;
 	if($fqn =~ m|\bXPP_(\w+)/.*$|) {
@@ -182,6 +228,13 @@ sub battery($) {
 	my @lines = @{$xpd->lines};
 	my $line = $lines[$index];
 	return $line->battery;
+}
+
+sub alarms($) {
+	my $self = shift or die;
+	my @alarms = @{$self->{ALARMS}};
+
+	return @alarms;
 }
 
 sub blink($$) {

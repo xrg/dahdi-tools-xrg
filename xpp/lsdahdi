@@ -36,8 +36,10 @@ foreach my $span (Dahdi::spans()) {
 		my ($type) = map { $type_map{$_} or $_ } $chan->type || ("unknown");
 		my $batt = "";
 		$batt = "(battery)" if $chan->battery;
-		printf "%3d %-10s %-10s %s %s\n",
-			$chan->num, $type, $chan->signalling, $chan->info, $batt;
+		my @alarms = $chan->alarms;
+		my $alarm_str = join(" ", @alarms);
+		printf "%3d %-10s %-10s %s %s %s\n",
+			$chan->num, $type, $chan->signalling, $chan->info, $batt, $alarm_str;
 		$index++;
 	}
 }

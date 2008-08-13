@@ -50,6 +50,10 @@
 #
 #bri_hardhdlc		yes
 
+# For MFC/R2 Support
+#pri_connection_type	R2
+#r2_idle_bits		1101
+
 # pri_types contains a list of settings:
 # Currently the only setting is for TE or NT (the default is TE)
 #
