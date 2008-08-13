@@ -164,14 +164,14 @@ $(LTZ_A): $(LTZ_A_OBJS)
 	ranlib $@
 
 $(LTZ_SO): $(LTZ_SO_OBJS)
-	$(CC) $(CFLAGS) -shared -Wl,-soname,$(LTZ_SO).$(LTZ_SO_MAJOR_VER).$(LTZ_SO_MINOR_VER) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -shared -Wl,-soname,$(LTZ_SO).$(LTZ_SO_MAJOR_VER).$(LTZ_SO_MINOR_VER) -o $@ $^ -Wl,--no-as-needed -lm
 
 dahdi_cfg: $(LTZ_A)
-dahdi_cfg: LDFLAGS+=-lm
+dahdi_cfg: LDFLAGS+=-Wl,--no-as-needed -lm
 
 fxstest: $(LTZ_SO)
-fxstest: LDFLAGS+=-lm
-fxotune: LDFLAGS+=-lm
+fxstest: LDFLAGS+=-Wl,--no-as-needed -lm
+fxotune: LDFLAGS+=-Wl,--no-as-needed -lm
 
 tonezones.txt: zonedata.c
 	perl -ne 'next unless (/\.(country|description) = *"([^"]*)/); \
