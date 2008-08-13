@@ -155,7 +155,7 @@ $(UTILS): version.o
 prereq: config.status
 
 dahdi_tool: CFLAGS+=$(NEWT_INCLUDE)
-dahdi_tool: LDFLAGS+=$(NEWT_LIB)
+dahdi_tool: LDFLAGS+=-Wl,--no-as-needed $(NEWT_LIB)
 
 dahdi_speed: CFLAGS+=-O0
 
