@@ -290,7 +290,6 @@ update:
 	fi
 
 clean:
-	-@$(MAKE) -C menuselect clean
 	rm -f $(BINS)
 	rm -f *.o dahdi_cfg tzdriver sethdlc
 	rm -f $(LTZ_SO) $(LTZ_A) *.lo
@@ -310,7 +309,6 @@ clean:
 distclean: dist-clean
 
 dist-clean: clean
-	@$(MAKE) -C menuselect dist-clean
 	rm -f makeopts menuselect.makeopts menuselect-tree build_tools/menuselect-deps
 	rm -f config.log config.status
 	rm -f .*.d
@@ -323,16 +321,13 @@ config.status: configure
 	@echo "****"
 	@exit 1
 
-menuselect.makeopts: menuselect/menuselect menuselect-tree
-	@menuselect/menuselect --check-deps ${GLOBAL_MAKEOPTS} ${USER_MAKEOPTS} $@
+menuselect.makeopts: menuselect-tree
+	@ast_menuselect --check-deps ${GLOBAL_MAKEOPTS} ${USER_MAKEOPTS} $@
 
-menuconfig: menuselect
+menuconfig:
 
-menuselect: menuselect/menuselect menuselect-tree
-	-@menuselect/menuselect $(GLOBAL_MAKEOPTS) $(USER_MAKEOPTS) menuselect.makeopts && echo "menuselect changes saved!" || echo "menuselect changes NOT saved!"
-
-menuselect/menuselect: menuselect/menuselect.c menuselect/menuselect_curses.c menuselect/menuselect_stub.c menuselect/menuselect.h menuselect/linkedlists.h config.status
-	@CFLAGS="" $(MAKE) -C menuselect CC=$(HOSTCC)
+menuselect: menuselect-tree
+	-@ast_menuselect $(GLOBAL_MAKEOPTS) $(USER_MAKEOPTS) menuselect.makeopts && echo "menuselect changes saved!" || echo "menuselect changes NOT saved!"
 
 menuselect-tree: dahdi.xml
 	@echo "Generating input for menuselect ..."

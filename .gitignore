@@ -1,6 +1,9 @@
 *.o
 *~
 *.lo
+.*.o.d
+.*.lo.d
+/version.c
 config.log
 config.status
 version.h
@@ -19,3 +22,6 @@ menuselect-tree
 menuselect.makedeps
 menuselect.makeopts
 sethdlc
+aclocal.m4
+autom4te.cache
+configure
