@@ -105,23 +105,23 @@ sub new($$$$$$) {
 	my $info = '';
 	if(defined $rest) {
 		# remarks in parenthesis (In use), (no pcm)
-		while($rest =~ s/\s*(\([^)]+\))\s*//) {
+		while($rest =~ s/\s*(\([^)]+\))\s*/ /) {
 			$info .= " $1";
 		}
 		# Alarms
 		foreach my $alarm (@alarm_types) {
-			if($rest =~ s/\s*(\b${alarm}\b)\s*//) {
+			if($rest =~ s/\s*(\b${alarm}\b)\s*/ /) {
 				push(@alarms, $1);
 			}
 		}
 		foreach my $sig (@sigtypes) {
-			if($rest =~ s/^\Q$sig\E//) {
+			if($rest =~ s/^\Q$sig\E/ /) {
 				$signalling = $sig;
 				last;
 			}
 		}
 		warn "Unrecognized garbage '$rest' in $fqn\n"
-			if length($rest);
+			if $rest =~ /\S/;
 	}
 	$self->{NUM} = $num;
 	$self->{FQN} = $fqn;
