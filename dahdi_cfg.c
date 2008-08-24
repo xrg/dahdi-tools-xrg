@@ -86,6 +86,8 @@ static const char *sig[DAHDI_MAX_CHANNELS];		/* Signalling */
 
 static int slineno[DAHDI_MAX_CHANNELS];	/* Line number where signalling specified */
 
+static int fiftysixkhdlc[DAHDI_MAX_CHANNELS];
+
 static int spans=0;
 
 static int fo_real = 1;
@@ -644,6 +646,49 @@ static int setlaw(char *keyword, char *args)
 			cc[x].deflaw = law;
 	}
 	return 0;
+}
+
+static int setfiftysixkhdlc(char *keyword, char *args)
+{
+	int res;
+
+	res = apply_channels(fiftysixkhdlc, args);
+	if (res <= 0)
+		return -1;
+
+	return 0;
+}
+
+static void apply_fiftysix(void)
+{
+	int x;
+	int rate;
+	int chanfd;
+
+	for (x = 1; x < DAHDI_MAX_CHANNELS; x++) {
+		chanfd = open("/dev/dahdi/channel", O_RDWR);
+		if (chanfd == -1) {
+			fprintf(stderr, "Couldn't open /dev/zap/channel\n");
+			exit(-1);
+		}
+
+		if (ioctl(chanfd, DAHDI_SPECIFY, &x)) {
+			continue;
+		}
+
+		if (fiftysixkhdlc[x]) {
+			printf("Setting channel %d to 56K mode (only valid on HDLC channels)\n", x);
+			rate = 56;
+		} else {
+			rate = 64;
+		}
+
+		if (ioctl(chanfd, DAHDI_HDLC_RATE, &rate)) {
+			fprintf(stderr, "Error setting HDLC rate\n");
+			exit(-1);
+		}
+		close(chanfd);
+	}
 }
 
 static int setechocan(char *keyword, char *args)
@@ -1310,6 +1355,7 @@ static struct handler {
 	{ "channel", rad_chanconfig },
 	{ "channels", rad_chanconfig },
 	{ "echocanceller", setechocan },
+	{ "56k", setfiftysixkhdlc },
 };
 
 static char *readline()
@@ -1586,5 +1632,6 @@ finish:
 		fprintf(stderr, "\n%d error(s) detected\n\n", errcnt);
 		exit(1);
 	}
+	apply_fiftysix();
 	exit(0);
 }
