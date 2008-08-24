@@ -1490,147 +1490,148 @@ int main(int argc, char *argv[])
 
 finish:
 	if (!errcnt) {
-		if (verbose) {
-			printconfig(fd);
-		}
-		if (fo_real) {
-			if (debug & DEBUG_APPLY) {
-				printf("About to open Master device\n");
-				fflush(stdout);
-			}
-			for (x=0;x<numdynamic;x++) {
-				/* destroy them all */
-				ioctl(fd, DAHDI_DYNAMIC_DESTROY, &zds[x]);
-			}
-			if (stopmode) {
-				for (x=0;x<spans;x++) {
-					if (ioctl(fd, DAHDI_SHUTDOWN, &lc[x].span)) {
-						fprintf(stderr, "DAHDI shutdown failed: %s\n", strerror(errno));
-						close(fd);
-						exit(1);
-					}
-				}
-			} else {
-				for (x=0;x<spans;x++) {
-					if (ioctl(fd, DAHDI_SPANCONFIG, lc + x)) {
-						fprintf(stderr, "DAHDI_SPANCONFIG failed on span %d: %s (%d)\n", lc[x].span, strerror(errno), errno);
-						close(fd);
-						exit(1);
-					}
-				}
-				for (x=0;x<numdynamic;x++) {
-					if (ioctl(fd, DAHDI_DYNAMIC_CREATE, &zds[x])) {
-						fprintf(stderr, "DAHDI dynamic span creation failed: %s\n", strerror(errno));
-						close(fd);
-						exit(1);
-					}
-				}
-				for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
-					struct dahdi_params current_state;
-					int master;
-					int needupdate = force;
-					
-					if (debug & DEBUG_APPLY) {
-						printf("Configuring device %d\n", x);
-						fflush(stdout);
-					}
-					if (!cc[x].sigtype)
-						continue;
-					
-					if (!needupdate) {
-						memset(&current_state, 0, sizeof(current_state));
-						current_state.channo = cc[x].chan | DAHDI_GET_PARAMS_RETURN_MASTER;
-						if (ioctl(fd, DAHDI_GET_PARAMS, &current_state))
-							needupdate = 1;
-					}
-					
-					if (!needupdate) {
-						master = current_state.channo >> 16;
-						
-						if (cc[x].sigtype != current_state.sigtype) {
-							needupdate++;
-							if (verbose > 1)
-								printf("Changing signalling on channel %d from %s to %s\n",
-								       cc[x].chan, sigtype_to_str(current_state.sigtype),
-								       sigtype_to_str(cc[x].sigtype));
-						}
-						
-						if ((cc[x].deflaw != DAHDI_LAW_DEFAULT) && (cc[x].deflaw != current_state.curlaw)) {
-							needupdate++;
-							if (verbose > 1)
-								printf("Changing law on channel %d from %s to %s\n",
-								       cc[x].chan, laws[current_state.curlaw],
-								       laws[cc[x].deflaw]);
-						}
-						
-						if (cc[x].master != master) {
-							needupdate++;
-							if (verbose > 1)
-								printf("Changing master of channel %d from %d to %d\n",
-								       cc[x].chan, master,
-								       cc[x].master);
-						}
-						
-						if (cc[x].idlebits != current_state.idlebits) {
-							needupdate++;
-							if (verbose > 1)
-								printf("Changing idle bits of channel %d from %d to %d\n",
-								       cc[x].chan, current_state.idlebits,
-								       cc[x].idlebits);
-						}
-					}
-					
-					if (needupdate && ioctl(fd, DAHDI_CHANCONFIG, &cc[x])) {
-						fprintf(stderr, "DAHDI_CHANCONFIG failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
-						if (errno == EINVAL) {
-							fprintf(stderr, "Did you forget that FXS interfaces are configured with FXO signalling\n"
-								"and that FXO interfaces use FXS signalling?\n");
-						}
-						close(fd);
-						exit(1);
-					}
-
-					if (ae[x].chan) {
-						printf("Setting echocan for channel %d to %s\n", ae[x].chan, ae[x].echocan);
-						if (ioctl(fd, DAHDI_ATTACH_ECHOCAN, &ae[x])) {
-							fprintf(stderr, "DAHDI_ATTACH_ECHOCAN failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
-							close(fd);
-							exit(1);
-						}
-					}
-				}
-				for (x=0;x<numzones;x++) {
-					if (debug & DEBUG_APPLY) {
-						printf("Loading tone zone for %s\n", zonestoload[x]);
-						fflush(stdout);
-					}
-					if (tone_zone_register(fd, zonestoload[x]))
-						if (errno != EBUSY)
-							error("Unable to register tone zone '%s'\n", zonestoload[x]);
-				}
-				if (debug & DEBUG_APPLY) {
-					printf("Doing startup\n");
-					fflush(stdout);
-				}
-				if (deftonezone > -1) {
-					if (ioctl(fd, DAHDI_DEFAULTZONE, &deftonezone)) {
-						fprintf(stderr, "DAHDI_DEFAULTZONE failed: %s (%d)\n", strerror(errno), errno);
-						close(fd);
-						exit(1);
-					}
-				}
-				for (x=0;x<spans;x++) {
-					if (ioctl(fd, DAHDI_STARTUP, &lc[x].span)) {
-						fprintf(stderr, "DAHDI startup failed: %s\n", strerror(errno));
-						close(fd);
-						exit(1);
-					}
-				}
-			}
-		}
-	} else {
 		fprintf(stderr, "\n%d error(s) detected\n\n", errcnt);
 		exit(1);
+	}
+	if (verbose) {
+		printconfig(fd);
+	}
+	if (!fo_real) 
+		exit(0);
+
+	
+	if (debug & DEBUG_APPLY) {
+		printf("About to open Master device\n");
+		fflush(stdout);
+	}
+	for (x=0;x<numdynamic;x++) {
+		/* destroy them all */
+		ioctl(fd, DAHDI_DYNAMIC_DESTROY, &zds[x]);
+	}
+	if (!stopmode) {
+		for (x=0;x<spans;x++) {
+			if (ioctl(fd, DAHDI_SHUTDOWN, &lc[x].span)) {
+				fprintf(stderr, "DAHDI shutdown failed: %s\n", strerror(errno));
+				close(fd);
+				exit(1);
+			}
+		}
+		exit(1);
+	}
+	for (x=0;x<spans;x++) {
+		if (ioctl(fd, DAHDI_SPANCONFIG, lc + x)) {
+			fprintf(stderr, "DAHDI_SPANCONFIG failed on span %d: %s (%d)\n", lc[x].span, strerror(errno), errno);
+			close(fd);
+			exit(1);
+		}
+	}
+	for (x=0;x<numdynamic;x++) {
+		if (ioctl(fd, DAHDI_DYNAMIC_CREATE, &zds[x])) {
+			fprintf(stderr, "DAHDI dynamic span creation failed: %s\n", strerror(errno));
+			close(fd);
+			exit(1);
+		}
+	}
+	for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
+		struct dahdi_params current_state;
+		int master;
+		int needupdate = force;
+		
+		if (debug & DEBUG_APPLY) {
+			printf("Configuring device %d\n", x);
+			fflush(stdout);
+		}
+		if (!cc[x].sigtype)
+			continue;
+		
+		if (!needupdate) {
+			memset(&current_state, 0, sizeof(current_state));
+			current_state.channo = cc[x].chan | DAHDI_GET_PARAMS_RETURN_MASTER;
+			if (ioctl(fd, DAHDI_GET_PARAMS, &current_state))
+				needupdate = 1;
+		}
+		
+		if (!needupdate) {
+			master = current_state.channo >> 16;
+			
+			if (cc[x].sigtype != current_state.sigtype) {
+				needupdate++;
+				if (verbose > 1)
+					printf("Changing signalling on channel %d from %s to %s\n",
+					       cc[x].chan, sigtype_to_str(current_state.sigtype),
+					       sigtype_to_str(cc[x].sigtype));
+			}
+			
+			if ((cc[x].deflaw != DAHDI_LAW_DEFAULT) && (cc[x].deflaw != current_state.curlaw)) {
+				needupdate++;
+				if (verbose > 1)
+					printf("Changing law on channel %d from %s to %s\n",
+					       cc[x].chan, laws[current_state.curlaw],
+					       laws[cc[x].deflaw]);
+			}
+			
+			if (cc[x].master != master) {
+				needupdate++;
+				if (verbose > 1)
+					printf("Changing master of channel %d from %d to %d\n",
+					       cc[x].chan, master,
+					       cc[x].master);
+			}
+			
+			if (cc[x].idlebits != current_state.idlebits) {
+				needupdate++;
+				if (verbose > 1)
+					printf("Changing idle bits of channel %d from %d to %d\n",
+					       cc[x].chan, current_state.idlebits,
+					       cc[x].idlebits);
+			}
+		}
+		
+		if (needupdate && ioctl(fd, DAHDI_CHANCONFIG, &cc[x])) {
+			fprintf(stderr, "DAHDI_CHANCONFIG failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
+			if (errno == EINVAL) {
+				fprintf(stderr, "Did you forget that FXS interfaces are configured with FXO signalling\n"
+					"and that FXO interfaces use FXS signalling?\n");
+			}
+			close(fd);
+			exit(1);
+		}
+
+		if (ae[x].chan) {
+			printf("Setting echocan for channel %d to %s\n", ae[x].chan, ae[x].echocan);
+			if (ioctl(fd, DAHDI_ATTACH_ECHOCAN, &ae[x])) {
+				fprintf(stderr, "DAHDI_ATTACH_ECHOCAN failed on channel %d: %s (%d)\n", x, strerror(errno), errno);
+				close(fd);
+				exit(1);
+			}
+		}
+	}
+	for (x=0;x<numzones;x++) {
+		if (debug & DEBUG_APPLY) {
+			printf("Loading tone zone for %s\n", zonestoload[x]);
+			fflush(stdout);
+		}
+		if (tone_zone_register(fd, zonestoload[x]))
+			if (errno != EBUSY)
+				error("Unable to register tone zone '%s'\n", zonestoload[x]);
+	}
+	if (debug & DEBUG_APPLY) {
+		printf("Doing startup\n");
+		fflush(stdout);
+	}
+	if (deftonezone > -1) {
+		if (ioctl(fd, DAHDI_DEFAULTZONE, &deftonezone)) {
+			fprintf(stderr, "DAHDI_DEFAULTZONE failed: %s (%d)\n", strerror(errno), errno);
+			close(fd);
+			exit(1);
+		}
+	}
+	for (x=0;x<spans;x++) {
+		if (ioctl(fd, DAHDI_STARTUP, &lc[x].span)) {
+			fprintf(stderr, "DAHDI startup failed: %s\n", strerror(errno));
+			close(fd);
+			exit(1);
+		}
 	}
 	apply_fiftysix();
 	exit(0);
