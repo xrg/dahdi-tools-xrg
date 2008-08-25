@@ -492,7 +492,7 @@ static int chanconfig(char *keyword, char *args)
 		res = apply_channels(chans, args);
 	if (res <= 0)
 		return -1;
-	for (x=1;x<DAHDI_MAX_CHANNELS;x++) 
+	for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
 		if (chans[x]) {
 			if (slineno[x]) {
 				error("Channel %d already configured as '%s' at line %d\n", x, sig[x], slineno[x]);
@@ -617,6 +617,7 @@ static int chanconfig(char *keyword, char *args)
 				fprintf(stderr, "Huh? (%s)\n", keyword);
 			}
 		}
+	}
 	return 0;
 }
 
@@ -1148,7 +1149,10 @@ static int rad_chanconfig(char *keyword, char *args)
 		if (chans[x]) {
 			p.radpar = DAHDI_RADPAR_NUMTONES;
 			if (ind_ioctl(x,fd,DAHDI_RADIO_GETPARAM,&p) == -1)
-				n = 0; else n = p.data;
+				n = 0;
+			else
+				n = p.data;
+
 			if (n)
 			{
 				p.radpar = DAHDI_RADPAR_INITTONE;
@@ -1290,12 +1294,16 @@ static void printconfig(int fd)
 					if (ae[x].echocan[0]) {
 						printf(" (Echo Canceler: %s)", ae[x].echocan);
 					}
-					for (y=1;y<DAHDI_MAX_CHANNELS;y++) 
+					for (y=1;y<DAHDI_MAX_CHANNELS;y++) {
 						if (cc[y].master == x)  {
 							printf("%s%02d", ps++ ? " " : " (Slaves: ", y);
 						}
+					}
 				}
-				if (ps) printf(")\n"); else printf("\n");
+				if (ps)
+					printf(")\n");
+				else
+					printf("\n");
 			} else
 				if (cc[x].sigtype) configs++;
 		}
@@ -1613,9 +1621,10 @@ finish:
 			printf("Loading tone zone for %s\n", zonestoload[x]);
 			fflush(stdout);
 		}
-		if (tone_zone_register(fd, zonestoload[x]))
+		if (tone_zone_register(fd, zonestoload[x])) {
 			if (errno != EBUSY)
 				error("Unable to register tone zone '%s'\n", zonestoload[x]);
+		}
 	}
 	if (debug & DEBUG_APPLY) {
 		printf("Doing startup\n");
