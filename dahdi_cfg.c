@@ -1299,10 +1299,12 @@ static void printconfig(int fd)
 			} else
 				if (cc[x].sigtype) configs++;
 		}
-	} else 
-		for (x=1;x<DAHDI_MAX_CHANNELS;x++) 
+	} else {
+		for (x=1;x<DAHDI_MAX_CHANNELS;x++) {
 			if (cc[x].sigtype)
 				configs++;
+		}
+	}
 	printf("\n%d channels to configure.\n\n", configs);
 }
 
@@ -1489,7 +1491,7 @@ int main(int argc, char *argv[])
 	}
 
 finish:
-	if (!errcnt) {
+	if (errcnt) {
 		fprintf(stderr, "\n%d error(s) detected\n\n", errcnt);
 		exit(1);
 	}
@@ -1508,7 +1510,7 @@ finish:
 		/* destroy them all */
 		ioctl(fd, DAHDI_DYNAMIC_DESTROY, &zds[x]);
 	}
-	if (!stopmode) {
+	if (stopmode) {
 		for (x=0;x<spans;x++) {
 			if (ioctl(fd, DAHDI_SHUTDOWN, &lc[x].span)) {
 				fprintf(stderr, "DAHDI shutdown failed: %s\n", strerror(errno));
