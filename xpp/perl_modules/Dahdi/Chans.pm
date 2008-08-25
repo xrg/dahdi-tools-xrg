@@ -182,7 +182,7 @@ It may later be replaced by dahdi_scan(8).
 
 =cut
 
-my $dahdi_cfg = $ENV{DAHDI_CFG} || '/sbin/dahdi_cfg';
+my $dahdi_cfg = $ENV{DAHDI_CFG} || '/usr/sbin/dahdi_cfg';
 sub probe_type($) {
 	my $self = shift;
 	my $fqn = $self->fqn;
