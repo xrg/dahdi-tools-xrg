@@ -8,7 +8,7 @@ package contains the userspace tools to configure the kernel modules
 included in the package dahdi-linux.
 
 Build Requirements
-~~~~~~~~~~~~~~~~~~
+------------------
 This package needs the headers from dahdi-linux. Thus you should install
 dahdi-linux before building dahdi-tools.
 
@@ -24,7 +24,7 @@ run:
 
 
 Build System
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 gcc and friends. Generally you will need to install the package gcc.
 There may be cases where you will need a specific version of gcc to build
 kernel modules.
@@ -72,8 +72,9 @@ parts of DAHDI:
     partial targets)
   - make config: should be run once to configure 
 
-Building to a Subtree
-^^^^^^^^^^^^^^^^^^^^^
+
+Installation to a Subtree
+^^^^^^^^^^^^^^^^^^^^^^^^^
 The following may be useful when testing the package or when preparing a
 package for a binary distribution (such as an rpm package) installing
 onto a subtree rather than on th real system. 
@@ -81,6 +82,7 @@ onto a subtree rather than on th real system.
   make install DESTDIR=targetdir
 
 This can be useful for any partial install target from the list above.
+
 
 ./configure Options
 ^^^^^^^^^^^^^^^^^^^
@@ -100,8 +102,9 @@ time, use:
 
   ./ocnfig.status --recheck
 
+
 Configuration
-~~~~~~~~~~~~~
+-------------
 Configuration for DAHDI resides under /etc/dahdi . 
 
 /etc/dahdi/system.conf
@@ -182,6 +185,7 @@ dahdi_hardware::
   by a driver. Shows also some more information for Astribanks from
   /proc/xpp .
 
+
 PPP Support
 ~~~~~~~~~~~
 DAHDI digital cards can provide data channels through ppp as
@@ -201,8 +205,9 @@ that is included in the ppp/ subdirectory. To install it:
    distribution kernels and for HDLC (much less common) - CONFIG_PPP and
    CONFIG_HDLC .
 
+
 License
-~~~~~~~
+-------
 This package is distributed under the terms of the GNU General Public License
 Version 2, except for some components which are distributed under the terms of
 the GNU Lesser General Public License Version 2.1. Both licenses are included
@@ -213,15 +218,17 @@ terms are not appropriate (e.g. a proprietary embedded system), licenses under
 more flexible terms can be readily obtained through Digium, Inc. at reasonable
 cost.
 
+
 Reporting Bugs
-~~~~~~~~~~~~~~
+--------------
 Please report bug and patches to the Asterisk bug tracker at
 http://bugs.digium.com in the "DAHDI" category.
+
 
 Links
 -----
 - http://asterisk.org/[] - The Asterisk PBX
 - http://voip-info.org/[]
 - http://voip-info.org/wiki/view/Asterisk+Zaptel+Installation[]
-- http://docs.tzafrir.org.il/dahdi/README.html[Up-to-date HTML version
+- http://docs.tzafrir.org.il/dahdi-tools/README.html[Up-to-date HTML version
   of this file]

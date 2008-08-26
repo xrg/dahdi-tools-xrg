@@ -114,6 +114,8 @@ MAN_PAGES:=$(wildcard $(BINS:%=doc/%.8))
 GROFF_PAGES	:= $(wildcard doc/*.8 xpp/*.8)
 GROFF_HTML	:= $(GROFF_PAGES:%=%.html)
 
+GENERATED_DOCS	:= $(GROFF_HTML) README.html # README.Astribank.html
+
 all: menuselect.makeopts 
 	@$(MAKE) _all
 
@@ -184,11 +186,13 @@ tonezones.txt: zonedata.c
 		$< \
 	| perl -p -e 'if (/^  #?(\w+)=/ && ! exists $$cfgs{$$1}){my $$cfg = $$1; $$cfgs{$$cfg} = 1; s/^/\n[[cfg_$$cfg]]\n/}'  >$@
 
+docs: $(GENERATED_DOCS)
+
 README.html: README system.conf.asciidoc init.conf.asciidoc tonezones.txt
 	$(ASCIIDOC) -n -a toc -a toclevels=3 $<
 
-kernel/xpp/README.Astribank.html: kernel/xpp/README.Astribank
-	cd $(@D); $(ASCIIDOC) -o $(@F) -n -a toc -a toclevels=4 $(<F)
+README.Astribank.html: xpp/README.Astribank
+	$(ASCIIDOC) -o $@ -n -a toc -a toclevels=4 $<
 
 # on Debian: this requires the full groof, not just groff-base.
 %.8.html: %.8
@@ -304,8 +308,7 @@ clean:
 	rm -f fxotune
 	rm -f core
 	rm -f dahdi_cfg-shared fxstest
-	rm -rf $(GROFF_HTML)
-	rm -rf README.html xpp/README.Astribank.html *.asciidoc tonezones.txt
+	rm -rf $(GENERATED_DOCS) *.asciidoc tonezones.txt
 
 distclean: dist-clean
 
