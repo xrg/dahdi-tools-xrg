@@ -150,7 +150,7 @@ case "$1" in
   start)
 	cat "/etc/dahdi/modules" | grep "^[^\#]" | {
 		foundone=false
-		echo -ne $"Loading DAHDI hardware modules:\n"
+		echo "Loading DAHDI hardware modules:"
 		while read line; do
 			foundone=true
 			if [ $system = debian ]; then
@@ -164,7 +164,7 @@ case "$1" in
 				action "  ${line}: " modprobe $line 
 			fi
 		done
-		echo -ne $"\n"
+		echo ""
 		if ! $foundone; then
 			echo "There aren't any DAHDI hardware modules specified to "
 			echo "load.  Please update /etc/dahdi/modules in order to "
@@ -172,7 +172,9 @@ case "$1" in
 			exit 1
 		fi
 	}
+
 	TMOUT=$DAHDI_DEV_TIMEOUT # max secs to wait
+
 	while [ ! -d /dev/dahdi ] ; do
  		sleep 1
 		TMOUT=`expr $TMOUT - 1`
@@ -181,7 +183,6 @@ case "$1" in
 			exit 1
 		fi
 	done
-	sleep 3 # TODO: remove it
 
 	xpp_startup
 
@@ -214,7 +215,7 @@ case "$1" in
 	# Unload drivers
 	#shutdown_dynamic # FIXME: needs test from someone with dynamic spans
 	if [ $system = debian ]; then
-		echo -ne $"Unloading DAHDI hardware modules: " 
+		echo -n "Unloading DAHDI hardware modules: " 
 		if unload_module dahdi; then
 			echo -n "done"
 		else

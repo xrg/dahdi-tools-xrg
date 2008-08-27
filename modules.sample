@@ -7,37 +7,35 @@
 # Anything after a '#' is ignore, likewise trailing and leading
 # whitespaces and empty lines.
 
-# TE405P - Quad Span T1/E1 Card (5v version)
-# TE410P - Quad Span T1/E1 Card (3.3v version)
+# Digium TE205P/TE207P/TE210P/TE212P: PCI dual-port T1/E1/J1
+# Digium TE405P/TE407P/TE410P/TE412P: PCI quad-port T1/E1/J1
+# Digium TE220: PCI-Express dual-port T1/E1/J1
+# Digium TE420: PCI-Express quad-port T1/E1/J1
 wct4xxp
 
-# * TE120P - Single Span T1/E1 Card
+# Digium TE120P: PCI single-port T1/E1/J1
+# Digium TE121: PCI-Express single-port T1/E1/J1
+# Digium TE122: PCI single-port T1/E1/J1
 wcte12xp
 
-# T100P - Single Span T1 Card
-# E100P - Single Span E1 Card
+# Digium T100P: PCI single-port T1
+# Digium E100P: PCI single-port E1
 wct1xxp
 
-# TE110P - Single Span T1/E1 Card
+# Digium TE110P: PCI single-port T1/E1/J1
 wcte11xp
 
-# TDM2400P - Modular FXS/FXO interface (1-24 ports)
-# TDM410P  - Modular FXS/FXO interface (4 ports)
-# TDM800P  - Modular FXS/FXO interface (8 ports)
+# Digium TDM2400P/AEX2400: up to 24 analog ports
+# Digium TDM800P/AEX800: up to 8 analog ports
+# Digium TDM410P/AEX410: up to 4 analog ports
 wctdm24xxp
 
 # X100P - Single port FXO interface
 # X101P - Single port FXO interface 
 wcfxo
 
-# TDM400P - Modular FXS/FXO interface (1-4 ports)
+# Digium TDM400P: up to 4 analog ports
 wctdm
 
-# DAHDI timing only interface. Disabled by default, as it will be loaded
-# by the init.d script in case no hardware is found.
-#
-# If you have no hardware, enable it and disable others.
-#dahdi_dummy 
-
-# Xorcom Astribank Device
+# Xorcom Astribank Devices
 xpp_usb
