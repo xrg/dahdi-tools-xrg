@@ -38,6 +38,10 @@ ifneq (,$(findstring x86_64,$(UNAME_M)))
 CFLAGS+=-m64
 endif
 
+ifeq ($(DAHDI_DEVMODE),yes)
+  CFLAGS+=-Werror -Wunused -Wundef $(DAHDI_DECLARATION_AFTER_STATEMENT) -Wmissing-format-attribute -Wformat-security #-Wformat=2
+endif
+
 ROOT_PREFIX=
 
 # extra cflags to build dependencies. Recursively expanded.

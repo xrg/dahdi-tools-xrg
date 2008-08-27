@@ -195,6 +195,8 @@ static void clear_fields()
 	preemp = 0;
 }
 
+static int error(char *fmt, ...) __attribute__ ((format(printf, 1, 2)));
+
 static int error(char *fmt, ...)
 {
 	int res;

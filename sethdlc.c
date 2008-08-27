@@ -50,7 +50,7 @@ static char **argv;
 int sock;
 
 
-static void error(const char *format, ...) __attribute__ ((noreturn));
+static void error(const char *format, ...) __attribute__ ((noreturn, format(printf, 1, 2)));
 
 static void error(const char *format, ...)
 {

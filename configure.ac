@@ -63,6 +63,25 @@ AC_SUBST(DOWNLOAD)
 
 AC_LANG(C)
 
+AC_ARG_ENABLE(dev-mode,
+	[  --enable-dev-mode    Turn on developer mode],
+	[case "${enableval}" in
+	      y|ye|yes) DAHDI_DEVMODE=yes ;;
+	      n|no)  DAHDI_DEVMODE=no ;;
+	      *) AC_MSG_ERROR(bad value ${enableval} for --enable-dev-mode)  ;;
+	esac])
+AC_SUBST(DAHDI_DEVMODE)
+
+AC_MSG_CHECKING(for -Wdeclaration-after-statement support)
+if $(${CC} -Wdeclaration-after-statement -S -o /dev/null -xc /dev/null > /dev/null 2>&1); then
+	AC_MSG_RESULT(yes)
+	DAHDI_DECLARATION_AFTER_STATEMENT=-Wdeclaration-after-statement
+else
+	AC_MSG_RESULT(no)
+	DAHDI_DECLARATION_AFTER_STATEMENT=
+fi
+AC_SUBST(DAHDI_DECLARATION_AFTER_STATEMENT)
+
 AST_EXT_LIB_SETUP([CURSES], [curses], [curses])
 AST_EXT_LIB_SETUP([DAHDI], [DAHDI], [dahdi])
 AST_EXT_LIB_SETUP([NCURSES], [ncurses], [ncurses])
