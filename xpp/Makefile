@@ -56,7 +56,7 @@ PERL_SCRIPTS	=	\
 PERL_MANS	= $(PERL_SCRIPTS:%=%.8)
 
 TARGETS	= perlcheck
-PROG_INSTALL	= genzaptelconf
+PROG_INSTALL	= #genzaptelconf
 MAN_INSTALL	= $(PROG_INSTALL:%=%.8)
 ifeq	(1,$(PBX_USB))
 TARGETS	+= libhexfile.a fpga_load test_parse
