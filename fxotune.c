@@ -131,7 +131,9 @@ static int ensure_silence(struct silence_info *info)
 {
 	struct timeval tv;
 	long int elapsedms;
-	
+	int x = DAHDI_ONHOOK;
+	struct dahdi_dialoperation dop;
+
 	gettimeofday(&tv, NULL);
 	
 	if (info->last_reset.tv_sec == 0) {
@@ -155,7 +157,6 @@ static int ensure_silence(struct silence_info *info)
 	/* do a line reset */
 	/* prepare line for silence */
 	/* Do line hookstate reset */
-	int x = DAHDI_ONHOOK;
 
 	if (ioctl(info->device, DAHDI_HOOK, &x)) {
 		fprintf(stderr, "Unable to hang up fd %d\n", info->device);
@@ -170,7 +171,6 @@ static int ensure_silence(struct silence_info *info)
 	}
 	sleep(2); /* Added to ensure that dial can actually takes place */
 
-	struct dahdi_dialoperation dop;
 	memset(&dop, 0, sizeof(dop));
 	dop.op = DAHDI_DIAL_OP_REPLACE;
 	dop.dialstr[0] = 'T';
@@ -350,6 +350,12 @@ static int maptone(int whichdahdi, int freq, char *dialstr, int delayuntilsilenc
 	struct dahdi_bufferinfo bi;
 	short inbuf[TEST_DURATION]; /* changed from BUFFER_LENGTH - this buffer is for short values, so it should be allocated using the length of the test */
 	FILE *outfile = NULL;
+	int leadin = 50;
+	int trailout = 100;
+	struct silence_info sinfo;
+	float power_result;
+	float power_waveform;
+	float echo;
 
 	outfile = fopen("fxotune_dump.vals", "w");
 	if (!outfile) {
@@ -378,8 +384,6 @@ static int maptone(int whichdahdi, int freq, char *dialstr, int delayuntilsilenc
 	}
 
 	/* Fill the output buffers */
-	int leadin = 50;
-	int trailout = 100;
 	for (i = 0; i < leadin; i++)
 		outbuf[i] = 0;
 	for (; i < TEST_DURATION - trailout; i++){
@@ -389,7 +393,6 @@ static int maptone(int whichdahdi, int freq, char *dialstr, int delayuntilsilenc
 		outbuf[i] = 0;
 
 	/* Make sure the line is clear */
-	struct silence_info sinfo;
 	memset(&sinfo, 0, sizeof(sinfo));
 	sinfo.device = whichdahdi;
 	sinfo.dialstr = dialstr;
@@ -426,9 +429,9 @@ retry:
 	}
 
 	/* write content of output buffer to debug file */
-	float power_result = power_of(inbuf, TEST_DURATION, 1); 
-	float power_waveform = power_of(outbuf, TEST_DURATION, 1); 
-	float echo = power_result/power_waveform;
+	power_result = power_of(inbuf, TEST_DURATION, 1); 
+	power_waveform = power_of(outbuf, TEST_DURATION, 1); 
+	echo = power_result/power_waveform;
 	
 	fprintf(outfile, "Buffers, freq=%d, outpower=%0.0f, echo=%0.4f\n", freq, power_result, echo);
 	fprintf(outfile, "Sample, Input (received from the line), Output (sent to the line)\n");
@@ -479,10 +482,15 @@ static int acim_tune2(int whichdahdi, int freq, char *dialstr, int delayuntilsil
 	int res = 0, x = 0;
 	int lowesttry = -1;
 	float lowesttryresult = 999999999999.0;
-	float lowestecho = 999999999999.0;;
+	float lowestecho = 999999999999.0;
 	struct dahdi_bufferinfo bi;
-
 	short inbuf[TEST_DURATION * 2];
+	struct silence_info sinfo;
+	int echo_trys_size = 72;
+	int trys = 0;
+	float waveform_power;
+	float freq_result;
+	float echo;
 
 	if (debug && !debugoutfile) {
 		if (!(debugoutfile = fopen("fxotune.vals", "w"))) {
@@ -524,7 +532,6 @@ static int acim_tune2(int whichdahdi, int freq, char *dialstr, int delayuntilsil
 
 
 	/* Set up silence settings */
-	struct silence_info sinfo;
 	memset(&sinfo, 0, sizeof(sinfo));
 	sinfo.device = whichdahdi;
 	sinfo.dialstr = dialstr;
@@ -536,13 +543,10 @@ static int acim_tune2(int whichdahdi, int freq, char *dialstr, int delayuntilsil
 		outbuf[i] = freq > 0 ? gentone(freq, i) : genwaveform(i); /* if freq is negative, use a multi-frequency waveform */
 	
 	/* compute power of input (so we can later compute echo levels relative to input) */
-	float waveform_power = calc_magnitude(outbuf, TEST_DURATION);
-	
+	waveform_power = calc_magnitude(outbuf, TEST_DURATION);
 
 	/* sweep through the various coefficient settings and see how our responses look */
 
-	int echo_trys_size = 72;
-	int trys = 0;
 	for (trys = 0; trys < echo_trys_size; trys++){
 		
 		/* ensure silence on the line */
@@ -580,8 +584,8 @@ retry:
 			goto retry;
 		}
 
-		float freq_result = calc_magnitude(inbuf, TEST_DURATION * 2);
-		float echo = db_loss(freq_result, waveform_power);
+		freq_result = calc_magnitude(inbuf, TEST_DURATION * 2);
+		echo = db_loss(freq_result, waveform_power);
 		
 #if 0
 		if (debug > 0)
@@ -643,7 +647,7 @@ static int acim_tune(int whichdahdi, char *dialstr, int delayuntilsilence, int s
 	int lowest = 0;
 	FILE *outfile = NULL;
 	float acim_results[16];
-
+	struct silence_info sinfo;
 
 	if (debug) {
 		outfile = fopen("fxotune.vals", "w");
@@ -654,7 +658,6 @@ static int acim_tune(int whichdahdi, char *dialstr, int delayuntilsilence, int s
 	}
 
 	/* Set up silence settings */
-	struct silence_info sinfo;
 	memset(&sinfo, 0, sizeof(sinfo));
 	sinfo.device = whichdahdi;
 	sinfo.dialstr = dialstr;
@@ -996,16 +999,13 @@ int main(int argc , char **argv)
 	int waveformtype = -1; /* -w multi-tone by default.  If > 0, single tone of specified frequency */
 	int delaytosilence = 0; /* -l */
 	int silencegoodfor = 18; /* -m */
-	
 	char* dialstr = "5"; /* -n */
-	
 	int res = 0;
-
 	int doset = 0; /* -s */
 	int docalibrate = 0; /* -i <dialstr> */
 	int dodump = 0; /* -d */
-
 	int i = 0;
+	int moreargs;
 	
 	for (i = 1; i < argc; i++){
 		if (!(argv[i][0] == '-' || argv[i][0] == '/') || (strlen(argv[i]) <= 1)){
@@ -1014,7 +1014,8 @@ int main(int argc , char **argv)
 			fputs(usage, stdout);
 			return -1;
 		}
-		int moreargs = (i < argc - 1);
+
+		moreargs = (i < argc - 1);
 		
 		switch(argv[i][1]){
 			case 's':
