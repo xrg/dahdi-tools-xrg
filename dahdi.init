@@ -39,6 +39,8 @@ if [ $system = redhat ]; then
     . $initdir/functions || exit 0
 fi
 
+DAHDI_MODULES_FILE="/etc/dahdi/modules"
+
 [ -r /etc/dahdi/init.conf ] && . /etc/dahdi/init.conf
 
 if [ $system = redhat ]; then
@@ -148,30 +150,25 @@ RETVAL=0
 # See how we were called.
 case "$1" in
   start)
-	cat "/etc/dahdi/modules" | grep "^[^\#]" | {
-		foundone=false
-		echo "Loading DAHDI hardware modules:"
-		while read line; do
-			foundone=true
-			if [ $system = debian ]; then
-					echo -n "   ${line}: " 
-					if modprobe $line 2> /dev/null; then
-					echo -n "done"
-				else
-					echo -n "error"
-				fi
-			elif [ $system = redhat ]; then
-				action "  ${line}: " modprobe $line 
+  	modules=`sed -e 's/#.*$//' $DAHDI_MODULES_FILE 2>/dev/null`
+	#if [ "$modules" = '' ]; then
+		# what?
+	#fi
+	echo "Loading DAHDI hardware modules:"
+	modprobe dahdi
+	for line in $modules; do
+		if [ $system = debian ]; then
+			echo -n "   ${line}: " 
+			if modprobe $line 2> /dev/null; then
+				echo -n "done"
+			else
+				echo -n "error"
 			fi
-		done
-		echo ""
-		if ! $foundone; then
-			echo "There aren't any DAHDI hardware modules specified to "
-			echo "load.  Please update /etc/dahdi/modules in order to "
-			echo "specify the modules to load."
-			exit 1
+		elif [ $system = redhat ]; then
+			action "  ${line}: " modprobe $line 
 		fi
-	}
+		echo ""
+	done
 
 	TMOUT=$DAHDI_DEV_TIMEOUT # max secs to wait
 
