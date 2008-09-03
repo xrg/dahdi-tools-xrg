@@ -206,6 +206,9 @@ that is included in the ppp/ subdirectory. To install it:
    CONFIG_HDLC .
 
 
+include::UPGRADE.txt[]
+
+
 License
 -------
 This package is distributed under the terms of the GNU General Public License
@@ -222,13 +225,13 @@ cost.
 Reporting Bugs
 --------------
 Please report bug and patches to the Asterisk bug tracker at
-http://bugs.digium.com in the "DAHDI" category.
+http://bugs.digium.com/[] in the "DAHDI" category.
 
 
 Links
 -----
 - http://asterisk.org/[] - The Asterisk PBX
 - http://voip-info.org/[]
-- http://voip-info.org/wiki/view/Asterisk+Zaptel+Installation[]
+- http://voip-info.org/wiki/view/DAHDI[]
 - http://docs.tzafrir.org.il/dahdi-tools/README.html[Up-to-date HTML version
   of this file]
