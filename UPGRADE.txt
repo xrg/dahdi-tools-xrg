@@ -96,3 +96,8 @@ Many tool names have changed:
 * In Astribank PRI modules, the LED behaviour represents which ports
   are *CLOCK MASTER* (red color) and which are *CLOCK SLAVE* (green color).
   Usually (but not always), this corresponds to the NT/TE settings in Asterisk.
+
+* The /etc/sysconfig/zaptel (or /etc/default/zaptel file, depending
+  on your distribution) is now split into two separate files:
+  /etc/dahdi/modules control which modules are loaded and module options are
+  set via /etc/modprobe.d/dahdi.  

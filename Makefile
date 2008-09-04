@@ -276,9 +276,10 @@ ifneq (,$(ADD_INITD))
 endif
 	@echo "DAHDI has been configured."
 	@echo ""
-	@echo "If you have any DAHDI hardware it is now recommended to "
-	@echo "edit /etc/dahdi/init.conf and set there an optimal value "
-	@echo "for the variable MODULES ."
+	@echo "If you have any DAHDI hardware it is now recommended you "
+	@echo "edit /etc/dahdi/modules in order to oad support for only "
+	@echo "the DAHDI hardware installed in this system . By default "
+	@echo "support for all DAHDI hardware is loaded at DAHDI start. "
 	@echo ""
 	@echo "I think that the DAHDI hardware you have on your system is:"
 	@xpp/dahdi_hardware || true
