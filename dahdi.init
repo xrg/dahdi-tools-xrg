@@ -15,7 +15,7 @@ initdir=/etc/init.d
 DAHDI_CFG=/usr/sbin/dahdi_cfg
 DAHDI_CFG_CMD="$DAHDI_CFG" # e.g: for a custom system.conf location
 
-FXOTUNE=/sbin/fxotune
+FXOTUNE=/usr/sbin/fxotune
 
 # The default syncer Astribank. Usually set automatically to a sane
 # value by xpp_sync(1) if you have an Astribank. You can set this to an
