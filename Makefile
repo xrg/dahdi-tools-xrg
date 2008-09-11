@@ -61,9 +61,9 @@ ifeq (,$(DESTDIR))
   endif
 endif
 
-INITRD_DIR	:= $(firstword $(wildcard /etc/rc.d/init.d /etc/init.d))
+INITRD_DIR	:= $(firstword $(wildcard $(DESTDIR)/etc/rc.d/init.d $(DESTDIR)/etc/init.d))
 ifneq (,$(INITRD_DIR))
-  INIT_TARGET	:= $(DESTDIR)$(INITRD_DIR)/dahdi
+  INIT_TARGET	:= $(INITRD_DIR)/dahdi
   COPY_INITD	:= install -D dahdi.init $(INIT_TARGET)
 endif
 
@@ -72,9 +72,9 @@ MODULES_FILE	= /etc/dahdi/modules
 MODPROBE_FILE	= /etc/modprobe.d/dahdi
 BLACKLIST_FILE	= /etc/modprobe.d/dahdi.blacklist
 
-NETSCR_DIR	:= $(firstword $(wildcard /etc/sysconfig/network-scripts ))
+NETSCR_DIR	:= $(firstword $(wildcard $(DESTDIR)/etc/sysconfig/network-scripts ))
 ifneq (,$(NETSCR_DIR))
-  NETSCR_TARGET	:= $(DESTDIR)$(NETSCR_DIR)/ifup-hdlc
+  NETSCR_TARGET	:= $(NETSCR_DIR)/ifup-hdlc
   COPY_NETSCR	:= install -D ifup-hdlc $(NETSCR_TARGET)
 endif
 
