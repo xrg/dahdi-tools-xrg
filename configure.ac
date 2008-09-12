@@ -82,15 +82,11 @@ else
 fi
 AC_SUBST(DAHDI_DECLARATION_AFTER_STATEMENT)
 
-AST_EXT_LIB_SETUP([CURSES], [curses], [curses])
 AST_EXT_LIB_SETUP([DAHDI], [DAHDI], [dahdi])
-AST_EXT_LIB_SETUP([NCURSES], [ncurses], [ncurses])
 AST_EXT_LIB_SETUP([NEWT], [newt], [newt])
 AST_EXT_LIB_SETUP([USB], [usb], [usb])
 
-AST_EXT_LIB_CHECK([CURSES], [curses], [initscr], [curses.h])
 AST_C_DEFINE_CHECK([DAHDI], [DAHDI_CODE], [dahdi/user.h])
-AST_EXT_LIB_CHECK([NCURSES], [ncurses], [initscr], [curses.h])
 AST_EXT_LIB_CHECK([NEWT], [newt], [newtBell], [newt.h])
 AST_EXT_LIB_CHECK([USB], [usb], [usb_init], [usb.h])
 
