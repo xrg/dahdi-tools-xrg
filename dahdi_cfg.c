@@ -678,6 +678,7 @@ static void apply_fiftysix(void)
 		}
 
 		if (ioctl(chanfd, DAHDI_SPECIFY, &x)) {
+			close(chanfd);
 			continue;
 		}
 
