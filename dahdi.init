@@ -167,8 +167,8 @@ case "$1" in
 		elif [ $system = redhat ]; then
 			action "  ${line}: " modprobe $line 
 		fi
-		echo ""
 	done
+	echo ""
 
 	TMOUT=$DAHDI_DEV_TIMEOUT # max secs to wait
 
