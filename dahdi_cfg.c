@@ -671,7 +671,9 @@ static void apply_fiftysix(void)
 	for (x = 1; x < DAHDI_MAX_CHANNELS; x++) {
 		chanfd = open("/dev/dahdi/channel", O_RDWR);
 		if (chanfd == -1) {
-			fprintf(stderr, "Couldn't open /dev/dahdi/channel\n");
+			fprintf(stderr, 
+			    "Couldn't open /dev/dahdi/channel: %s\n", 
+			    strerror(errno));
 			exit(-1);
 		}
 
