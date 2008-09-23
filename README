@@ -12,17 +12,6 @@ Build Requirements
 This package needs the headers from dahdi-linux. Thus you should install
 dahdi-linux before building dahdi-tools.
 
-The script install_prereq should help you install the
-required packages. To see what it suggests, run:
-
-  ./install_prereq test
-
-You can either copy/paste that code to a terminal to run it, or just
-run:
-
-  ./install_prereq install
-
-
 Build System
 ~~~~~~~~~~~~
 gcc and friends. Generally you will need to install the package gcc.
