@@ -5,6 +5,7 @@
 		<defaultenabled>no</defaultenabled>
 	</member>
 	<member name="sethdlc" remove_on_change="sethdlc sethdlc.o">
+		<defaultenabled>no</defaultenabled>
 	</member>
 	<member name="dahdi_cfg" remove_on_change="dahdi_cfg dahdi_cfg.o">
 	</member>
