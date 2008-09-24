@@ -90,6 +90,8 @@ AST_C_DEFINE_CHECK([DAHDI], [DAHDI_CODE], [dahdi/user.h])
 AST_EXT_LIB_CHECK([NEWT], [newt], [newtBell], [newt.h])
 AST_EXT_LIB_CHECK([USB], [usb], [usb_init], [usb.h])
 
+AST_C_DEFINE_CHECK([HDLC], [GENERIC_HDLC_VERSION], [linux/hdlc.h], [4])
+
 AC_ARG_WITH(selinux,
 	[AS_HELP_STRING([--with-selinux],
 			[enable (with) / disable (without) SELinux])],
@@ -143,6 +145,16 @@ case "$with_ppp" in
 	fi
 	;;
 esac
+
+if test "x${PBX_HDLC}" == "x1"; then
+   AC_EGREP_CPP([VERSION = 4],
+		[#include <linux/hdlc.h>
+		VERSION = GENERIC_HDLC_VERSION], [], [PBX_HDLC=0])
+fi
+
+if test "x${PBX_HDLC}" != "x1"; then
+   AC_MSG_NOTICE([GENERIC_HDLC_VERSION version 4 not found, disabling sethdlc.])
+fi
 
 if test "x${PBX_DAHDI}" != "x1"; then
    AC_MSG_NOTICE([***])
