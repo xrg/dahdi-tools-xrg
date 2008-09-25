@@ -82,7 +82,7 @@ xpp_startup() {
 	# overriding locales for the above two, as perl can be noisy
 	# when locales are missing.
 	# No register all the devices if they didn't auto-register:
-	LC_ALL=C dahdi__registration on
+	LC_ALL=C dahdi_registration on
 
 	# this one could actually be run after dahdi_cfg:
 	LC_ALL=C xpp_sync "$XPP_SYNC"
