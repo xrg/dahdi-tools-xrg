@@ -14,7 +14,7 @@ sub new($$) {
 	my $cfg_file = shift || die;
 	my $self = { GENCONF_FILE => $cfg_file };
 	bless $self, $pack;
-	open(F, $cfg_file) || die "$0: Cannot read '$cfg_file': $!\n";
+	open(F, $cfg_file) || return $self; # Empty configuration
 	my $array_key;
 	while(<F>) {
 		my ($key, $val);
