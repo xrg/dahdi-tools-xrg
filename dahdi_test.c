@@ -54,7 +54,7 @@ static void usage(char *argv0)
 		"  -c COUNT    Run just COUNT cycles (otherwise: forever).\n"
 		"  -v          More verbose output.\n"
 		"  -h          This help text.\n"
-	,c);
+	, c);
 }
 
 int main(int argc, char *argv[])
@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
 	int fd;
 	int res;
 	int c;
-	int count=0;
+	int count = 0;
 	int seconds = 0;
 	int curarg = 1;
-	int verbose=0;
+	int verbose = 0;
 	char buf[8192];
 	float score;
 	float ms;
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	while((c = getopt(argc, argv, "c:hv")) != -1) {
+	while ((c = getopt(argc, argv, "c:hv")) != -1) {
 		switch(c) {
 		case 'c':
 			seconds = atoi(optarg);
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	while(curarg < argc) {
+	while (curarg < argc) {
 		if (!strcasecmp(argv[curarg], "-v"))
 			verbose++;
 		if (!strcasecmp(argv[curarg], "-c") && argc > curarg)
@@ -106,13 +106,13 @@ int main(int argc, char *argv[])
 	signal(SIGINT, hup_handler);
 	signal(SIGALRM, hup_handler);
 	/* Flush input buffer */
-	for (count = 0;count < 4; count++)
+	for (count = 0; count < 4; count++)
 		res = read(fd, buf, sizeof(buf));
 	count = 0;
 	ms = 0; /* Makes the compiler happy */
 	if (seconds > 0)
 		alarm(seconds + 1); /* This will give 'seconds' cycles */
-	for(;;) {
+	for (;;) {
 		if (count == 0)
 			ms = 0;
 		gettimeofday(&start, NULL);
@@ -126,14 +126,13 @@ int main(int argc, char *argv[])
 		ms += (now.tv_sec - start.tv_sec) * 8000;
 		ms += (now.tv_usec - start.tv_usec) / 125.0;
 		if (count >= SIZE) {
-			double percent;
-
-			percent = 100.0 * (count - ms) / count;
-			if (verbose)
+			double percent = 100.0 * (count - ms) / count;
+			if (verbose) {
 				printf("\n%d samples in %0.3f system clock sample intervals (%.3f%%)", 
 						count, ms, 100 - percent);
-			else if (pass > 0 && (pass % 8) == 0)
+			} else if (pass > 0 && (pass % 8) == 0) {
 				printf("\n");
+			}
 			score = 100.0 - fabs(percent);
 			if (score > best)
 				best = score;
