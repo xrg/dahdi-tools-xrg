@@ -40,19 +40,40 @@
 int main(int argc, char *argv[])
 {
 	int ctl;
-	int x, y;
+	int x, y, z;
 	struct dahdi_params params;
 	unsigned int basechan = 1;
 	struct dahdi_spaninfo s;
 	char buf[100];
 	char alarms[50];
+	int filter_count = 0;
+	int span_filter[DAHDI_MAX_SPANS];
 
 	if ((ctl = open("/dev/dahdi/ctl", O_RDWR)) < 0) {
 		fprintf(stderr, "Unable to open /dev/dahdi/ctl: %s\n", strerror(errno));
 		exit(1);
 	}
+
+	for (x = 1; x < argc && filter_count < DAHDI_MAX_SPANS; x++) {
+		int s = atoi(argv[x]);
+		if (s > 0) {
+			span_filter[filter_count++] = s;
+		}
+	}
 	
 	for (x = 1; x < DAHDI_MAX_SPANS; x++) {
+		if (filter_count > 0) {
+			int match = 0;
+			for (z = 0; z < filter_count; z++) {
+				if (x == span_filter[z]) {
+					match = 1;
+					break;
+				}
+			}
+			if (!match) {
+				continue;
+			}
+		}
 		memset(&s, 0, sizeof(s));
 		s.spanno = x;
 		if (ioctl(ctl, DAHDI_SPANSTAT, &s))
